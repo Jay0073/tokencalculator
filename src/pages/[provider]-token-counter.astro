@@ -1,0 +1,18 @@
+---
+import CalculatorPage from '../components/CalculatorPage.astro';
+import type { ProviderId } from '../domain/models';
+
+type ProviderPage={slug:string;provider:ProviderId;title:string;description:string;eyebrow:string;heading:string;intro:string;methodology:string;faq:{question:string;answer:string}[]};
+
+export function getStaticPaths(){
+  const pages:ProviderPage[]=[
+    {slug:'openai',provider:'openai',title:'OpenAI Token Counter — GPT Cost Calculator',description:'Count GPT tokens locally with exact BPE tokenization. Check OpenAI API input cost and context-window usage.',eyebrow:'OpenAI token counter',heading:'Count OpenAI tokens exactly.',intro:'Paste text or attach files and images to inspect GPT token usage locally.',methodology:'OpenAI text is encoded locally with the model family’s BPE encoding. API message wrappers, tools, and hidden provider instructions can add tokens.',faq:[{question:'How does the GPT token calculator work?',answer:'The browser runs the o200k_base BPE tokenizer locally and compares the result with current OpenAI context limits and prices.'}]},
+    {slug:'claude',provider:'anthropic',title:'Claude Token Counter — Anthropic Cost Calculator',description:'Estimate Claude tokens, image tokens, Anthropic input cost, and context-window usage locally.',eyebrow:'Claude token counter',heading:'Estimate Claude token usage.',intro:'Measure prompts, documents, and images against current Claude models without uploading your content.',methodology:'Claude text uses a transparent calibrated estimate because Anthropic does not publish a lightweight offline browser tokenizer. Images use Anthropic’s published visual-patch rules.',faq:[{question:'Why is the Claude count an estimate?',answer:'Anthropic’s production tokenizer is not distributed as a lightweight browser library, so this tool uses a deterministic calibrated ratio and labels it clearly.'}]},
+    {slug:'gemini',provider:'google',title:'Gemini Token Counter — Google AI Cost Calculator',description:'Estimate Gemini tokens locally for text, documents, and images with Google AI pricing and context limits.',eyebrow:'Gemini token counter',heading:'Estimate Gemini token usage.',intro:'Measure text, documents, and images against current Gemini models in your browser.',methodology:'Gemini text uses a deterministic provider-family estimate. Images follow Google’s published media token guidance. The Gemini countTokens API is authoritative.',faq:[{question:'Does the Gemini counter support images?',answer:'Yes. Image dimensions are read locally and converted using Google’s published media-token rules; the image itself is not uploaded.'}]},
+    {slug:'deepseek',provider:'deepseek',title:'DeepSeek Token Counter — API Cost Calculator',description:'Estimate current DeepSeek model tokens, input cost, and context-window usage locally.',eyebrow:'DeepSeek token counter',heading:'Estimate DeepSeek prompt tokens.',intro:'Measure text and readable documents against current DeepSeek production models.',methodology:'DeepSeek text uses a calibrated provider-family estimate. Models without documented image input show an unsupported state rather than an invented count.',faq:[{question:'Can DeepSeek count image tokens?',answer:'The current direct DeepSeek models in this calculator do not publish supported image-input rules, so image counts are marked unavailable.'}]},
+  ];
+  return pages.map((page)=>({params:{provider:page.slug},props:page}));
+}
+const page=Astro.props as ProviderPage;
+---
+<CalculatorPage provider={page.provider} title={page.title} description={page.description} eyebrow={page.eyebrow} heading={page.heading} intro={page.intro} canonical={`/${page.slug}-token-counter`} methodology={page.methodology} additionalFaq={page.faq} />

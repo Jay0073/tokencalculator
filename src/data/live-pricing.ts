@@ -3,7 +3,7 @@ import type { ModelConfig, ProviderId } from '../domain/models';
 type ModelsDevModel = {
   id: string;
   limit?: { context?: number; output?: number };
-  cost?: { input?: number; output?: number };
+  cost?: { input?: number; output?: number; cache_read?: number };
 };
 
 type ModelsDevResponse = Partial<Record<ProviderId, { models?: Record<string, ModelsDevModel> }>>;
@@ -31,6 +31,7 @@ export async function loadLivePricing(models: ModelConfig[]): Promise<PricingSna
         contextWindow: live.limit?.context ?? model.contextWindow,
         maxOutput: live.limit?.output ?? model.maxOutput,
         inputPerMillion: live.cost?.input ?? model.inputPerMillion,
+        cachedInputPerMillion: live.cost?.cache_read ?? model.cachedInputPerMillion,
         outputPerMillion: live.cost?.output ?? model.outputPerMillion,
       };
     });

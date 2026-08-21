@@ -5,9 +5,10 @@ import FAQ from './seo/FAQ.astro';
 import ProviderLinks from './seo/ProviderLinks.astro';
 import type { ProviderId } from '../domain/models';
 
-interface Props { provider?:ProviderId; title:string; description:string; eyebrow:string; heading:string; intro:string; canonical:string; methodology:string }
-const { provider,title,description,eyebrow,heading,intro,canonical,methodology }=Astro.props;
+interface Props { provider?:ProviderId; title:string; description:string; eyebrow:string; heading:string; intro:string; canonical:string; methodology:string; additionalFaq?:{question:string;answer:string}[] }
+const { provider,title,description,eyebrow,heading,intro,canonical,methodology,additionalFaq=[] }=Astro.props;
 const faq=[
+  ...additionalFaq,
   {question:'Does this tool upload my prompt or files?',answer:'No. Text, document extraction, image dimensions, and token calculations run in your browser. Your content is not sent to TokenCalculator.dev.'},
   {question:'Are the token counts exact?',answer:'OpenAI text counts use the matching local BPE encoding. Other providers are clearly labeled estimates unless they publish a deterministic local formula. Image counts use provider-published rules.'},
   {question:'Can I count tokens in PDF and DOCX files?',answer:'Text-based PDF and DOCX files are read locally. Scanned or encrypted PDFs require OCR and are not supported.'},
@@ -15,10 +16,10 @@ const faq=[
 ];
 ---
 <BaseLayout {title} {description} {canonical} {faq}>
-  <section class="shell max-w-4xl text-center pt-16 sm:pt-24 pb-9 relative z-10">
+  <section class="shell max-w-4xl pt-12 sm:pt-16 pb-7 relative z-10">
     <span class="eyebrow">{eyebrow}</span>
-    <h1 class="m-0 mt-5 text-[clamp(2.5rem,6vw,4.6rem)] leading-[.98] tracking-[-.065em]">{heading}</h1>
-    <p class="muted text-[17px] sm:text-lg mt-5 mb-0 mx-auto max-w-2xl">{intro}</p>
+    <h1 class="m-0 mt-4 text-[clamp(2.25rem,5vw,3.75rem)] leading-[1.02] tracking-[-.055em] max-w-3xl">{heading}</h1>
+    <p class="muted text-[16px] sm:text-[17px] mt-4 mb-0 max-w-2xl">{intro}</p>
   </section>
   <Calculator {provider}/>
   <section class="shell mt-24 grid md:grid-cols-2 gap-10 md:gap-20 relative z-10">

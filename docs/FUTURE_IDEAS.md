@@ -4,8 +4,6 @@ This file preserves worthwhile ideas without turning them into launch requiremen
 
 ## Cost planning
 
-- Expected output tokens and response-length presets
-- Per-call, 1,000-call, daily, monthly, and annual forecasts
 - Input/output cost-driver breakdown and savings suggestions
 - Cached-input, cache-write, batch, reasoning-token, and tiered pricing
 - Retries, multi-turn context growth, and agent/tool-call steps
@@ -23,7 +21,6 @@ This file preserves worthwhile ideas without turning them into launch requiremen
 - OCR and scanned PDFs
 - Rich PDF/DOCX layout and table extraction
 - Chat-role/system/user/assistant breakdown
-- Token-piece visualizer for supported exact tokenizers
 - Prompt-version diff and optimization suggestions
 - Audio and video token estimates
 - Usage-log import and estimated-versus-actual reconciliation
@@ -39,7 +36,6 @@ This file preserves worthwhile ideas without turning them into launch requiremen
 ## Product expansion
 
 - Qwen, Copilot-related guidance, Meta-hosted models, Mistral, Grok, Perplexity, Cohere, OpenRouter, Bedrock, Azure, and Vertex AI
-- Shareable scenario URLs
 - CSV/PDF export
 - API and CLI
 - Saved projects, accounts, and team reports

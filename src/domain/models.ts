@@ -13,6 +13,7 @@ export interface ModelConfig {
   contextWindow: number;
   maxOutput: number;
   inputPerMillion: number;
+  cachedInputPerMillion?: number;
   outputPerMillion: number;
   vision?: VisionStrategy;
   pricingUrl: string;

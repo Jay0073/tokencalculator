@@ -15,6 +15,10 @@ The application is a free, static, browser-only tool. User content never leaves 
 - Attempt lightweight, client-side extraction from text-based PDF and DOCX files.
 - Upload an image and estimate vision-input tokens for models with published rules.
 - Compare the same input across the four launch providers without choosing a model first.
+- Update results live on every text input, paste, upload, or removal.
+- Inspect exact OpenAI BPE pieces in a color-coded token view.
+- Forecast per-call, daily, and monthly spend from output-token and request-volume controls.
+- Copy a Markdown comparison and share workload parameters in the URL.
 - Display tokens, word count, character count, UTF-8 byte count, input cost, context-window usage, and overflow state.
 - Label every count as `Exact`, `Provider formula`, or `Estimated`.
 - Support dark and light themes, keyboard navigation, responsive layouts, and reduced motion.
@@ -22,9 +26,8 @@ The application is a free, static, browser-only tool. User content never leaves 
 
 ### Excluded
 
-- Output-token forecasting and workload simulation.
 - Full sortable model/pricing comparison tables beyond the compact results dashboard.
-- Cached-input, batch, RAG, agent, or embedding calculators.
+- Batch, RAG, agent, or embedding calculators.
 - OCR, scanned-PDF parsing, layout reconstruction, and table extraction.
 - Accounts, storage, saved projects, APIs, CLIs, databases, or server-side processing.
 - Providers other than OpenAI, Anthropic, Google, and DeepSeek.
@@ -45,9 +48,9 @@ Excluded ideas belong in `docs/FUTURE_IDEAS.md` and must not enter the launch im
 
 ## Experience
 
-The calculator opens with one centered, unified composer for text, documents, and images. Results remain hidden until the user chooses `Count tokens`, then appear in a separate dashboard below and scroll into view. The dashboard summarizes all launch providers and exposes model details after provider selection.
+The calculator opens with one unified composer for text, documents, and images. Results update live and appear in a separate dashboard below as soon as content exists. The dashboard summarizes all launch providers and exposes model details after provider selection.
 
-The composer contains a text area, one multi-file attachment action, attachment chips, and a single count action. It contains no provider, model, pricing, or context controls. The results dashboard contains provider summaries, word/character/attachment totals, and model rows with tokens, cost, context use, and accuracy labels.
+The composer contains a text area, one multi-file attachment action, attachment chips, token-inspection toggle, privacy assertion, and live status. It contains no provider, model, pricing, or context controls. The results dashboard contains provider summaries, word/character/attachment totals, model rows, workload controls, and sharing/export actions.
 
 Image processing reads only local file metadata and dimensions. Document errors distinguish unsupported, encrypted, scanned, oversized, and malformed files. Empty input produces a neutral zero state rather than an error.
 
@@ -91,11 +94,9 @@ src/
     calculator.worker.ts
   pages/
     index.astro
-    openai-token-counter.astro
-    claude-token-counter.astro
-    gemini-token-counter.astro
-    deepseek-token-counter.astro
-    about.astro methodology.astro privacy-policy.astro terms.astro contact.astro
+    [provider]-token-counter.astro
+    about.astro methodology.astro privacy-policy.astro terms-of-service.astro contact.astro
+    404.astro 500.astro
   layouts/ styles/ utils/
 tests/
   tokenizers/ vision/ documents/ pricing/
@@ -154,4 +155,4 @@ Every calculator page has a unique title, description, H1, canonical URL, social
 
 ## Launch condition
 
-The product is ready when a user can select one of the four providers, paste text or upload a supported local file, receive an honestly labeled token count and input cost, understand context-window fit, and verify that their content was not transmitted. Features in `FUTURE_IDEAS.md` are not launch blockers.
+The product is ready when a user can paste text or upload a supported local file, receive live and honestly labeled counts across the four providers, inspect exact BPE pieces, understand cost and context fit, forecast a simple workload, and verify that their content was not transmitted. Features in `FUTURE_IDEAS.md` are not launch blockers.

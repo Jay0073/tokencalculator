@@ -9,9 +9,11 @@ const visibleProviders = [...new Set(visibleModels.map((model) => model.provider
 ---
 
 <section class="shell relative z-10" data-calculator data-models={JSON.stringify(visibleModels)} data-provider={provider ?? ''}>
-  <div class="max-w-4xl mx-auto panel composer-shadow rounded-[22px] overflow-hidden">
+  <div id="input-surface" class="max-w-4xl mx-auto panel composer-shadow rounded-xl overflow-hidden relative transition-colors">
+    <div id="drop-overlay" class="hidden absolute inset-0 z-10 border-2 border-dashed border-[var(--accent)] bg-[color-mix(in_srgb,var(--accent)_7%,var(--panel))] place-items-center pointer-events-none"><span class="font-semibold text-[var(--accent)]">Drop files to add them</span></div>
     <label for="prompt-input" class="sr-only">Text to count</label>
     <textarea id="prompt-input" class="w-full min-h-52 sm:min-h-64 resize-y bg-transparent px-5 pt-5 sm:px-7 sm:pt-7 outline-none text-[16px] leading-7 placeholder:text-[var(--faint)]" placeholder="Paste text, a prompt, or the contents you want to count…" spellcheck="false"></textarea>
+    <div id="token-inspector" class="hidden min-h-52 sm:min-h-64 px-5 py-5 sm:px-7 sm:py-7 mono text-sm leading-7 flex-wrap content-start gap-1 overflow-auto" aria-label="Exact o200k token boundaries"></div>
 
     <div id="attachment-list" class="hidden px-5 sm:px-7 pb-3 flex flex-wrap gap-2" aria-live="polite"></div>
     <p id="input-error" class="hidden mx-5 sm:mx-7 mb-3 text-sm text-[var(--warn)]" role="alert"></p>
@@ -22,11 +24,9 @@ const visibleProviders = [...new Set(visibleModels.map((model) => model.provider
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m20.5 11.5-8.8 8.8a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.2a2 2 0 1 1-2.8-2.8l8.5-8.5"/></svg>
         Add files or images
       </label>
-      <span class="hidden sm:block text-xs muted">Everything stays in this browser</span>
-      <button id="count-button" class="primary-button rounded-full h-10 px-5 text-sm font-semibold ml-auto flex items-center gap-2" type="button">
-        Count tokens
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5"/></svg>
-      </button>
+      <button id="token-toggle" class="soft-button rounded-full h-10 px-4 text-sm" type="button" aria-pressed="false">Show tokens</button>
+      <span class="text-xs muted basis-full sm:basis-auto order-last sm:order-none">Everything stays in this browser</span>
+      <span id="live-status" class="ml-auto flex items-center gap-2 text-xs text-[var(--success)]"><span class="size-1.5 rounded-full bg-[var(--success)]"></span><span>Live</span></span>
     </div>
   </div>
 
@@ -42,9 +42,9 @@ const visibleProviders = [...new Set(visibleModels.map((model) => model.provider
       </div>
     </div>
 
-    <div class:list={["grid gap-3", visibleProviders.length > 1 ? "sm:grid-cols-2 lg:grid-cols-4" : "max-w-sm"]} id="provider-cards">
+    <div class:list={["grid gap-3", visibleProviders.length > 1 ? "grid-cols-2 lg:grid-cols-4" : "max-w-sm"]} id="provider-cards">
       {visibleProviders.map((providerId, index) => (
-        <button type="button" class="provider-card panel text-left rounded-2xl p-5 hover:border-[var(--line-strong)]" data-provider-card={providerId} data-active={String(index === 0)}>
+        <button type="button" class="provider-card panel text-left rounded-xl p-4 sm:p-5 min-h-36 hover:border-[var(--line-strong)]" data-provider-card={providerId} data-active={String(index === 0)}>
           <span class="flex items-center justify-between gap-2"><span class="text-sm font-semibold">{PROVIDERS[providerId].name}</span><span class="mono text-[10px] muted">{PROVIDERS[providerId].short}</span></span>
           <strong class="provider-token mono block text-3xl mt-7 tracking-[-.06em]">—</strong>
           <span class="provider-label text-xs muted block mt-1">Calculating…</span>
@@ -52,12 +52,32 @@ const visibleProviders = [...new Set(visibleModels.map((model) => model.provider
       ))}
     </div>
 
-    <div class="panel rounded-[22px] overflow-hidden mt-4">
+    <div class="panel rounded-xl overflow-hidden mt-4">
       <div class="px-5 py-4 sm:px-6 border-b hairline flex flex-wrap items-center justify-between gap-3">
         <div><span id="detail-provider" class="font-semibold">Provider</span><span class="muted text-sm ml-2">model details</span></div>
         <span id="pricing-status" class="mono text-[10px] uppercase tracking-wider muted">Checking live pricing…</span>
       </div>
       <div id="model-results" class="divide-y divide-[var(--line)]"></div>
+    </div>
+
+    <details id="workload-planner" class="panel rounded-xl mt-4 overflow-hidden">
+      <summary class="px-5 py-4 sm:px-6 cursor-pointer font-semibold flex items-center justify-between">Workload &amp; Scaling Planner <span class="text-[var(--accent)]">+</span></summary>
+      <div class="border-t hairline p-5 sm:p-6 grid lg:grid-cols-[1fr_1fr] gap-8">
+        <div class="space-y-6">
+          <label class="block"><span class="flex justify-between text-sm mb-2"><span>Expected output tokens</span><output id="output-token-value" class="mono">500</output></span><input id="output-token-slider" class="w-full accent-[var(--accent)]" type="range" min="0" max="8000" step="100" value="500" /></label>
+          <label class="block"><span class="flex justify-between text-sm mb-2"><span>Requests per day</span><output id="request-value" class="mono">1,000</output></span><input id="request-slider" class="w-full accent-[var(--accent)]" type="range" min="0" max="10000" step="100" value="1000" /></label>
+        </div>
+        <div class="grid grid-cols-3 gap-px bg-[var(--line)] border hairline rounded-lg overflow-hidden">
+          <div class="bg-[var(--panel)] p-4"><span id="planner-call" class="mono block text-lg">—</span><span class="text-xs muted">per call</span></div>
+          <div class="bg-[var(--panel)] p-4"><span id="planner-daily" class="mono block text-lg">—</span><span class="text-xs muted">daily</span></div>
+          <div class="bg-[var(--panel)] p-4"><span id="planner-monthly" class="mono block text-lg">—</span><span class="text-xs muted">monthly</span></div>
+        </div>
+      </div>
+    </details>
+
+    <div class="flex flex-wrap gap-3 mt-4 justify-end">
+      <button id="copy-breakdown" class="soft-button rounded-lg px-4 py-2.5 text-sm" type="button">Copy Markdown breakdown</button>
+      <button id="share-calculation" class="soft-button rounded-lg px-4 py-2.5 text-sm" type="button">Share calculation</button>
     </div>
   </section>
 </section>
@@ -76,7 +96,7 @@ const visibleProviders = [...new Set(visibleModels.map((model) => model.provider
   import type { CalculationResult, ModelConfig, ProviderId } from '../../domain/models';
 
   type Asset = { id:string; name:string; kind:'document'; text:string } | { id:string; name:string; kind:'image'; width:number; height:number; size:number };
-  type WorkerResponse = { id:number; ok:boolean; result?:CalculationResult; error?:string };
+  type WorkerResponse = { id:number; ok:boolean; result?:CalculationResult; pieces?:string[]; error?:string };
   type ModelMeasurement = { model:ModelConfig; tokens:number; cost:number; ratio:number; unsupportedImages:number; method:string };
 
   function initializeCalculator() {
@@ -88,10 +108,18 @@ const visibleProviders = [...new Set(visibleModels.map((model) => model.provider
     let models = JSON.parse(root.dataset.models ?? '[]') as ModelConfig[];
     let assets:Asset[] = [];
     let workerId = 0;
+    let calculationSequence = 0;
+    let currentMeasurements:ModelMeasurement[] = [];
+    let inspectionVisible = false;
     let activeProvider = (root.dataset.provider || models[0]?.provider) as ProviderId;
-    const pending = new Map<number, { resolve:(value:CalculationResult)=>void; reject:(reason:Error)=>void }>();
+    const pending = new Map<number, { resolve:(value:CalculationResult|string[])=>void; reject:(reason:Error)=>void }>();
     const worker = new Worker(new URL('../../workers/calculator.worker.ts', import.meta.url), { type:'module' });
     const textarea = $<HTMLTextAreaElement>('#prompt-input');
+    const initialQuery = new URLSearchParams(location.search);
+    const initialOutput = Number(initialQuery.get('output'));
+    const initialRequests = Number(initialQuery.get('requests'));
+    if (initialQuery.has('output') && Number.isFinite(initialOutput) && initialOutput >= 0) $<HTMLInputElement>('#output-token-slider').value=String(Math.min(8000,initialOutput));
+    if (initialQuery.has('requests') && Number.isFinite(initialRequests) && initialRequests >= 0) $<HTMLInputElement>('#request-slider').value=String(Math.min(10000,initialRequests));
     const pricingPromise = loadLivePricing(models).then((snapshot) => {
       models = snapshot.models;
       $('#pricing-status').textContent = snapshot.source === 'models.dev' ? 'Live pricing · Models.dev' : 'Bundled pricing · offline fallback';
@@ -103,19 +131,38 @@ const visibleProviders = [...new Set(visibleModels.map((model) => model.provider
       if (!request) return;
       pending.delete(event.data.id);
       if (event.data.ok && event.data.result) request.resolve(event.data.result);
+      else if (event.data.ok && event.data.pieces) request.resolve(event.data.pieces);
       else request.reject(new Error(event.data.error ?? 'Calculation failed.'));
     };
     worker.onerror = () => setError('The local tokenizer could not start. Reload the page and try again.');
 
     const requestWorker = (modelId:string, payload:{ text?:string; image?:{ width:number; height:number; detail:'high' } }) => new Promise<CalculationResult>((resolve,reject) => {
       const id = ++workerId;
-      pending.set(id,{resolve,reject});
+      pending.set(id,{resolve:resolve as (value:CalculationResult|string[])=>void,reject});
       worker.postMessage({id,modelId,...payload});
+    });
+    const requestInspection = (text:string) => new Promise<string[]>((resolve,reject)=>{
+      const id=++workerId;
+      pending.set(id,{resolve:resolve as (value:CalculationResult|string[])=>void,reject});
+      worker.postMessage({id,modelId:'gpt-5.6-terra',text,inspect:true});
     });
     const setError = (message='') => { const el=$<HTMLParagraphElement>('#input-error'); el.textContent=message; el.classList.toggle('hidden',!message); };
     const combinedText = () => [textarea.value,...assets.filter((asset):asset is Extract<Asset,{kind:'document'}>=>asset.kind==='document').map((asset)=>asset.text)].filter(Boolean).join('\n\n');
     const formatCost = (value:number) => value === 0 ? '$0.000000' : value < .000001 ? '<$0.000001' : `$${value.toFixed(6)}`;
     const formatContext = (value:number) => value >= 1_000_000 ? `${(value/1_000_000).toFixed(value%1_000_000===0?0:1)}M` : `${Math.round(value/1000)}K`;
+    const setLiveStatus=(label:string,busy=false)=>{const status=$('#live-status');status.querySelector('span:last-child')!.textContent=label;status.classList.toggle('animate-pulse',busy);};
+
+    async function renderTokenInspection() {
+      const inspector=$('#token-inspector');
+      if(!inspectionVisible)return;
+      const text=combinedText();
+      if(!text){inspector.innerHTML='<span class="muted">Add text to inspect exact token boundaries.</span>';return;}
+      try {
+        const pieces=await requestInspection(text);
+        inspector.innerHTML='';
+        pieces.forEach((piece)=>{const chip=document.createElement('span');chip.className='token-chip rounded px-1.5 py-0.5 whitespace-pre-wrap';chip.textContent=piece;chip.title=JSON.stringify(piece);inspector.append(chip);});
+      } catch(error) { inspector.innerHTML=`<span class="muted">${error instanceof Error?error.message:'Token inspection failed.'}</span>`; }
+    }
 
     function renderAttachments() {
       const list=$('#attachment-list');
@@ -125,15 +172,14 @@ const visibleProviders = [...new Set(visibleModels.map((model) => model.provider
       assets.forEach((asset)=>{
         const chip=template.content.firstElementChild!.cloneNode(true) as HTMLElement;
         chip.querySelector<HTMLElement>('.attachment-name')!.textContent=asset.name;
-        chip.querySelector<HTMLButtonElement>('.remove-attachment')!.addEventListener('click',()=>{assets=assets.filter((item)=>item.id!==asset.id);renderAttachments();});
+        chip.querySelector<HTMLButtonElement>('.remove-attachment')!.addEventListener('click',()=>{assets=assets.filter((item)=>item.id!==asset.id);renderAttachments();void calculate();});
         list.append(chip);
       });
     }
 
     async function addFiles(files:FileList) {
       setError();
-      const button=$<HTMLButtonElement>('#count-button');
-      button.disabled=true; button.textContent='Reading files…';
+      setLiveStatus('Reading files…',true);
       for (const file of [...files]) {
         try {
           const id=crypto.randomUUID();
@@ -142,12 +188,14 @@ const visibleProviders = [...new Set(visibleModels.map((model) => model.provider
             const bitmap=await createImageBitmap(file);
             assets.push({id,name:file.name,kind:'image',width:bitmap.width,height:bitmap.height,size:file.size}); bitmap.close();
           } else {
-            assets.push({id,name:file.name,kind:'document',text:await extractDocument(file)});
+            const extracted=await extractDocument(file);
+            textarea.value=[textarea.value,extracted].filter(Boolean).join(textarea.value?'\n\n':'');
+            assets.push({id,name:file.name,kind:'document',text:''});
           }
         } catch(error) { setError(error instanceof Error?error.message:`Could not read ${file.name}.`); }
       }
       renderAttachments();
-      button.disabled=false; button.innerHTML='Count tokens <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5"/></svg>';
+      await calculate();
     }
 
     async function measureModel(model:ModelConfig,text:string,images:Extract<Asset,{kind:'image'}>[]):Promise<ModelMeasurement> {
@@ -169,19 +217,36 @@ const visibleProviders = [...new Set(visibleModels.map((model) => model.provider
         const unsupported=item.unsupportedImages>0;
         const row=document.createElement('div');
         row.className='grid sm:grid-cols-[1.4fr_.75fr_.8fr_1fr] gap-3 sm:gap-5 px-5 py-5 sm:px-6 items-center';
-        row.innerHTML=`<div><strong class="block text-sm">${item.model.name}</strong><span class="text-xs muted">${item.model.textAccuracy.replace('-',' ')} text count${unsupported?' · image unsupported':''}</span></div><div><span class="mono block">${unsupported&&item.tokens===0?'—':item.tokens.toLocaleString()}</span><span class="text-xs muted">tokens</span></div><div><span class="mono block">${formatCost(item.cost)}</span><span class="text-xs muted">input cost</span></div><div><div class="flex justify-between text-[10px] mono mb-1.5"><span>${(item.ratio*100).toFixed(item.ratio<.01?3:1)}%</span><span>${formatContext(item.model.contextWindow)}</span></div><div class="h-1.5 bg-[var(--panel-2)] rounded-full overflow-hidden"><div class="metric-bar h-full rounded-full" style="width:${Math.min(100,item.ratio*100)}%;background:${item.ratio>1?'var(--warn)':'var(--accent)'}"></div></div></div>`;
+        const accuracy=item.model.textAccuracy==='exact'?'Exact BPE':'Calibrated Estimate';
+        const accuracyHelp=item.model.textAccuracy==='exact'?'Counted locally with the model family’s BPE encoding.':'Deterministic provider-family estimate; the API billing record is authoritative.';
+        const overflow=item.ratio>1;
+        row.innerHTML=`<div><strong class="block text-sm">${item.model.name}</strong><span class="inline-flex mt-1 text-[10px] mono rounded-full border hairline px-2 py-0.5" title="${accuracyHelp}">${accuracy}</span>${unsupported?'<span class="block text-xs text-[var(--warn)] mt-1">Image input unavailable</span>':''}</div><div><span class="mono block">${unsupported&&item.tokens===0?'—':item.tokens.toLocaleString()}</span><span class="text-xs muted">tokens</span></div><div><span class="mono block">${formatCost(item.cost)}</span><span class="text-xs muted">input · cache $${item.model.cachedInputPerMillion??'—'}/1M</span></div><div><div class="flex justify-between text-[10px] mono mb-1.5"><span>${(item.ratio*100).toFixed(item.ratio<.01?3:1)}%</span><span>${formatContext(item.model.contextWindow)}</span></div><div class="h-1.5 bg-[var(--panel-2)] rounded-full overflow-hidden"><div class="metric-bar h-full rounded-full" style="width:${Math.min(100,item.ratio*100)}%;background:${overflow?'var(--danger)':item.ratio>.8?'var(--warn)':'var(--accent)'}"></div></div>${overflow?`<span class="block text-[10px] text-[var(--danger)] mt-1">Context Overflow: Exceeds ${formatContext(item.model.contextWindow)} limit</span>`:''}</div>`;
         container.append(row);
       });
+      renderPlanner();
+    }
+
+    function renderPlanner() {
+      const result=currentMeasurements.find((item)=>item.model.provider===activeProvider);
+      if(!result)return;
+      const outputTokens=Number($<HTMLInputElement>('#output-token-slider').value);
+      const requests=Number($<HTMLInputElement>('#request-slider').value);
+      const perCall=result.cost+(outputTokens/1_000_000)*result.model.outputPerMillion;
+      $('#output-token-value').textContent=outputTokens.toLocaleString(); $('#request-value').textContent=requests.toLocaleString();
+      $('#planner-call').textContent=formatCost(perCall); $('#planner-daily').textContent=formatCost(perCall*requests); $('#planner-monthly').textContent=formatCost(perCall*requests*30);
     }
 
     async function calculate() {
+      const sequence=++calculationSequence;
       const text=combinedText();
       const images=assets.filter((asset):asset is Extract<Asset,{kind:'image'}>=>asset.kind==='image');
-      if(!text.trim()&&!images.length){setError('Add text, a file, or an image before counting.');textarea.focus();return;}
+      if(!text.trim()&&!images.length){setError();$('#results-dashboard').classList.add('hidden');setLiveStatus('Live');void renderTokenInspection();return;}
       setError();
-      const button=$<HTMLButtonElement>('#count-button'); button.disabled=true; button.textContent='Counting locally…';
+      setLiveStatus('Calculating…',true);
       await pricingPromise;
       const measurements=await Promise.all(models.map((model)=>measureModel(model,text,images)));
+      if(sequence!==calculationSequence)return;
+      currentMeasurements=measurements;
       const words=text.trim().match(/\S+/g)?.length??0;
       $('#total-words').textContent=words.toLocaleString(); $('#total-characters').textContent=text.length.toLocaleString(); $('#total-assets').textContent=assets.length.toLocaleString();
       calculatorRoot.querySelectorAll<HTMLElement>('[data-provider-card]').forEach((card)=>{
@@ -193,14 +258,37 @@ const visibleProviders = [...new Set(visibleModels.map((model) => model.provider
       });
       renderDetails(measurements);
       const dashboard=$('#results-dashboard'); dashboard.classList.remove('hidden');
-      button.disabled=false; button.innerHTML='Count again <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5"/></svg>';
-      dashboard.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});
+      setLiveStatus('Live');
+      void renderTokenInspection();
       calculatorRoot.querySelectorAll<HTMLElement>('[data-provider-card]').forEach((card)=>card.onclick=()=>{activeProvider=card.dataset.providerCard as ProviderId;calculatorRoot.querySelectorAll<HTMLElement>('[data-provider-card]').forEach((item)=>item.dataset.active=String(item===card));renderDetails(measurements);});
     }
 
     $<HTMLInputElement>('#asset-input').addEventListener('change',(event)=>{const input=event.target as HTMLInputElement;if(input.files)addFiles(input.files);input.value='';});
-    $('#count-button').addEventListener('click',()=>calculate().catch((error)=>{setError(error instanceof Error?error.message:'Calculation failed.');$<HTMLButtonElement>('#count-button').disabled=false;}));
-    textarea.addEventListener('keydown',(event)=>{if((event.metaKey||event.ctrlKey)&&event.key==='Enter')calculate();});
+    textarea.addEventListener('input',()=>void calculate().catch((error)=>{setError(error instanceof Error?error.message:'Calculation failed.');setLiveStatus('Unavailable');}));
+    $('#token-toggle').addEventListener('click',async()=>{
+      inspectionVisible=!inspectionVisible;
+      const toggle=$<HTMLButtonElement>('#token-toggle'); toggle.setAttribute('aria-pressed',String(inspectionVisible)); toggle.textContent=inspectionVisible?'Hide tokens':'Show tokens';
+      textarea.classList.toggle('hidden',inspectionVisible); const inspector=$('#token-inspector'); inspector.classList.toggle('hidden',!inspectionVisible); inspector.classList.toggle('flex',inspectionVisible);
+      await renderTokenInspection();
+    });
+
+    const inputSurface=$('#input-surface'); const dropOverlay=$('#drop-overlay');
+    ['dragenter','dragover'].forEach((name)=>inputSurface.addEventListener(name,(event)=>{event.preventDefault();dropOverlay.classList.remove('hidden');dropOverlay.classList.add('grid');}));
+    ['dragleave','drop'].forEach((name)=>inputSurface.addEventListener(name,(event)=>{event.preventDefault();dropOverlay.classList.add('hidden');dropOverlay.classList.remove('grid');}));
+    inputSurface.addEventListener('drop',(event)=>{const files=(event as DragEvent).dataTransfer?.files;if(files?.length)void addFiles(files);});
+
+    $<HTMLInputElement>('#output-token-slider').addEventListener('input',renderPlanner);
+    $<HTMLInputElement>('#request-slider').addEventListener('input',renderPlanner);
+    $('#copy-breakdown').addEventListener('click',async()=>{
+      const rows=currentMeasurements.map((item)=>`| ${PROVIDERS[item.model.provider].name} | ${item.model.name} | ${item.tokens.toLocaleString()} | ${formatCost(item.cost)} |`);
+      const markdown=['| Provider | Model | Input tokens | Input cost |','|---|---|---:|---:|',...rows].join('\n');
+      await navigator.clipboard.writeText(markdown); const button=$<HTMLButtonElement>('#copy-breakdown');button.textContent='Copied';setTimeout(()=>button.textContent='Copy Markdown breakdown',1500);
+    });
+    $('#share-calculation').addEventListener('click',async()=>{
+      const result=currentMeasurements.find((item)=>item.model.provider===activeProvider); if(!result)return;
+      const url=new URL(location.href);url.search='';url.searchParams.set('tokens',String(result.tokens));url.searchParams.set('model',result.model.id);url.searchParams.set('output',$<HTMLInputElement>('#output-token-slider').value);url.searchParams.set('requests',$<HTMLInputElement>('#request-slider').value);
+      history.replaceState(null,'',url);await navigator.clipboard.writeText(url.href);const button=$<HTMLButtonElement>('#share-calculation');button.textContent='Link copied';setTimeout(()=>button.textContent='Share calculation',1500);
+    });
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initializeCalculator,{once:true});else initializeCalculator();
 </script>

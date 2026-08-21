@@ -3,6 +3,7 @@ import { getModel } from '../src/data/models';
 import { loadLivePricing } from '../src/data/live-pricing';
 import { calculateResult } from '../src/engines/pricing/calculate';
 import { countImage } from '../src/engines/vision/count';
+import { inspectText } from '../src/engines/tokenizers/count';
 
 afterEach(() => vi.unstubAllGlobals());
 
@@ -18,15 +19,26 @@ describe('pricing and context', () => {
   });
 });
 
+describe('exact token inspection', () => {
+  it('returns reversible o200k token pieces', () => {
+    const text = 'Hello, token world 👋';
+    expect(inspectText(text, getModel('gpt-5.6-terra')).join('')).toBe(text);
+  });
+
+  it('rejects heuristic tokenizers', () => {
+    expect(() => inspectText('hello', getModel('claude-sonnet-5'))).toThrow(/exact BPE/i);
+  });
+});
+
 describe('live pricing overlay', () => {
   it('updates pricing and limits from Models.dev', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
       ok: true,
-      json: async () => ({ openai: { models: { 'gpt-5.6-terra': { id: 'gpt-5.6-terra', cost: { input: 9, output: 18 }, limit: { context: 999_000, output: 12_000 } } } } }),
+      json: async () => ({ openai: { models: { 'gpt-5.6-terra': { id: 'gpt-5.6-terra', cost: { input: 9, output: 18, cache_read: 3 }, limit: { context: 999_000, output: 12_000 } } } } }),
     }));
     const snapshot = await loadLivePricing([getModel('gpt-5.6-terra')]);
     expect(snapshot.source).toBe('models.dev');
-    expect(snapshot.models[0]).toMatchObject({ inputPerMillion: 9, outputPerMillion: 18, contextWindow: 999_000, maxOutput: 12_000 });
+    expect(snapshot.models[0]).toMatchObject({ inputPerMillion: 9, outputPerMillion: 18, cachedInputPerMillion: 3, contextWindow: 999_000, maxOutput: 12_000 });
   });
 
   it('keeps bundled pricing when the catalog is unavailable', async () => {

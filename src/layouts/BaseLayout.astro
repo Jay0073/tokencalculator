@@ -7,7 +7,7 @@ interface Props { title: string; description: string; canonical?: string; faq?: 
 const { title, description, canonical = Astro.url.pathname, faq = [] } = Astro.props;
 const url = new URL(canonical, Astro.site ?? 'https://tokencalculator.dev');
 const schema = [
-  { '@context':'https://schema.org', '@type':'WebApplication', name:'TokenCalculator.dev', applicationCategory:'DeveloperApplication', operatingSystem:'Any', url:url.href, description, offers:{ '@type':'Offer', price:'0', priceCurrency:'USD' }, featureList:['Local token counting','File token estimation','Image token estimation','Context window measurement'] },
+  { '@context':'https://schema.org', '@type':'WebApplication', name:'TokenCalculator.dev', applicationCategory:'DeveloperApplication', operatingSystem:'All', url:url.href, description, offers:{ '@type':'Offer', price:'0', priceCurrency:'USD' }, featureList:['Local token counting','File token estimation','Image token estimation','Context window measurement'] },
   ...(faq.length ? [{ '@context':'https://schema.org', '@type':'FAQPage', mainEntity:faq.map((item) => ({ '@type':'Question', name:item.question, acceptedAnswer:{ '@type':'Answer', text:item.answer } })) }] : []),
 ];
 ---
