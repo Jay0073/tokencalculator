@@ -1,0 +1,31 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Manrope", "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", "Cascadia Code", monospace;
+  --color-void: #080b10;
+  --color-panel: #10151d;
+  --color-line: #26303d;
+  --color-trace: #22d3ee;
+  --color-signal: #5eead4;
+  --color-warning: #f59e0b;
+}
+
+:root { color-scheme: dark; --bg:#080b10; --panel:#10151d; --panel-2:#151b24; --line:#26303d; --text:#f4f7fb; --muted:#93a0b2; --faint:#566274; --trace:#22d3ee; --signal:#5eead4; --warn:#f59e0b; }
+:root.light { color-scheme: light; --bg:#f4f6f8; --panel:#ffffff; --panel-2:#edf1f5; --line:#d7dde5; --text:#10151d; --muted:#566274; --faint:#8993a1; --trace:#0784a0; --signal:#087f6d; --warn:#b96b00; }
+* { box-sizing: border-box; }
+html { background: var(--bg); scroll-behavior: smooth; }
+body { margin: 0; min-width: 320px; background: var(--bg); color: var(--text); font-family: var(--font-sans); line-height: 1.55; }
+body::before { content:""; position:fixed; inset:0; pointer-events:none; opacity:.22; background-image:linear-gradient(rgba(110,130,155,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(110,130,155,.08) 1px,transparent 1px); background-size:48px 48px; mask-image:linear-gradient(to bottom,black,transparent 48rem); }
+a { color: inherit; }
+button,input,select,textarea { font: inherit; }
+button,select { cursor: pointer; }
+:focus-visible { outline:2px solid var(--trace); outline-offset:3px; }
+.shell { width:min(1180px, calc(100% - 32px)); margin-inline:auto; }
+.hairline { border-color:var(--line); }
+.eyebrow { color:var(--trace); font:600 .72rem/1 var(--font-mono); letter-spacing:.14em; text-transform:uppercase; }
+.section-title { margin:0; font-size:clamp(1.55rem, 3vw, 2.35rem); letter-spacing:-.045em; line-height:1.08; }
+.muted { color:var(--muted); }
+.mono { font-family:var(--font-mono); }
+.panel { background:color-mix(in srgb,var(--panel) 94%,transparent); border:1px solid var(--line); }
+@media (prefers-reduced-motion:reduce) { *,*::before,*::after { scroll-behavior:auto!important; transition:none!important; animation:none!important; } }

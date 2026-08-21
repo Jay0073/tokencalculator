@@ -1,0 +1,24 @@
+<header class="border-b hairline relative z-10">
+  <div class="shell h-16 flex items-center justify-between gap-4">
+    <a href="/" class="flex items-center gap-3 no-underline" aria-label="TokenCalculator.dev home">
+      <svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><rect x="1" y="1" width="28" height="28" rx="7" fill="none" stroke="var(--line)"/><path d="M6 17h4l2.1-7 4.2 13 2.1-6H24" fill="none" stroke="var(--trace)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="font-semibold tracking-[-.025em]">TokenCalculator<span class="text-cyan-400">.dev</span></span>
+    </a>
+    <div class="flex items-center gap-2 sm:gap-4">
+      <span class="hidden sm:flex items-center gap-2 text-xs muted"><span class="size-1.5 rounded-full bg-emerald-400 shadow-[0_0_10px_#34d399]"></span>100% local</span>
+      <button id="theme-toggle" class="size-9 grid place-items-center border hairline rounded-lg bg-transparent text-[var(--muted)] hover:text-[var(--text)]" type="button" aria-label="Toggle color theme">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9c-5 2-11-4-9-9Z"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<script is:inline>
+  const root = document.documentElement;
+  const saved = localStorage.getItem('theme');
+  if (saved === 'light' || (!saved && matchMedia('(prefers-color-scheme: light)').matches)) root.classList.add('light');
+  document.querySelector('#theme-toggle')?.addEventListener('click', () => {
+    root.classList.toggle('light');
+    localStorage.setItem('theme', root.classList.contains('light') ? 'light' : 'dark');
+  });
+</script>

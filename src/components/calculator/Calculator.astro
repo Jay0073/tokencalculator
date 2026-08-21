@@ -1,0 +1,117 @@
+---
+import { MODELS } from '../../data/models';
+import { PROVIDERS } from '../../data/providers';
+import type { ProviderId } from '../../domain/models';
+interface Props { provider?: ProviderId }
+const { provider } = Astro.props;
+const visibleModels = provider ? MODELS.filter((model) => model.provider === provider) : MODELS;
+const initial = visibleModels.find((model) => model.isDefault) ?? visibleModels[0];
+---
+<section class="shell relative z-10" data-calculator data-models={JSON.stringify(visibleModels)}>
+  <div class="panel rounded-2xl overflow-hidden shadow-[0_28px_80px_rgba(0,0,0,.22)] grid lg:grid-cols-[1.08fr_.92fr] min-h-[620px]">
+    <div class="p-5 sm:p-7 lg:p-9 border-b lg:border-b-0 lg:border-r hairline flex flex-col">
+      <div class="flex flex-col sm:flex-row gap-4 sm:items-end justify-between mb-6">
+        <label class="block flex-1"><span class="eyebrow block mb-2">Target model</span><select id="model-select" class="w-full bg-[var(--panel-2)] border hairline rounded-lg px-3 py-2.5 text-sm text-[var(--text)]">
+          {Object.keys(PROVIDERS).map((providerId) => {
+            const options = visibleModels.filter((model) => model.provider === providerId);
+            return options.length ? <optgroup label={PROVIDERS[providerId as ProviderId].name}>{options.map((model) => <option value={model.id} selected={model.id === initial.id}>{model.name}</option>)}</optgroup> : null;
+          })}
+        </select></label>
+        <span id="model-context" class="mono text-xs muted pb-3">{initial.contextWindow.toLocaleString()} context</span>
+      </div>
+      <div class="flex items-center justify-between border-b hairline mb-5">
+        <div class="flex" role="tablist" aria-label="Input type">
+          {['text','file','image'].map((mode) => <button class="mode-tab px-4 py-3 text-sm capitalize border-b-2 border-transparent text-[var(--muted)] data-[active=true]:border-cyan-400 data-[active=true]:text-[var(--text)]" type="button" role="tab" data-mode={mode} data-active={mode === 'text'}>{mode}</button>)}
+        </div>
+        <button id="clear-input" class="text-xs mono muted hover:text-[var(--text)]" type="button">Clear</button>
+      </div>
+      <div id="text-mode" class="mode-panel flex-1 flex flex-col">
+        <label for="prompt-input" class="sr-only">Prompt text</label>
+        <textarea id="prompt-input" class="flex-1 min-h-80 lg:min-h-0 resize-none bg-transparent outline-none mono text-[15px] leading-7 placeholder:text-[var(--faint)]" placeholder="Paste a prompt, document, code, or structured data…" spellcheck="false"></textarea>
+      </div>
+      <div id="file-mode" class="mode-panel hidden flex-1">
+        <label class="h-full min-h-80 grid place-items-center text-center border border-dashed hairline rounded-xl bg-[var(--panel-2)] hover:border-cyan-400/60 cursor-pointer p-8">
+          <input id="file-input" type="file" class="sr-only" accept=".txt,.md,.markdown,.json,.csv,.js,.jsx,.ts,.tsx,.py,.go,.rs,.java,.c,.cpp,.h,.hpp,.css,.html,.xml,.yaml,.yml,.toml,.sql,.sh,.pdf,.docx" />
+          <span><svg class="mx-auto mb-4 text-cyan-400" width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 16V4m0 0L7 9m5-5 5 5M5 14v5h14v-5"/></svg><strong class="block mb-1">Choose a local document</strong><span class="text-sm muted">Text, code, PDF, or DOCX · up to 12 MB</span><span id="file-status" class="block mono text-xs text-cyan-400 mt-4"></span></span>
+        </label>
+      </div>
+      <div id="image-mode" class="mode-panel hidden flex-1">
+        <label class="h-full min-h-80 grid place-items-center text-center border border-dashed hairline rounded-xl bg-[var(--panel-2)] hover:border-cyan-400/60 cursor-pointer p-8">
+          <input id="image-input" type="file" class="sr-only" accept="image/png,image/jpeg,image/webp,image/gif" />
+          <span><svg class="mx-auto mb-4 text-cyan-400" width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m4 18 5-5 4 4 2-2 5 4"/></svg><strong class="block mb-1">Choose an image</strong><span class="text-sm muted">PNG, JPEG, WebP, or GIF · dimensions only</span><span id="image-status" class="block mono text-xs text-cyan-400 mt-4"></span></span>
+        </label>
+        <label id="image-detail-control" class="mt-4 flex items-center gap-3 text-sm"><span class="muted">OpenAI detail</span><select id="image-detail" class="bg-[var(--panel-2)] border hairline rounded-lg px-3 py-2"><option value="high">High</option><option value="low">Low</option></select></label>
+      </div>
+      <p id="input-error" class="hidden mt-4 text-sm text-amber-400" role="alert"></p>
+    </div>
+
+    <aside class="p-5 sm:p-7 lg:p-9 bg-[color-mix(in_srgb,var(--panel-2)_55%,transparent)] flex flex-col" aria-live="polite">
+      <div class="flex items-center justify-between mb-8"><span class="eyebrow">Live measurement</span><span id="accuracy-badge" class="mono text-[10px] uppercase tracking-wider border hairline rounded-full px-2.5 py-1 text-cyan-300">{initial.textAccuracy.replace('-', ' ')}</span></div>
+      <div class="mb-8"><div id="token-count" class="mono text-[clamp(3.5rem,8vw,6.7rem)] leading-none tracking-[-.08em] tabular-nums">0</div><div class="muted mt-2">input tokens</div></div>
+      <div class="grid grid-cols-3 gap-px bg-[var(--line)] border hairline rounded-xl overflow-hidden mb-8">
+        <div class="bg-[var(--panel)] p-4"><span id="word-count" class="mono block text-lg">0</span><span class="text-xs muted">words</span></div>
+        <div class="bg-[var(--panel)] p-4"><span id="char-count" class="mono block text-lg">0</span><span class="text-xs muted">characters</span></div>
+        <div class="bg-[var(--panel)] p-4"><span id="byte-count" class="mono block text-lg">0</span><span class="text-xs muted">UTF-8 bytes</span></div>
+      </div>
+      <div class="mb-8">
+        <div class="flex justify-between text-xs mb-2"><span class="muted">Context ruler</span><span id="context-label" class="mono">0 / {initial.contextWindow.toLocaleString()}</span></div>
+        <div class="h-3 rounded-sm bg-[var(--bg)] border hairline p-0.5 relative overflow-hidden"><div id="context-bar" class="h-full w-0 bg-cyan-400 shadow-[0_0_16px_rgba(34,211,238,.6)] transition-[width] duration-150"></div><div class="absolute inset-y-0 left-3/4 border-l border-dashed border-[var(--faint)]"></div></div>
+        <div class="flex justify-between mt-2 mono text-[10px] text-[var(--faint)]"><span>0%</span><span>75% caution</span><span>100%</span></div>
+      </div>
+      <div class="border-t hairline pt-6 mt-auto">
+        <div class="flex items-end justify-between gap-4"><div><span class="eyebrow block mb-2">Estimated input cost</span><span id="input-cost" class="mono text-2xl">$0.000000</span></div><span id="price-rate" class="mono text-xs muted text-right">${initial.inputPerMillion}/1M<br/>input tokens</span></div>
+        <p id="method-label" class="text-xs muted mt-5 mb-0">Start typing to measure this request.</p>
+        <div class="flex flex-wrap items-center gap-x-3 gap-y-1 mt-3 text-xs"><a id="pricing-source" href={initial.pricingUrl} target="_blank" rel="noreferrer" class="text-cyan-400">Official pricing source ↗</a><span id="verified-date" class="muted">Verified {initial.verifiedAt}</span></div>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<script>
+  import { extractDocument } from '../../engines/documents/extract';
+  import type { ModelConfig, CalculationResult } from '../../domain/models';
+
+  function initializeCalculator() {
+    const root = document.querySelector<HTMLElement>('[data-calculator]');
+    if (!root || root.dataset.initialized === 'true') return;
+    root.dataset.initialized = 'true';
+    const models = JSON.parse(root.dataset.models ?? '[]') as ModelConfig[];
+    const worker = new Worker(new URL('../../workers/calculator.worker.ts', import.meta.url), { type:'module' });
+    const $ = <T extends HTMLElement>(selector:string) => root.querySelector<T>(selector)!;
+    const modelSelect = $<HTMLSelectElement>('#model-select');
+    const textarea = $<HTMLTextAreaElement>('#prompt-input');
+    const tabs = [...root.querySelectorAll<HTMLButtonElement>('.mode-tab')];
+    let mode = 'text'; let requestId = 0; let imageData: { width:number; height:number; detail:'low'|'high' } | null = null;
+    let fileText = '';
+
+    const activeModel = () => models.find((model) => model.id === modelSelect.value) ?? models[0];
+    const formatCost = (value:number) => value === 0 ? '$0.000000' : value < .000001 ? `<$0.000001` : `$${value.toFixed(6)}`;
+    const setError = (message='') => { const el=$<HTMLParagraphElement>('#input-error'); el.textContent=message; el.classList.toggle('hidden', !message); };
+    const updateTextMetrics = (text:string) => { $('#word-count').textContent=(text.trim().match(/\S+/g)?.length ?? 0).toLocaleString(); $('#char-count').textContent=text.length.toLocaleString(); $('#byte-count').textContent=new TextEncoder().encode(text).length.toLocaleString(); };
+    const calculate = () => {
+      const id=++requestId; setError();
+      if (mode === 'image' && !imageData) { renderZero(); return; }
+      const text = mode === 'file' ? fileText : textarea.value;
+      if (mode !== 'image') updateTextMetrics(text);
+      worker.postMessage({ id, modelId:modelSelect.value, ...(mode === 'image' ? { image:imageData } : { text }) });
+    };
+    const renderZero = () => { $('#token-count').textContent='0'; $('#input-cost').textContent='$0.000000'; $('#context-label').textContent=`0 / ${activeModel().contextWindow.toLocaleString()}`; $('#context-bar').style.width='0%'; $('#method-label').textContent='Add content to measure this request.'; };
+    const render = (result:CalculationResult) => {
+      const model=activeModel(); $('#token-count').textContent=result.tokens.toLocaleString(); $('#input-cost').textContent=formatCost(result.cost);
+      $('#accuracy-badge').textContent=result.accuracy.replace('-', ' '); $('#context-label').textContent=`${result.tokens.toLocaleString()} / ${model.contextWindow.toLocaleString()}`;
+      const bar=$<HTMLElement>('#context-bar'); bar.style.width=`${Math.min(100,result.contextRatio*100)}%`; bar.style.background=result.overContext?'var(--warn)':result.contextRatio>.75?'var(--warn)':'var(--trace)';
+      $('#method-label').textContent=`${result.method}. ${result.overContext ? 'This input exceeds the model context window.' : `${(result.contextRatio*100).toFixed(result.contextRatio < .01 ? 3 : 1)}% of context used.`}`;
+    };
+    worker.onmessage=(event:MessageEvent<{ id:number; ok:boolean; result?:CalculationResult; error?:string }>)=>{ if(event.data.id!==requestId)return; event.data.ok&&event.data.result?render(event.data.result):setError(event.data.error ?? 'Calculation failed.'); };
+    worker.onerror=()=>setError('The local tokenizer could not start. Reload the page and try again.');
+    const syncModel = () => { const model=activeModel(); $('#model-context').textContent=`${model.contextWindow.toLocaleString()} context`; $('#price-rate').innerHTML=`$${model.inputPerMillion}/1M<br>input tokens`; $('#accuracy-badge').textContent=model.textAccuracy.replace('-', ' '); $('#verified-date').textContent=`Verified ${model.verifiedAt}`; $('#image-detail-control').classList.toggle('hidden', model.provider !== 'openai'); const source=$<HTMLAnchorElement>('#pricing-source'); source.href=model.pricingUrl; calculate(); };
+    tabs.forEach((tab)=>tab.addEventListener('click',()=>{ mode=tab.dataset.mode ?? 'text'; tabs.forEach((item)=>item.dataset.active=String(item===tab)); root.querySelectorAll('.mode-panel').forEach((panel)=>panel.classList.add('hidden')); $(`#${mode}-mode`).classList.remove('hidden'); if(mode==='text')updateTextMetrics(textarea.value); calculate(); }));
+    textarea.addEventListener('input',calculate); modelSelect.addEventListener('change',syncModel); $('#image-detail').addEventListener('change',(event)=>{ if(imageData){imageData.detail=(event.target as HTMLSelectElement).value as 'low'|'high';calculate();} });
+    $<HTMLInputElement>('#file-input').addEventListener('change',async(event)=>{const file=(event.target as HTMLInputElement).files?.[0];if(!file)return;$('#file-status').textContent=`Reading ${file.name}…`;try{fileText=await extractDocument(file);$('#file-status').textContent=`${file.name} · ${fileText.length.toLocaleString()} characters`;updateTextMetrics(fileText);calculate();}catch(error){fileText='';$('#file-status').textContent='';setError(error instanceof Error?error.message:'Could not read this file.');renderZero();}});
+    $<HTMLInputElement>('#image-input').addEventListener('change',async(event)=>{const file=(event.target as HTMLInputElement).files?.[0];if(!file)return;try{const bitmap=await createImageBitmap(file);imageData={width:bitmap.width,height:bitmap.height,detail:$<HTMLSelectElement>('#image-detail').value as 'low'|'high'};bitmap.close();$('#image-status').textContent=`${file.name} · ${imageData.width}×${imageData.height}px`;$('#word-count').textContent='—';$('#char-count').textContent='—';$('#byte-count').textContent=file.size.toLocaleString();calculate();}catch{setError('This image could not be read in your browser.');}});
+    $('#clear-input').addEventListener('click',()=>{textarea.value='';fileText='';imageData=null;$<HTMLInputElement>('#file-input').value='';$<HTMLInputElement>('#image-input').value='';$('#file-status').textContent='';$('#image-status').textContent='';updateTextMetrics('');setError();renderZero();textarea.focus();});
+    syncModel();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initializeCalculator, { once:true });
+  else initializeCalculator();
+</script>

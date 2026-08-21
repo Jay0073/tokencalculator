@@ -1,0 +1,8 @@
+---
+interface Props { items: { question:string; answer:string }[] }
+const { items } = Astro.props;
+---
+<section class="shell mt-24 relative z-10" aria-labelledby="faq-title">
+  <span class="eyebrow">Plain answers</span><h2 id="faq-title" class="section-title mt-3 mb-8">Frequently asked questions</h2>
+  <div class="border-t hairline">{items.map((item)=><details class="group border-b hairline py-5"><summary class="font-medium cursor-pointer list-none flex justify-between gap-6">{item.question}<span class="mono text-cyan-400 group-open:rotate-45">+</span></summary><p class="muted max-w-3xl mb-0 mt-3">{item.answer}</p></details>)}</div>
+</section>

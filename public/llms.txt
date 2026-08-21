@@ -1,0 +1,10 @@
+# TokenCalculator.dev
+
+TokenCalculator.dev is a free, client-side LLM input token and cost calculator for OpenAI, Anthropic Claude, Google Gemini, and DeepSeek.
+
+- [Universal calculator](https://tokencalculator.dev/)
+- [Methodology](https://tokencalculator.dev/methodology)
+- [OpenAI token counter](https://tokencalculator.dev/openai-token-counter)
+- [Claude token counter](https://tokencalculator.dev/claude-token-counter)
+- [Gemini token counter](https://tokencalculator.dev/gemini-token-counter)
+- [DeepSeek token counter](https://tokencalculator.dev/deepseek-token-counter)

@@ -1,0 +1,7 @@
+---
+import BaseLayout from './BaseLayout.astro';
+interface Props { title:string; description:string; heading:string }
+const {title,description,heading}=Astro.props;
+---
+<BaseLayout {title} {description}><article class="shell max-w-3xl pt-20 relative z-10"><span class="eyebrow">TokenCalculator.dev</span><h1 class="text-5xl sm:text-6xl tracking-[-.06em] leading-none mt-4 mb-10">{heading}</h1><div class="prose-content muted"><slot/></div></article></BaseLayout>
+<style is:global>.prose-content h2{color:var(--text);font-size:1.45rem;margin-top:2.5rem}.prose-content a{color:var(--trace)}.prose-content li{margin:.4rem 0}</style>
