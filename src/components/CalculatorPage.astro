@@ -15,14 +15,15 @@ const faq=[
 ];
 ---
 <BaseLayout {title} {description} {canonical} {faq}>
-  <section class="shell pt-16 pb-10 relative z-10">
+  <section class="shell max-w-4xl text-center pt-16 sm:pt-24 pb-9 relative z-10">
     <span class="eyebrow">{eyebrow}</span>
-    <div class="grid lg:grid-cols-[1fr_.65fr] gap-8 items-end mt-4"><h1 class="m-0 text-[clamp(2.7rem,7vw,5.8rem)] leading-[.94] tracking-[-.075em] max-w-4xl">{heading}</h1><p class="muted text-lg lg:mb-1 max-w-xl">{intro}</p></div>
+    <h1 class="m-0 mt-5 text-[clamp(2.5rem,6vw,4.6rem)] leading-[.98] tracking-[-.065em]">{heading}</h1>
+    <p class="muted text-[17px] sm:text-lg mt-5 mb-0 mx-auto max-w-2xl">{intro}</p>
   </section>
   <Calculator {provider}/>
   <section class="shell mt-24 grid md:grid-cols-2 gap-10 md:gap-20 relative z-10">
     <div><span class="eyebrow">How it works</span><h2 class="section-title mt-3">A measurement, not a guess disguised as fact.</h2></div>
-    <div class="muted"><p>{methodology}</p><p>Every result identifies its method and accuracy level. Pricing links point to provider documentation and show when the registry was verified.</p><a href="/methodology" class="text-cyan-400">Read the complete methodology →</a></div>
+    <div class="muted"><p>{methodology}</p><p>Every result identifies its method and accuracy level. Pricing is refreshed from Models.dev with the bundled registry available as an offline fallback.</p><a href="/methodology" class="text-[var(--accent)]">Read the complete methodology →</a></div>
   </section>
   <ProviderLinks/><FAQ items={faq}/>
 </BaseLayout>

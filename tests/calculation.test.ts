@@ -1,7 +1,10 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { getModel } from '../src/data/models';
+import { loadLivePricing } from '../src/data/live-pricing';
 import { calculateResult } from '../src/engines/pricing/calculate';
 import { countImage } from '../src/engines/vision/count';
+
+afterEach(() => vi.unstubAllGlobals());
 
 describe('pricing and context', () => {
   it('calculates per-million input pricing', () => {
@@ -12,6 +15,25 @@ describe('pricing and context', () => {
   it('marks context overflow', () => {
     const model = getModel('deepseek-v4-flash');
     expect(calculateResult(1_000_001, model, 'estimated', 'test').overContext).toBe(true);
+  });
+});
+
+describe('live pricing overlay', () => {
+  it('updates pricing and limits from Models.dev', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ openai: { models: { 'gpt-5.6-terra': { id: 'gpt-5.6-terra', cost: { input: 9, output: 18 }, limit: { context: 999_000, output: 12_000 } } } } }),
+    }));
+    const snapshot = await loadLivePricing([getModel('gpt-5.6-terra')]);
+    expect(snapshot.source).toBe('models.dev');
+    expect(snapshot.models[0]).toMatchObject({ inputPerMillion: 9, outputPerMillion: 18, contextWindow: 999_000, maxOutput: 12_000 });
+  });
+
+  it('keeps bundled pricing when the catalog is unavailable', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('offline')));
+    const model = getModel('gpt-5.6-terra');
+    const snapshot = await loadLivePricing([model]);
+    expect(snapshot).toEqual({ models: [model], source: 'bundled' });
   });
 });
 

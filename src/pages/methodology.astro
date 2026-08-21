@@ -6,5 +6,5 @@ import ContentLayout from '../layouts/ContentLayout.astro';
   <h2>Text</h2><p>OpenAI content uses the matching local BPE encoding. Claude, Gemini, and DeepSeek use deterministic UTF-8 byte ratios calibrated by provider family. Estimates are useful for planning but the provider response remains the final billing record.</p>
   <h2>Documents</h2><p>Text and source files are read directly. DOCX and text-based PDF files are converted to plain text locally. Scans, layout, embedded images, and OCR are excluded.</p>
   <h2>Images</h2><p>Images are not OCR’d or uploaded. The browser reads their dimensions and applies the selected provider’s published patch, tile, detail, and cap rules. Unsupported model combinations return an error.</p>
-  <h2>Prices</h2><p>All prices are USD per million input tokens and link to official provider documentation. The model registry records a verification date; provider invoices remain authoritative.</p>
+  <h2>Prices</h2><p>Pricing and context limits are refreshed from the open-source Models.dev catalog in the browser. A bundled registry provides an offline fallback. Prices are USD per million input tokens; provider invoices remain authoritative.</p>
 </ContentLayout>

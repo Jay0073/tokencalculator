@@ -14,7 +14,7 @@ The application is a free, static, browser-only tool. User content never leaves 
 - Upload text-readable files such as TXT, Markdown, JSON, CSV, JavaScript, TypeScript, Python, and similar source files.
 - Attempt lightweight, client-side extraction from text-based PDF and DOCX files.
 - Upload an image and estimate vision-input tokens for models with published rules.
-- Select a provider and one current production model.
+- Compare the same input across the four launch providers without choosing a model first.
 - Display tokens, word count, character count, UTF-8 byte count, input cost, context-window usage, and overflow state.
 - Label every count as `Exact`, `Provider formula`, or `Estimated`.
 - Support dark and light themes, keyboard navigation, responsive layouts, and reduced motion.
@@ -23,7 +23,7 @@ The application is a free, static, browser-only tool. User content never leaves 
 ### Excluded
 
 - Output-token forecasting and workload simulation.
-- Multi-model comparison tables.
+- Full sortable model/pricing comparison tables beyond the compact results dashboard.
 - Cached-input, batch, RAG, agent, or embedding calculators.
 - OCR, scanned-PDF parsing, layout reconstruction, and table extraction.
 - Accounts, storage, saved projects, APIs, CLIs, databases, or server-side processing.
@@ -45,9 +45,9 @@ Excluded ideas belong in `docs/FUTURE_IDEAS.md` and must not enter the launch im
 
 ## Experience
 
-The desktop calculator uses two stable columns: input on the left and results on the right. Mobile stacks input above results. The layout must not move as counts update.
+The calculator opens with one centered, unified composer for text, documents, and images. Results remain hidden until the user chooses `Count tokens`, then appear in a separate dashboard below and scroll into view. The dashboard summarizes all launch providers and exposes model details after provider selection.
 
-The input panel contains the provider/model selector, text/file/image modes, text area or drop zone, file status, and clear action. The results panel contains the primary token count, accuracy badge, secondary text metrics, context gauge, input cost, and a short calculation explanation.
+The composer contains a text area, one multi-file attachment action, attachment chips, and a single count action. It contains no provider, model, pricing, or context controls. The results dashboard contains provider summaries, word/character/attachment totals, and model rows with tokens, cost, context use, and accuracy labels.
 
 Image processing reads only local file metadata and dimensions. Document errors distinguish unsupported, encrypted, scanned, oversized, and malformed files. Empty input produces a neutral zero state rather than an error.
 
@@ -61,6 +61,7 @@ Image processing reads only local file metadata and dimensions. Document errors 
 - Lazy-loaded tokenizer and document dependencies
 - Cloudflare Pages deployment
 - No runtime backend or API keys
+- Live pricing and context-limit metadata from Models.dev with a bundled offline fallback
 
 Processing flow:
 
