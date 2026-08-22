@@ -58,7 +58,7 @@ const visibleProviders = [...new Set(visibleModels.map((model) => model.provider
     <div class="panel rounded-xl overflow-hidden mt-4">
       <div class="px-5 py-4 sm:px-6 border-b hairline flex flex-wrap items-center justify-between gap-3">
         <div><span id="detail-provider" class="font-semibold">Provider</span><span class="muted text-sm ml-2">model details</span></div>
-        <span id="pricing-status" class="mono text-[10px] uppercase tracking-wider muted">Checking live pricing…</span>
+        <span id="pricing-status" class="mono text-[10px] uppercase tracking-wider muted">Bundled pricing · refreshes on use</span>
       </div>
       <div id="model-results" class="divide-y divide-[var(--line)]"></div>
     </div>
@@ -127,11 +127,17 @@ const visibleProviders = [...new Set(visibleModels.map((model) => model.provider
     const initialRequests = Number(initialQuery.get('requests'));
     if (initialQuery.has('output') && Number.isFinite(initialOutput) && initialOutput >= 0) $<HTMLInputElement>('#output-token-slider').value=String(Math.min(8000,initialOutput));
     if (initialQuery.has('requests') && Number.isFinite(initialRequests) && initialRequests >= 0) $<HTMLInputElement>('#request-slider').value=String(Math.min(10000,initialRequests));
-    const pricingPromise = loadLivePricing(models).then((snapshot) => {
-      models = snapshot.models;
-      $('#pricing-status').textContent = snapshot.source === 'models.dev' ? 'Live pricing · Models.dev' : 'Bundled pricing · offline fallback';
-      return snapshot;
-    });
+    let pricingPromise:ReturnType<typeof loadLivePricing> | undefined;
+    const ensurePricing = () => {
+      if (pricingPromise) return pricingPromise;
+      $('#pricing-status').textContent = 'Checking live pricing…';
+      pricingPromise = loadLivePricing(models).then((snapshot) => {
+        models = snapshot.models;
+        $('#pricing-status').textContent = snapshot.source === 'models.dev' ? 'Live pricing · Models.dev' : 'Bundled pricing · offline fallback';
+        return snapshot;
+      });
+      return pricingPromise;
+    };
 
     const getWorker = () => {
       if (worker) return worker;
@@ -280,7 +286,7 @@ const visibleProviders = [...new Set(visibleModels.map((model) => model.provider
       const images=assets.filter((asset):asset is Extract<Asset,{kind:'image'}>=>asset.kind==='image');
       if(!text.trim()&&!images.length){$('#results-dashboard').classList.add('hidden');const viewResults=$<HTMLButtonElement>('#view-results');viewResults.disabled=true;viewResults.innerHTML='Results appear below <span aria-hidden="true">↓</span>';setLiveStatus('Live');void renderTokenInspection();return;}
       setLiveStatus('Calculating…',true);
-      await pricingPromise;
+      await ensurePricing();
       const measurements=await Promise.all(models.map((model)=>measureModel(model,text,images)));
       if(sequence!==calculationSequence)return;
       const words=text.trim().match(/\S+/g)?.length??0;
@@ -325,7 +331,7 @@ const visibleProviders = [...new Set(visibleModels.map((model) => model.provider
     void (async()=>{
       const encoded=initialQuery.get('counts');
       if(!encoded)return;
-      await pricingPromise;
+      await ensurePricing();
       const tokenCounts=new Map(encoded.split(',').map((entry)=>{const split=entry.lastIndexOf(':');return [entry.slice(0,split),Number(entry.slice(split+1))] as const;}).filter((entry)=>entry[0]&&Number.isFinite(entry[1])&&entry[1]>=0));
       const measurements=models.filter((model)=>tokenCounts.has(model.id)).map((model)=>{const tokens=Math.round(tokenCounts.get(model.id)!);return {model,tokens,cost:calculateInputCost(tokens,model),ratio:tokens/model.contextWindow,unsupportedImages:0,method:'Restored token count; original content not shared'};});
       if(!measurements.length)return;
