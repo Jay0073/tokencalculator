@@ -2,6 +2,7 @@
 import '../styles/global.css';
 import Header from '../components/site/Header.astro';
 import Footer from '../components/site/Footer.astro';
+import GoogleAnalytics from '../components/site/GoogleAnalytics.astro';
 
 interface Breadcrumb { label:string; href?:string }
 interface Props { title: string; description: string; canonical?: string; faq?: { question: string; answer: string }[]; application?:boolean; noindex?:boolean; breadcrumbs?:Breadcrumb[]; socialImage?:string }
@@ -42,5 +43,5 @@ const schema = [
     <link rel="preload" href="/fonts/manrope-latin.woff2" as="font" type="font/woff2" crossorigin />
     {schema.length > 0 && <script is:inline type="application/ld+json" set:html={JSON.stringify(schema)} />}
   </head>
-  <body><Header/><main><slot /></main><Footer/></body>
+  <body><Header/><main><slot /></main><Footer/><GoogleAnalytics/></body>
 </html>
