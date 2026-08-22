@@ -14,7 +14,9 @@ export async function extractDocument(file: File): Promise<string> {
   }
 
   if (extension === 'pdf') {
-    const pdfjs = await import('pdfjs-dist');
+    const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs');
+    const workerModule = await import('pdfjs-dist/legacy/build/pdf.worker.min.mjs?worker');
+    pdfjs.GlobalWorkerOptions.workerPort = new workerModule.default();
     const pdf = await pdfjs.getDocument({ data: new Uint8Array(await file.arrayBuffer()), useWorkerFetch: false, useSystemFonts: true }).promise;
     const pages: string[] = [];
     for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {

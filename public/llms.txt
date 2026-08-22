@@ -1,10 +1,17 @@
 # TokenCalculator.dev
 
-TokenCalculator.dev is a free, client-side LLM input token and cost calculator for OpenAI, Anthropic Claude, Google Gemini, and DeepSeek.
+TokenCalculator.dev is a free, client-side LLM token calculator for OpenAI, Anthropic Claude, Google Gemini, and DeepSeek. It measures text, readable documents, and supported images, then reports provider token counts, context-window fit, and API cost estimates. User content stays in the browser.
 
 - [Universal calculator](https://tokencalculator.dev/)
-- [Methodology](https://tokencalculator.dev/methodology)
-- [OpenAI token counter](https://tokencalculator.dev/openai-token-counter)
-- [Claude token counter](https://tokencalculator.dev/claude-token-counter)
-- [Gemini token counter](https://tokencalculator.dev/gemini-token-counter)
-- [DeepSeek token counter](https://tokencalculator.dev/deepseek-token-counter)
+- [Methodology and accuracy labels](https://tokencalculator.dev/methodology/)
+- [OpenAI token counter](https://tokencalculator.dev/openai-token-counter/)
+- [Claude token counter](https://tokencalculator.dev/claude-token-counter/)
+- [Gemini token counter](https://tokencalculator.dev/gemini-token-counter/)
+- [DeepSeek token counter](https://tokencalculator.dev/deepseek-token-counter/)
+- [About and editorial responsibility](https://tokencalculator.dev/about/)
+- [Privacy and local processing](https://tokencalculator.dev/privacy-policy/)
+- [Contact and corrections](https://tokencalculator.dev/contact/)
+
+## Accuracy
+
+OpenAI raw text uses a local BPE tokenizer. Claude, Gemini, and DeepSeek text counts are labeled calibrated estimates. Supported image counts use provider-published formulas. Provider API usage remains authoritative.

@@ -1,6 +1,7 @@
 ---
 import { MODELS } from '../../data/models';
 import { PROVIDERS } from '../../data/providers';
+import ProviderIcon from '../site/ProviderIcon.astro';
 import type { ProviderId } from '../../domain/models';
 interface Props { provider?: ProviderId }
 const { provider } = Astro.props;
@@ -26,15 +27,17 @@ const visibleProviders = [...new Set(visibleModels.map((model) => model.provider
       </label>
       <button id="token-toggle" class="soft-button rounded-full h-10 px-4 text-sm" type="button" aria-pressed="false">Show tokens</button>
       <span class="text-xs muted basis-full sm:basis-auto order-last sm:order-none">Everything stays in this browser</span>
+      <button id="view-results" class="primary-button rounded-full h-10 px-5 text-sm font-semibold inline-flex items-center gap-2 disabled:opacity-40 disabled:cursor-default" type="button" disabled>Results appear below <span aria-hidden="true">↓</span></button>
       <span id="live-status" class="ml-auto flex items-center gap-2 text-xs text-[var(--success)]"><span class="size-1.5 rounded-full bg-[var(--success)]"></span><span>Live</span></span>
     </div>
   </div>
 
   <p class="text-center text-xs muted mt-4">Text, code, PDF, DOCX, PNG, JPEG, WebP, or GIF · 12 MB per file</p>
 
-  <section id="results-dashboard" class="hidden scroll-mt-6 mt-20" aria-labelledby="results-title">
+  <p id="result-announcer" class="sr-only" aria-live="polite"></p>
+  <section id="results-dashboard" class="hidden scroll-mt-24 mt-14 sm:mt-16" aria-labelledby="results-title">
     <div class="flex flex-col md:flex-row md:items-end justify-between gap-5 mb-7">
-      <div><span class="eyebrow">Your results</span><h2 id="results-title" class="section-title mt-3">One input, measured across providers.</h2></div>
+      <div class="flex items-start gap-4"><span class="result-marker" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M4 16h3l2-8 4 12 2.5-7H20" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><span class="eyebrow">Live token results</span><h2 id="results-title" class="section-title mt-3">Your input, measured across providers.</h2><p class="muted text-sm mt-2 mb-0">Choose a provider card to inspect every available model.</p></div></div>
       <div class="flex gap-6 text-sm">
         <div><span id="total-words" class="mono block text-lg">0</span><span class="muted text-xs">words</span></div>
         <div><span id="total-characters" class="mono block text-lg">0</span><span class="muted text-xs">characters</span></div>
@@ -44,8 +47,8 @@ const visibleProviders = [...new Set(visibleModels.map((model) => model.provider
 
     <div class:list={["grid gap-3", visibleProviders.length > 1 ? "grid-cols-2 lg:grid-cols-4" : "max-w-sm"]} id="provider-cards">
       {visibleProviders.map((providerId, index) => (
-        <button type="button" class="provider-card panel text-left rounded-xl p-4 sm:p-5 min-h-36 hover:border-[var(--line-strong)]" data-provider-card={providerId} data-active={String(index === 0)}>
-          <span class="flex items-center justify-between gap-2"><span class="text-sm font-semibold">{PROVIDERS[providerId].name}</span><span class="mono text-[10px] muted">{PROVIDERS[providerId].short}</span></span>
+        <button type="button" class="provider-card panel text-left rounded-xl p-4 sm:p-5 min-h-36 hover:border-[var(--line-strong)]" data-provider-card={providerId} data-active={String(index === 0)} aria-pressed={index === 0}>
+          <span class="flex items-center justify-between gap-2"><span class="flex items-center gap-2.5 text-sm font-semibold text-[var(--accent)]"><ProviderIcon provider={providerId}/><span class="text-[var(--text)]">{PROVIDERS[providerId].name}</span></span><span class="mono text-[10px] muted">{PROVIDERS[providerId].short}</span></span>
           <strong class="provider-token mono block text-3xl mt-7 tracking-[-.06em]">—</strong>
           <span class="provider-label text-xs muted block mt-1">Calculating…</span>
         </button>
@@ -64,6 +67,7 @@ const visibleProviders = [...new Set(visibleModels.map((model) => model.provider
       <summary class="px-5 py-4 sm:px-6 cursor-pointer font-semibold flex items-center justify-between">Workload &amp; Scaling Planner <span class="text-[var(--accent)]">+</span></summary>
       <div class="border-t hairline p-5 sm:p-6 grid lg:grid-cols-[1fr_1fr] gap-8">
         <div class="space-y-6">
+          <label class="block"><span class="text-sm block mb-2">Pricing model</span><select id="planner-model" class="w-full soft-button rounded-lg px-3 py-2.5 text-sm"></select></label>
           <label class="block"><span class="flex justify-between text-sm mb-2"><span>Expected output tokens</span><output id="output-token-value" class="mono">500</output></span><input id="output-token-slider" class="w-full accent-[var(--accent)]" type="range" min="0" max="8000" step="100" value="500" /></label>
           <label class="block"><span class="flex justify-between text-sm mb-2"><span>Requests per day</span><output id="request-value" class="mono">1,000</output></span><input id="request-slider" class="w-full accent-[var(--accent)]" type="range" min="0" max="10000" step="100" value="1000" /></label>
         </div>
@@ -93,10 +97,11 @@ const visibleProviders = [...new Set(visibleModels.map((model) => model.provider
   import { extractDocument } from '../../engines/documents/extract';
   import { loadLivePricing } from '../../data/live-pricing';
   import { PROVIDERS } from '../../data/providers';
-  import type { CalculationResult, ModelConfig, ProviderId } from '../../domain/models';
+  import { calculateInputCost, calculateWorkloadCost, resolveRates } from '../../engines/pricing/calculate';
+  import type { CalculationResult, ModelConfig, ProviderId, TokenInspectionPiece } from '../../domain/models';
 
   type Asset = { id:string; name:string; kind:'document'; text:string } | { id:string; name:string; kind:'image'; width:number; height:number; size:number };
-  type WorkerResponse = { id:number; ok:boolean; result?:CalculationResult; pieces?:string[]; error?:string };
+  type WorkerResponse = { id:number; ok:boolean; result?:CalculationResult; pieces?:TokenInspectionPiece[]; error?:string };
   type ModelMeasurement = { model:ModelConfig; tokens:number; cost:number; ratio:number; unsupportedImages:number; method:string };
 
   function initializeCalculator() {
@@ -111,9 +116,11 @@ const visibleProviders = [...new Set(visibleModels.map((model) => model.provider
     let calculationSequence = 0;
     let currentMeasurements:ModelMeasurement[] = [];
     let inspectionVisible = false;
+    let revealAfterCalculation = false;
     let activeProvider = (root.dataset.provider || models[0]?.provider) as ProviderId;
-    const pending = new Map<number, { resolve:(value:CalculationResult|string[])=>void; reject:(reason:Error)=>void }>();
-    const worker = new Worker(new URL('../../workers/calculator.worker.ts', import.meta.url), { type:'module' });
+    const preferredIds:Partial<Record<ProviderId,string>>={openai:'gpt-5.6-terra',anthropic:'claude-sonnet-5',google:'gemini-3.1-flash-lite',deepseek:'deepseek-v4-flash'};
+    const pending = new Map<number, { resolve:(value:CalculationResult|TokenInspectionPiece[])=>void; reject:(reason:Error)=>void }>();
+    let worker:Worker | undefined;
     const textarea = $<HTMLTextAreaElement>('#prompt-input');
     const initialQuery = new URLSearchParams(location.search);
     const initialOutput = Number(initialQuery.get('output'));
@@ -126,25 +133,30 @@ const visibleProviders = [...new Set(visibleModels.map((model) => model.provider
       return snapshot;
     });
 
-    worker.onmessage = (event:MessageEvent<WorkerResponse>) => {
-      const request = pending.get(event.data.id);
-      if (!request) return;
-      pending.delete(event.data.id);
-      if (event.data.ok && event.data.result) request.resolve(event.data.result);
-      else if (event.data.ok && event.data.pieces) request.resolve(event.data.pieces);
-      else request.reject(new Error(event.data.error ?? 'Calculation failed.'));
+    const getWorker = () => {
+      if (worker) return worker;
+      worker = new Worker(new URL('../../workers/calculator.worker.ts', import.meta.url), { type:'module' });
+      worker.onmessage = (event:MessageEvent<WorkerResponse>) => {
+        const request = pending.get(event.data.id);
+        if (!request) return;
+        pending.delete(event.data.id);
+        if (event.data.ok && event.data.result) request.resolve(event.data.result);
+        else if (event.data.ok && event.data.pieces) request.resolve(event.data.pieces);
+        else request.reject(new Error(event.data.error ?? 'Calculation failed.'));
+      };
+      worker.onerror = () => setError('The local tokenizer could not start. Reload the page and try again.');
+      return worker;
     };
-    worker.onerror = () => setError('The local tokenizer could not start. Reload the page and try again.');
 
     const requestWorker = (modelId:string, payload:{ text?:string; image?:{ width:number; height:number; detail:'high' } }) => new Promise<CalculationResult>((resolve,reject) => {
       const id = ++workerId;
-      pending.set(id,{resolve:resolve as (value:CalculationResult|string[])=>void,reject});
-      worker.postMessage({id,modelId,...payload});
+      pending.set(id,{resolve:resolve as (value:CalculationResult|TokenInspectionPiece[])=>void,reject});
+      getWorker().postMessage({id,modelId,...payload});
     });
-    const requestInspection = (text:string) => new Promise<string[]>((resolve,reject)=>{
+    const requestInspection = (text:string) => new Promise<TokenInspectionPiece[]>((resolve,reject)=>{
       const id=++workerId;
-      pending.set(id,{resolve:resolve as (value:CalculationResult|string[])=>void,reject});
-      worker.postMessage({id,modelId:'gpt-5.6-terra',text,inspect:true});
+      pending.set(id,{resolve:resolve as (value:CalculationResult|TokenInspectionPiece[])=>void,reject});
+      getWorker().postMessage({id,modelId:'gpt-5.6-terra',text,inspect:true});
     });
     const setError = (message='') => { const el=$<HTMLParagraphElement>('#input-error'); el.textContent=message; el.classList.toggle('hidden',!message); };
     const combinedText = () => [textarea.value,...assets.filter((asset):asset is Extract<Asset,{kind:'document'}>=>asset.kind==='document').map((asset)=>asset.text)].filter(Boolean).join('\n\n');
@@ -160,7 +172,8 @@ const visibleProviders = [...new Set(visibleModels.map((model) => model.provider
       try {
         const pieces=await requestInspection(text);
         inspector.innerHTML='';
-        pieces.forEach((piece)=>{const chip=document.createElement('span');chip.className='token-chip rounded px-1.5 py-0.5 whitespace-pre-wrap';chip.textContent=piece;chip.title=JSON.stringify(piece);inspector.append(chip);});
+        const note=document.createElement('p');note.className='basis-full muted text-xs mb-2';note.textContent=`${pieces.reduce((total,piece)=>total+piece.tokenIds.length,0).toLocaleString()} exact BPE tokens. Unicode characters can span multiple tokens, so those tokens stay in one readable chip.`;inspector.append(note);
+        pieces.forEach((piece)=>{const chip=document.createElement('span');chip.className='token-chip rounded px-1.5 py-0.5 whitespace-pre-wrap';chip.textContent=piece.text;chip.title=piece.tokenIds.length===1?`Token ${piece.tokenIds[0]}`:`${piece.tokenIds.length} tokens: ${piece.tokenIds.join(', ')}`;chip.setAttribute('aria-label',`${piece.tokenIds.length} token${piece.tokenIds.length===1?'':'s'}: ${piece.text}`);inspector.append(chip);});
       } catch(error) { inspector.innerHTML=`<span class="muted">${error instanceof Error?error.message:'Token inspection failed.'}</span>`; }
     }
 
@@ -179,6 +192,7 @@ const visibleProviders = [...new Set(visibleModels.map((model) => model.provider
 
     async function addFiles(files:FileList) {
       setError();
+      revealAfterCalculation=true;
       setLiveStatus('Reading files…',true);
       for (const file of [...files]) {
         try {
@@ -189,8 +203,7 @@ const visibleProviders = [...new Set(visibleModels.map((model) => model.provider
             assets.push({id,name:file.name,kind:'image',width:bitmap.width,height:bitmap.height,size:file.size}); bitmap.close();
           } else {
             const extracted=await extractDocument(file);
-            textarea.value=[textarea.value,extracted].filter(Boolean).join(textarea.value?'\n\n':'');
-            assets.push({id,name:file.name,kind:'document',text:''});
+            assets.push({id,name:file.name,kind:'document',text:extracted});
           }
         } catch(error) { setError(error instanceof Error?error.message:`Could not read ${file.name}.`); }
       }
@@ -206,7 +219,7 @@ const visibleProviders = [...new Set(visibleModels.map((model) => model.provider
         try { tokens+=(await requestWorker(model.id,{image:{width:image.width,height:image.height,detail:'high'}})).tokens; }
         catch { unsupportedImages+=1; }
       }
-      return {model,tokens,cost:(tokens/1_000_000)*model.inputPerMillion,ratio:tokens/model.contextWindow,unsupportedImages,method:textResult.method};
+      return {model,tokens,cost:calculateInputCost(tokens,model),ratio:tokens/model.contextWindow,unsupportedImages,method:textResult.method};
     }
 
     function renderDetails(measurements:ModelMeasurement[]) {
@@ -220,51 +233,65 @@ const visibleProviders = [...new Set(visibleModels.map((model) => model.provider
         const accuracy=item.model.textAccuracy==='exact'?'Exact BPE':'Calibrated Estimate';
         const accuracyHelp=item.model.textAccuracy==='exact'?'Counted locally with the model family’s BPE encoding.':'Deterministic provider-family estimate; the API billing record is authoritative.';
         const overflow=item.ratio>1;
-        row.innerHTML=`<div><strong class="block text-sm">${item.model.name}</strong><span class="inline-flex mt-1 text-[10px] mono rounded-full border hairline px-2 py-0.5" title="${accuracyHelp}">${accuracy}</span>${unsupported?'<span class="block text-xs text-[var(--warn)] mt-1">Image input unavailable</span>':''}</div><div><span class="mono block">${unsupported&&item.tokens===0?'—':item.tokens.toLocaleString()}</span><span class="text-xs muted">tokens</span></div><div><span class="mono block">${formatCost(item.cost)}</span><span class="text-xs muted">input · cache $${item.model.cachedInputPerMillion??'—'}/1M</span></div><div><div class="flex justify-between text-[10px] mono mb-1.5"><span>${(item.ratio*100).toFixed(item.ratio<.01?3:1)}%</span><span>${formatContext(item.model.contextWindow)}</span></div><div class="h-1.5 bg-[var(--panel-2)] rounded-full overflow-hidden"><div class="metric-bar h-full rounded-full" style="width:${Math.min(100,item.ratio*100)}%;background:${overflow?'var(--danger)':item.ratio>.8?'var(--warn)':'var(--accent)'}"></div></div>${overflow?`<span class="block text-[10px] text-[var(--danger)] mt-1">Context Overflow: Exceeds ${formatContext(item.model.contextWindow)} limit</span>`:''}</div>`;
+        const rates=resolveRates(item.model,item.tokens);
+        row.innerHTML=`<div><strong class="block text-sm">${item.model.name}</strong><span class="inline-flex mt-1 text-[10px] mono rounded-full border hairline px-2 py-0.5" title="${accuracyHelp}">${accuracy}</span><span class="block text-[10px] muted mt-1">${item.method}</span><a class="inline-block text-[10px] text-[var(--accent)] mt-1" href="${item.model.pricingUrl}" target="_blank" rel="noreferrer">Official pricing ↗</a><span class="text-[10px] muted"> · verified ${item.model.verifiedAt}</span>${unsupported?'<span class="block text-xs text-[var(--warn)] mt-1">Image input unavailable</span>':''}</div><div><span class="mono block">${unsupported&&item.tokens===0?'—':item.tokens.toLocaleString()}</span><span class="text-xs muted">tokens</span></div><div><span class="mono block">${formatCost(item.cost)}</span><span class="text-xs muted">input · $${rates.inputPerMillion}/1M · cache $${rates.cachedInputPerMillion??'—'}/1M</span>${rates.label!=='Standard rate'?`<span class="block text-[10px] text-[var(--warn)] mt-1">${rates.label}</span>`:''}</div><div><div class="flex justify-between text-[10px] mono mb-1.5"><span>${(item.ratio*100).toFixed(item.ratio<.01?3:1)}%</span><span>${formatContext(item.model.contextWindow)}</span></div><div class="h-1.5 bg-[var(--panel-2)] rounded-full overflow-hidden"><div class="metric-bar h-full rounded-full" style="width:${Math.min(100,item.ratio*100)}%;background:${overflow?'var(--danger)':item.ratio>.8?'var(--warn)':'var(--accent)'}"></div></div>${overflow?`<span class="block text-[10px] text-[var(--danger)] mt-1">Context Overflow: Exceeds ${formatContext(item.model.contextWindow)} limit</span>`:''}</div>`;
         container.append(row);
       });
+      const plannerSelect=$<HTMLSelectElement>('#planner-model');
+      const previous=plannerSelect.value;
+      plannerSelect.innerHTML='';
+      providerMeasurements.forEach((item)=>plannerSelect.add(new Option(item.model.name,item.model.id)));
+      plannerSelect.value=providerMeasurements.some((item)=>item.model.id===previous)?previous:(preferredIds[activeProvider]??providerMeasurements[0]?.model.id);
       renderPlanner();
     }
 
     function renderPlanner() {
-      const result=currentMeasurements.find((item)=>item.model.provider===activeProvider);
+      const result=currentMeasurements.find((item)=>item.model.id===$<HTMLSelectElement>('#planner-model').value);
       if(!result)return;
       const outputTokens=Number($<HTMLInputElement>('#output-token-slider').value);
       const requests=Number($<HTMLInputElement>('#request-slider').value);
-      const perCall=result.cost+(outputTokens/1_000_000)*result.model.outputPerMillion;
+      const perCall=calculateWorkloadCost(result.tokens,outputTokens,result.model);
       $('#output-token-value').textContent=outputTokens.toLocaleString(); $('#request-value').textContent=requests.toLocaleString();
       $('#planner-call').textContent=formatCost(perCall); $('#planner-daily').textContent=formatCost(perCall*requests); $('#planner-monthly').textContent=formatCost(perCall*requests*30);
+    }
+
+    function renderMeasurementDashboard(measurements:ModelMeasurement[],words:number,characters:number,assetCount:number,shared=false) {
+      currentMeasurements=measurements;
+      $('#total-words').textContent=shared?'—':words.toLocaleString(); $('#total-characters').textContent=shared?'—':characters.toLocaleString(); $('#total-assets').textContent=shared?'—':assetCount.toLocaleString();
+      calculatorRoot.querySelectorAll<HTMLElement>('[data-provider-card]').forEach((card)=>{
+        const providerId=card.dataset.providerCard as ProviderId;
+        const result=measurements.find((item)=>item.model.id===preferredIds[providerId])??measurements.find((item)=>item.model.provider===providerId);
+        if(!result)return;
+        card.querySelector<HTMLElement>('.provider-token')!.textContent=result.unsupportedImages&&result.tokens===0?'—':result.tokens.toLocaleString();
+        card.querySelector<HTMLElement>('.provider-label')!.textContent=result.unsupportedImages?`${result.model.name} · image unavailable`: `${result.model.name} · ${formatCost(result.cost)}`;
+      });
+      renderDetails(measurements);
+      const dashboard=$('#results-dashboard');dashboard.classList.remove('hidden');
+      const viewResults=$<HTMLButtonElement>('#view-results');
+      const preferred=measurements.find((item)=>item.model.id===preferredIds[activeProvider])??measurements[0];
+      viewResults.disabled=false;viewResults.innerHTML=`View results${preferred?` · ${preferred.tokens.toLocaleString()} tokens`:''} <span aria-hidden="true">↓</span>`;
+      $('#result-announcer').textContent=shared?'Shared calculation restored. The original private content is not included.':`Results updated for ${words.toLocaleString()} words and ${assetCount.toLocaleString()} attachments.`;
+      if(revealAfterCalculation&&!shared){revealAfterCalculation=false;requestAnimationFrame(()=>dashboard.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'}));}
     }
 
     async function calculate() {
       const sequence=++calculationSequence;
       const text=combinedText();
       const images=assets.filter((asset):asset is Extract<Asset,{kind:'image'}>=>asset.kind==='image');
-      if(!text.trim()&&!images.length){setError();$('#results-dashboard').classList.add('hidden');setLiveStatus('Live');void renderTokenInspection();return;}
-      setError();
+      if(!text.trim()&&!images.length){$('#results-dashboard').classList.add('hidden');const viewResults=$<HTMLButtonElement>('#view-results');viewResults.disabled=true;viewResults.innerHTML='Results appear below <span aria-hidden="true">↓</span>';setLiveStatus('Live');void renderTokenInspection();return;}
       setLiveStatus('Calculating…',true);
       await pricingPromise;
       const measurements=await Promise.all(models.map((model)=>measureModel(model,text,images)));
       if(sequence!==calculationSequence)return;
-      currentMeasurements=measurements;
       const words=text.trim().match(/\S+/g)?.length??0;
-      $('#total-words').textContent=words.toLocaleString(); $('#total-characters').textContent=text.length.toLocaleString(); $('#total-assets').textContent=assets.length.toLocaleString();
-      calculatorRoot.querySelectorAll<HTMLElement>('[data-provider-card]').forEach((card)=>{
-        const providerId=card.dataset.providerCard as ProviderId;
-        const preferredIds:Partial<Record<ProviderId,string>>={openai:'gpt-5.6-terra',anthropic:'claude-sonnet-5',google:'gemini-3.1-flash-lite',deepseek:'deepseek-v4-flash'};
-        const result=measurements.find((item)=>item.model.id===preferredIds[providerId])??measurements.find((item)=>item.model.provider===providerId)!;
-        card.querySelector<HTMLElement>('.provider-token')!.textContent=result.unsupportedImages&&result.tokens===0?'—':result.tokens.toLocaleString();
-        card.querySelector<HTMLElement>('.provider-label')!.textContent=result.unsupportedImages?`${result.model.name} · image unavailable`: `${result.model.name} · ${formatCost(result.cost)}`;
-      });
-      renderDetails(measurements);
-      const dashboard=$('#results-dashboard'); dashboard.classList.remove('hidden');
+      renderMeasurementDashboard(measurements,words,text.length,assets.length);
       setLiveStatus('Live');
       void renderTokenInspection();
-      calculatorRoot.querySelectorAll<HTMLElement>('[data-provider-card]').forEach((card)=>card.onclick=()=>{activeProvider=card.dataset.providerCard as ProviderId;calculatorRoot.querySelectorAll<HTMLElement>('[data-provider-card]').forEach((item)=>item.dataset.active=String(item===card));renderDetails(measurements);});
     }
 
     $<HTMLInputElement>('#asset-input').addEventListener('change',(event)=>{const input=event.target as HTMLInputElement;if(input.files)addFiles(input.files);input.value='';});
-    textarea.addEventListener('input',()=>void calculate().catch((error)=>{setError(error instanceof Error?error.message:'Calculation failed.');setLiveStatus('Unavailable');}));
+    textarea.addEventListener('paste',()=>{revealAfterCalculation=true;});
+    textarea.addEventListener('input',()=>{setError();void calculate().catch((error)=>{setError(error instanceof Error?error.message:'Calculation failed.');setLiveStatus('Unavailable');});});
     $('#token-toggle').addEventListener('click',async()=>{
       inspectionVisible=!inspectionVisible;
       const toggle=$<HTMLButtonElement>('#token-toggle'); toggle.setAttribute('aria-pressed',String(inspectionVisible)); toggle.textContent=inspectionVisible?'Hide tokens':'Show tokens';
@@ -279,16 +306,35 @@ const visibleProviders = [...new Set(visibleModels.map((model) => model.provider
 
     $<HTMLInputElement>('#output-token-slider').addEventListener('input',renderPlanner);
     $<HTMLInputElement>('#request-slider').addEventListener('input',renderPlanner);
+    $<HTMLSelectElement>('#planner-model').addEventListener('change',renderPlanner);
+    $('#view-results').addEventListener('click',()=>$('#results-dashboard').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'}));
+    calculatorRoot.querySelectorAll<HTMLElement>('[data-provider-card]').forEach((card)=>card.addEventListener('click',()=>{activeProvider=card.dataset.providerCard as ProviderId;calculatorRoot.querySelectorAll<HTMLElement>('[data-provider-card]').forEach((item)=>{const selected=item===card;item.dataset.active=String(selected);item.setAttribute('aria-pressed',String(selected));});renderDetails(currentMeasurements);}));
     $('#copy-breakdown').addEventListener('click',async()=>{
       const rows=currentMeasurements.map((item)=>`| ${PROVIDERS[item.model.provider].name} | ${item.model.name} | ${item.tokens.toLocaleString()} | ${formatCost(item.cost)} |`);
       const markdown=['| Provider | Model | Input tokens | Input cost |','|---|---|---:|---:|',...rows].join('\n');
-      await navigator.clipboard.writeText(markdown); const button=$<HTMLButtonElement>('#copy-breakdown');button.textContent='Copied';setTimeout(()=>button.textContent='Copy Markdown breakdown',1500);
+      try { await navigator.clipboard.writeText(markdown); const button=$<HTMLButtonElement>('#copy-breakdown');button.textContent='Copied';setTimeout(()=>button.textContent='Copy Markdown breakdown',1500); }
+      catch { setError('Your browser blocked clipboard access. Allow clipboard permission and try again.'); }
     });
     $('#share-calculation').addEventListener('click',async()=>{
-      const result=currentMeasurements.find((item)=>item.model.provider===activeProvider); if(!result)return;
-      const url=new URL(location.href);url.search='';url.searchParams.set('tokens',String(result.tokens));url.searchParams.set('model',result.model.id);url.searchParams.set('output',$<HTMLInputElement>('#output-token-slider').value);url.searchParams.set('requests',$<HTMLInputElement>('#request-slider').value);
-      history.replaceState(null,'',url);await navigator.clipboard.writeText(url.href);const button=$<HTMLButtonElement>('#share-calculation');button.textContent='Link copied';setTimeout(()=>button.textContent='Share calculation',1500);
+      const result=currentMeasurements.find((item)=>item.model.id===$<HTMLSelectElement>('#planner-model').value); if(!result)return;
+      const url=new URL(location.href);url.search='';url.searchParams.set('counts',currentMeasurements.map((item)=>`${item.model.id}:${item.tokens}`).join(','));url.searchParams.set('model',result.model.id);url.searchParams.set('output',$<HTMLInputElement>('#output-token-slider').value);url.searchParams.set('requests',$<HTMLInputElement>('#request-slider').value);
+      try { history.replaceState(null,'',url);await navigator.clipboard.writeText(url.href);const button=$<HTMLButtonElement>('#share-calculation');button.textContent='Link copied';setTimeout(()=>button.textContent='Share calculation',1500); }
+      catch { setError('The share link was created, but your browser blocked clipboard access. Copy it from the address bar.'); }
     });
+
+    void (async()=>{
+      const encoded=initialQuery.get('counts');
+      if(!encoded)return;
+      await pricingPromise;
+      const tokenCounts=new Map(encoded.split(',').map((entry)=>{const split=entry.lastIndexOf(':');return [entry.slice(0,split),Number(entry.slice(split+1))] as const;}).filter((entry)=>entry[0]&&Number.isFinite(entry[1])&&entry[1]>=0));
+      const measurements=models.filter((model)=>tokenCounts.has(model.id)).map((model)=>{const tokens=Math.round(tokenCounts.get(model.id)!);return {model,tokens,cost:calculateInputCost(tokens,model),ratio:tokens/model.contextWindow,unsupportedImages:0,method:'Restored token count; original content not shared'};});
+      if(!measurements.length)return;
+      const selectedModel=models.find((model)=>model.id===initialQuery.get('model'));
+      if(selectedModel){activeProvider=selectedModel.provider;calculatorRoot.querySelectorAll<HTMLElement>('[data-provider-card]').forEach((card)=>{const selected=card.dataset.providerCard===activeProvider;card.dataset.active=String(selected);card.setAttribute('aria-pressed',String(selected));});}
+      renderMeasurementDashboard(measurements,0,0,0,true);
+      if(selectedModel&&$<HTMLSelectElement>('#planner-model').querySelector(`option[value="${CSS.escape(selectedModel.id)}"]`))$<HTMLSelectElement>('#planner-model').value=selectedModel.id;
+      renderPlanner();setLiveStatus('Shared result');
+    })().catch(()=>setError('This shared calculation could not be restored.'));
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initializeCalculator,{once:true});else initializeCalculator();
 </script>

@@ -3,19 +3,27 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Calculator from './calculator/Calculator.astro';
 import FAQ from './seo/FAQ.astro';
 import ProviderLinks from './seo/ProviderLinks.astro';
+import Breadcrumbs from './seo/Breadcrumbs.astro';
+import KnowledgeSections from './seo/KnowledgeSections.astro';
 import type { ProviderId } from '../domain/models';
 
 interface Props { provider?:ProviderId; title:string; description:string; eyebrow:string; heading:string; intro:string; canonical:string; methodology:string; additionalFaq?:{question:string;answer:string}[] }
 const { provider,title,description,eyebrow,heading,intro,canonical,methodology,additionalFaq=[] }=Astro.props;
 const faq=[
   ...additionalFaq,
+  {question:'What is a token in an AI model?',answer:'A token is a small unit of content processed by a language model. It may be a whole word, part of a word, punctuation, whitespace, or—in multimodal models—a unit assigned to an image. Different providers can split the same input differently.'},
+  {question:'How is LLM API input cost calculated?',answer:'Input cost is calculated as input tokens divided by one million, multiplied by the selected model’s input price per million tokens. Provider tiers, cached input, tools, and message wrappers can affect final billing.'},
   {question:'Does this tool upload my prompt or files?',answer:'No. Text, document extraction, image dimensions, and token calculations run in your browser. Your content is not sent to TokenCalculator.dev.'},
   {question:'Are the token counts exact?',answer:'OpenAI text counts use the matching local BPE encoding. Other providers are clearly labeled estimates unless they publish a deterministic local formula. Image counts use provider-published rules.'},
   {question:'Can I count tokens in PDF and DOCX files?',answer:'Text-based PDF and DOCX files are read locally. Scanned or encrypted PDFs require OCR and are not supported.'},
   {question:'Why can the API report a slightly different count?',answer:'Providers can add message wrappers, system instructions, tools, or model-specific processing. The accuracy badge and methodology explain what this calculator includes.'},
 ];
+const providerLabels:Partial<Record<ProviderId,string>>={openai:'OpenAI',anthropic:'Claude',google:'Gemini',deepseek:'DeepSeek'};
+const pageLabel=provider ? `${providerLabels[provider]} token counter` : 'Token calculator';
+const breadcrumbs=provider ? [{label:'Token calculator',href:'/'},{label:pageLabel}] : [];
 ---
-<BaseLayout {title} {description} {canonical} {faq}>
+<BaseLayout {title} {description} {canonical} {faq} {breadcrumbs} application>
+  {provider && <Breadcrumbs items={breadcrumbs}/>} 
   <section class="shell max-w-4xl pt-12 sm:pt-16 pb-7 relative z-10">
     <span class="eyebrow">{eyebrow}</span>
     <h1 class="m-0 mt-4 text-[clamp(2.25rem,5vw,3.75rem)] leading-[1.02] tracking-[-.055em] max-w-3xl">{heading}</h1>
@@ -24,7 +32,8 @@ const faq=[
   <Calculator {provider}/>
   <section class="shell mt-24 grid md:grid-cols-2 gap-10 md:gap-20 relative z-10">
     <div><span class="eyebrow">How it works</span><h2 class="section-title mt-3">A measurement, not a guess disguised as fact.</h2></div>
-    <div class="muted"><p>{methodology}</p><p>Every result identifies its method and accuracy level. Pricing is refreshed from Models.dev with the bundled registry available as an offline fallback.</p><a href="/methodology" class="text-[var(--accent)]">Read the complete methodology →</a></div>
+    <div class="muted"><p>{methodology}</p><p>Every result identifies its method and accuracy level. Pricing is refreshed from Models.dev with the bundled registry available as an offline fallback.</p><a href="/methodology/" class="text-[var(--accent)]">Read the complete methodology →</a></div>
   </section>
+  <KnowledgeSections {provider}/>
   <ProviderLinks/><FAQ items={faq}/>
 </BaseLayout>

@@ -3,6 +3,14 @@ export type Accuracy = 'exact' | 'provider-formula' | 'estimated';
 export type TokenizerStrategy = 'o200k_base' | 'cl100k_base' | 'claude-estimate' | 'gemini-estimate' | 'deepseek-estimate';
 export type VisionStrategy = 'openai-tiles' | 'claude-patches' | 'gemini-tiles';
 
+export interface PricingTier {
+  aboveInputTokens: number;
+  inputPerMillion: number;
+  cachedInputPerMillion?: number;
+  outputPerMillion: number;
+  label: string;
+}
+
 export interface ModelConfig {
   id: string;
   name: string;
@@ -15,10 +23,16 @@ export interface ModelConfig {
   inputPerMillion: number;
   cachedInputPerMillion?: number;
   outputPerMillion: number;
+  pricingTiers?: PricingTier[];
   vision?: VisionStrategy;
   pricingUrl: string;
   verifiedAt: string;
   isDefault?: boolean;
+}
+
+export interface TokenInspectionPiece {
+  text: string;
+  tokenIds: number[];
 }
 
 export interface CalculationResult {

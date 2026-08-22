@@ -1,9 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { getModel } from '../src/data/models';
 import { loadLivePricing } from '../src/data/live-pricing';
-import { calculateResult } from '../src/engines/pricing/calculate';
+import { calculateResult, calculateWorkloadCost, resolveRates } from '../src/engines/pricing/calculate';
 import { countImage } from '../src/engines/vision/count';
-import { inspectText } from '../src/engines/tokenizers/count';
+import { countText, inspectText } from '../src/engines/tokenizers/count';
 
 afterEach(() => vi.unstubAllGlobals());
 
@@ -17,12 +17,25 @@ describe('pricing and context', () => {
     const model = getModel('deepseek-v4-flash');
     expect(calculateResult(1_000_001, model, 'estimated', 'test').overContext).toBe(true);
   });
+
+  it('applies OpenAI long-context rates only above 272K input tokens', () => {
+    const model = getModel('gpt-5.6-terra');
+    expect(resolveRates(model, 272_000).inputPerMillion).toBe(2);
+    expect(resolveRates(model, 272_001)).toMatchObject({ inputPerMillion: 4, outputPerMillion: 18 });
+    expect(calculateWorkloadCost(300_000, 1_000, model)).toBeCloseTo(1.218);
+  });
+
+  it('applies Gemini 2.5 Pro long-context rates above 200K', () => {
+    expect(resolveRates(getModel('gemini-2.5-pro'), 200_001)).toMatchObject({ inputPerMillion: 2.5, cachedInputPerMillion: .25, outputPerMillion: 15 });
+  });
 });
 
 describe('exact token inspection', () => {
   it('returns reversible o200k token pieces', () => {
     const text = 'Hello, token world 👋';
-    expect(inspectText(text, getModel('gpt-5.6-terra')).join('')).toBe(text);
+    const pieces = inspectText(text, getModel('gpt-5.6-terra'));
+    expect(pieces.map((piece) => piece.text).join('')).toBe(text);
+    expect(pieces.reduce((total, piece) => total + piece.tokenIds.length, 0)).toBe(countText(text, getModel('gpt-5.6-terra')).tokens);
   });
 
   it('rejects heuristic tokenizers', () => {

@@ -1,14 +1,20 @@
 ---
 import BrandMark from './BrandMark.astro';
+import ProviderIcon from './ProviderIcon.astro';
 ---
 <header class="site-header relative z-20">
-  <div class="shell h-[72px] flex items-center justify-between gap-4">
-    <a href="/" class="flex items-center gap-3 no-underline" aria-label="TokenCalculator.dev home">
-      <BrandMark />
-      <span class="font-semibold tracking-[-.035em] text-[15px]">TokenCalculator<span class="text-[var(--accent)]">.dev</span></span>
+  <div class="shell h-[76px] grid grid-cols-[1fr_auto] md:grid-cols-[1fr_auto_1fr] items-center gap-5">
+    <a href="/" class="flex items-center gap-3.5 no-underline w-max" aria-label="TokenCalculator.dev home">
+      <BrandMark size={36}/>
+      <span class="font-semibold tracking-[-.04em] text-[17px] sm:text-[18px]">TokenCalculator<span class="text-[var(--accent)]">.dev</span></span>
     </a>
-    <div class="flex items-center gap-2 sm:gap-4">
-      <nav class="hidden md:flex items-center gap-5 text-xs text-[var(--muted)]" aria-label="Provider tools"><a href="/openai-token-counter">OpenAI</a><a href="/claude-token-counter">Claude</a><a href="/gemini-token-counter">Gemini</a><a href="/deepseek-token-counter">DeepSeek</a></nav>
+    <nav class="hidden md:flex items-center justify-center gap-1" aria-label="Provider tools">
+      <a class="nav-provider" href="/openai-token-counter/"><ProviderIcon provider="openai"/>OpenAI</a>
+      <a class="nav-provider" href="/claude-token-counter/"><ProviderIcon provider="anthropic"/>Claude</a>
+      <a class="nav-provider" href="/gemini-token-counter/"><ProviderIcon provider="google"/>Gemini</a>
+      <a class="nav-provider" href="/deepseek-token-counter/"><ProviderIcon provider="deepseek"/>DeepSeek</a>
+    </nav>
+    <div class="flex items-center justify-end gap-2 sm:gap-4">
       <span class="flex items-center gap-2 text-xs muted sm:border-l hairline sm:pl-4"><span class="size-1.5 rounded-full bg-[var(--success)]"></span><span class="hidden sm:inline">Local processing</span><span class="sm:hidden">Local</span></span>
       <button id="theme-toggle" class="size-9 grid place-items-center border hairline rounded-full bg-[var(--panel)] text-[var(--muted)] hover:text-[var(--text)]" type="button" aria-label="Toggle color theme">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9c-5 2-11-4-9-9Z"/></svg>

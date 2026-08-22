@@ -1,0 +1,83 @@
+---
+import type { ProviderId } from '../../domain/models';
+import { MODELS } from '../../data/models';
+import { PROVIDERS } from '../../data/providers';
+
+interface Props { provider?:ProviderId }
+const { provider }=Astro.props;
+const providerModels=provider ? MODELS.filter((model)=>model.provider===provider) : [];
+const reviewed=MODELS.map((model)=>model.verifiedAt).sort().at(-1) ?? '2026-08-22';
+const providerName=provider ? PROVIDERS[provider].name : '';
+
+const providerCopy:Record<ProviderId,{method:string;difference:string;image:string;source:string}>={
+  openai:{method:'OpenAI text is counted locally with the BPE encoding assigned to the selected model. This measures the raw content exactly; API message wrappers, tool definitions, and provider-side instructions can add tokens.',difference:'Different GPT model families can use different encodings. The selected model determines the tokenizer, context limit, and price used by the calculator.',image:'For supported vision models, the browser reads image dimensions and applies OpenAI’s published detail and tile rules. The image is never uploaded.',source:'https://developers.openai.com/api/docs/models/compare'},
+  anthropic:{method:'Claude text uses a deterministic calibrated estimate because Anthropic does not distribute its production tokenizer as a lightweight offline browser package. The result is always labeled as an estimate.',difference:'Punctuation, code, JSON, non-English text, and API message framing can shift the final Claude usage reported by Anthropic.',image:'Claude image estimates use Anthropic’s published 28×28 visual-patch method and the applicable model cap. Only dimensions are read locally.',source:'https://platform.claude.com/docs/en/build-with-claude/vision'},
+  google:{method:'Gemini text uses a deterministic provider-family estimate. Google’s countTokens API remains authoritative after the complete API request, including instructions and attached content, is assembled.',difference:'Gemini can tokenize text and multimodal inputs differently from GPT or Claude, so token totals should not be transferred between providers.',image:'Image dimensions are converted with Google’s published media-token guidance. The selected Gemini model determines the context and pricing applied.',source:'https://ai.google.dev/gemini-api/docs/tokens'},
+  deepseek:{method:'DeepSeek text uses a deterministic calibrated estimate. The calculator applies the selected model’s current context limit and input price while clearly distinguishing the estimate from provider billing.',difference:'Reasoning, message templates, and server-side processing can make billed usage differ from the raw prompt estimate shown here.',image:'When the selected DeepSeek API model has no documented vision-token rule, the calculator returns an unsupported state instead of inventing a count.',source:'https://api-docs.deepseek.com/quick_start/pricing/'},
+};
+---
+{provider ? (
+  <>
+    <section class="content-band shell relative z-10" aria-labelledby="provider-method-title">
+      <div class="content-heading"><span class="eyebrow">{providerName} methodology</span><h2 id="provider-method-title" class="section-title mt-3">How this {providerName} token calculator works</h2></div>
+      <div class="content-copy muted"><p>{providerCopy[provider].method}</p><p>{providerCopy[provider].difference}</p><p>{providerCopy[provider].image}</p><a href={providerCopy[provider].source} target="_blank" rel="noreferrer" class="text-[var(--accent)]">Read the official {providerName} documentation ↗</a></div>
+    </section>
+
+    <section class="shell mt-20 relative z-10" aria-labelledby="models-title">
+      <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-7"><div><span class="eyebrow">Curated production models</span><h2 id="models-title" class="section-title mt-3">Models included in this counter</h2></div><p class="mono text-xs muted m-0">Registry reviewed {reviewed}</p></div>
+      <div class="table-shell overflow-x-auto"><table class="seo-table"><thead><tr><th>Model</th><th>Counting method</th><th>Context</th><th>Input / 1M</th></tr></thead><tbody>{providerModels.map((model)=><tr><td><strong>{model.name}</strong></td><td>{model.textAccuracy==='exact'?'Exact local BPE':'Calibrated estimate'}</td><td>{model.contextWindow.toLocaleString()}</td><td>${model.inputPerMillion}</td></tr>)}</tbody></table></div>
+      <p class="text-xs muted mt-4">Prices are planning estimates in USD. Provider invoices and official documentation remain authoritative.</p>
+    </section>
+  </>
+) : (
+  <>
+    <section class="content-band shell relative z-10" aria-labelledby="measure-title">
+      <div class="content-heading"><span class="eyebrow">What it measures</span><h2 id="measure-title" class="section-title mt-3">One input, four provider views</h2></div>
+      <div class="content-copy muted"><p>This token calculator measures text prompts, code, structured data, readable documents, and supported images against current OpenAI, Anthropic Claude, Google Gemini, and DeepSeek models.</p><p>It reports input tokens, context-window fit, and estimated input cost. Text and files stay in the browser; only public model metadata may be refreshed from Models.dev.</p></div>
+    </section>
+
+    <section class="shell mt-20 relative z-10" aria-labelledby="flow-title">
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-7"><div><span class="eyebrow">Calculation path</span><h2 id="flow-title" class="section-title mt-3">From content to a usable estimate</h2></div><p class="muted max-w-lg m-0">The method stays visible, so an exact BPE count is never confused with a calibrated estimate.</p></div>
+      <figure class="measurement-flow panel rounded-2xl p-5 sm:p-7 m-0" aria-labelledby="flow-caption">
+        <ol class="flow-mobile list-none p-0 m-0" aria-label="Token calculation process">
+          <li><span>Input</span><strong>Text · file · image</strong><small>Read locally</small></li>
+          <li><span>Method</span><strong>Tokenize or estimate</strong><small>Method stays visible</small></li>
+          <li><span>Limit</span><strong>Check context fit</strong><small>Warn before overflow</small></li>
+          <li><span>Result</span><strong>Calculate input cost</strong><small>Apply current rates</small></li>
+        </ol>
+        <svg class="flow-desktop" viewBox="0 0 1040 210" role="img" aria-labelledby="flow-svg-title flow-svg-desc">
+          <title id="flow-svg-title">Token calculation process</title><desc id="flow-svg-desc">Text, documents, and images pass through a provider counting method, then context and cost calculations.</desc>
+          <defs><marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="var(--faint)"/></marker></defs>
+          <g class="flow-lines" fill="none" stroke="var(--faint)" stroke-width="2" marker-end="url(#arrow)"><path d="M238 105h92"/><path d="M498 105h92"/><path d="M758 105h92"/></g>
+          <g class="flow-node"><rect x="20" y="40" width="218" height="130" rx="18"/><text x="45" y="82" class="flow-label">INPUT</text><text x="45" y="119" class="flow-title">Text · file · image</text><text x="45" y="145" class="flow-note">Read locally</text></g>
+          <g class="flow-node"><rect x="330" y="40" width="168" height="130" rx="18"/><text x="355" y="82" class="flow-label">METHOD</text><text x="355" y="119" class="flow-title">Tokenize</text><text x="355" y="145" class="flow-note">or estimate</text></g>
+          <g class="flow-node"><rect x="590" y="40" width="168" height="130" rx="18"/><text x="615" y="82" class="flow-label">LIMIT</text><text x="615" y="119" class="flow-title">Context fit</text><text x="615" y="145" class="flow-note">with overflow alert</text></g>
+          <g class="flow-node"><rect x="850" y="40" width="170" height="130" rx="18"/><text x="875" y="82" class="flow-label">RESULT</text><text x="875" y="119" class="flow-title">Input cost</text><text x="875" y="145" class="flow-note">at current rates</text></g>
+        </svg>
+        <figcaption id="flow-caption" class="text-sm muted mt-3">Input cost = input tokens ÷ 1,000,000 × model input price.</figcaption>
+      </figure>
+    </section>
+
+    <section class="shell mt-20 relative z-10" aria-labelledby="accuracy-title">
+      <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-7"><div><span class="eyebrow">Accuracy contract</span><h2 id="accuracy-title" class="section-title mt-3">Exact where possible. Labeled where estimated.</h2></div><p class="mono text-xs muted m-0">Registry reviewed {reviewed}</p></div>
+      <div class="table-shell overflow-x-auto"><table class="seo-table"><thead><tr><th>Provider</th><th>Text method</th><th>Image method</th><th>Result label</th></tr></thead><tbody>
+        <tr><td><a href="/openai-token-counter/"><strong>OpenAI</strong></a></td><td>Local model BPE</td><td>Published tile rules</td><td>Exact BPE / provider formula</td></tr>
+        <tr><td><a href="/claude-token-counter/"><strong>Claude</strong></a></td><td>Calibrated estimate</td><td>Published patch rules</td><td>Calibrated estimate</td></tr>
+        <tr><td><a href="/gemini-token-counter/"><strong>Gemini</strong></a></td><td>Calibrated estimate</td><td>Published media rules</td><td>Calibrated estimate</td></tr>
+        <tr><td><a href="/deepseek-token-counter/"><strong>DeepSeek</strong></a></td><td>Calibrated estimate</td><td>Unavailable when undocumented</td><td>Calibrated estimate</td></tr>
+      </tbody></table></div>
+    </section>
+
+    <section class="shell mt-20 relative z-10" aria-labelledby="terms-title">
+      <span class="eyebrow">Useful definitions</span><h2 id="terms-title" class="section-title mt-3 mb-8">The numbers behind an LLM request</h2>
+      <dl class="definition-grid">
+        <div><dt>Token</dt><dd>A small unit of text processed by a language model. A token may be a word, part of a word, punctuation, or whitespace.</dd></div>
+        <div><dt>Input token</dt><dd>Content sent to the model, including prompts, context, instructions, and API message structure.</dd></div>
+        <div><dt>Output token</dt><dd>Content generated by the model. Providers normally price output separately from input.</dd></div>
+        <div><dt>Cached token</dt><dd>Previously processed prompt content eligible for a reduced provider rate when caching rules are satisfied.</dd></div>
+        <div><dt>Context window</dt><dd>The maximum combined input and output capacity available to a model for one request.</dd></div>
+        <div><dt>Price per million</dt><dd>The standard API rate multiplied by token usage. Actual billing may include tiers, caching, tools, or provider-side tokens.</dd></div>
+      </dl>
+    </section>
+  </>
+)}
