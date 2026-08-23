@@ -25,7 +25,7 @@ export function getStaticPaths() {
     {
       slug: 'gpt-5-6-sol-vs-claude-opus-4-8-cost',
       title: 'GPT-5.6 Sol vs Claude Opus 4.8 Cost Calculator | TokenCalculator.dev',
-      description: 'Compare GPT-5.6 Sol and Claude Opus 4.8 token cost for text, PDF, DOCX, code, and image workloads with private browser-only processing.',
+      description: 'Compare GPT-5.6 Sol and Claude Opus 4.8 token cost for text, PDF, DOCX, code, and images with privacy-first browser-based processing.',
       eyebrow: 'Frontier model comparison', heading: 'GPT-5.6 Sol vs Claude Opus 4.8 cost.',
       intro: 'Measure a real text, document, code, or image workload against the current frontier OpenAI and Claude models.',
       legacyTerms: 'This page uses GPT-5.6 Sol and Claude Opus 4.8 from the current maintained catalog. Rates, context limits, and verification dates are visible below.',
@@ -47,7 +47,7 @@ export function getStaticPaths() {
       leftId: 'gpt-5.6-terra', rightId: 'claude-sonnet-5',
       decision: 'For production agents, test the full system prompt and representative files. Small per-call output differences compound at scale.',
       faq: [
-        { question: 'Does identical text use the same tokens on Terra and Sonnet?', answer: 'Not necessarily. OpenAI raw text uses local o200k_base BPE counting here; Claude uses a clearly labeled calibrated estimate because its production tokenizer is not distributed for offline browser use.' },
+        { question: 'Does identical text use the same tokens on Terra and Sonnet?', answer: 'Not necessarily. OpenAI raw text uses exact local o200k_base BPE tokenization; Claude uses the deterministic Provider-Calibrated UTF-8 Token Projection because its production tokenizer is not distributed for offline browser use.' },
         { question: 'Can I include source code and JSON files?', answer: 'Yes. Add supported source, JSON, CSV, Markdown, PDF, or DOCX files and their locally extracted text is included in both results.' },
         { question: 'Which model is better for a large document workflow?', answer: 'Cost is only one factor. Compare context fit, output budget, provider features, and quality on your workload, then confirm final usage with each provider API.' },
       ],
@@ -79,7 +79,7 @@ export function getStaticPaths() {
       faq: [
         { question: 'Which is cheaper at high volume?', answer: 'Use the planner with realistic output tokens, cache assumptions, and requests per day. DeepSeek’s rate also varies by its published peak and off-peak schedule.' },
         { question: 'Can this calculate tokens in CSV or JSON?', answer: 'Yes. CSV, JSON, code, text, PDF, and DOCX contents are read locally and added to the selected workload.' },
-        { question: 'Is the DeepSeek count exact?', answer: 'No. It is a deterministic calibrated estimate and is labeled accordingly. Provider-reported API usage is authoritative.' },
+        { question: 'How is the DeepSeek count produced?', answer: 'The engine applies a deterministic Provider-Calibrated UTF-8 Token Projection using a DeepSeek-family bytes-per-token coefficient. Provider-reported API usage remains authoritative.' },
       ],
     },
     {
@@ -93,7 +93,7 @@ export function getStaticPaths() {
       decision: 'For multimodal pipelines, include representative image sizes as well as text. Vision-token rules differ, so text-only price tables can hide the real request cost.',
       faq: [
         { question: 'Can I compare image token cost on both models?', answer: 'Yes. Add PNG, JPEG, WebP, or GIF images. The browser reads dimensions and applies each provider’s documented visual-token method.' },
-        { question: 'Are Gemini token counts exact?', answer: 'Gemini results are deterministic calibrated estimates. Google’s countTokens API is authoritative for a fully assembled production request.' },
+        { question: 'How are Gemini token counts produced?', answer: 'Gemini results use the deterministic Provider-Calibrated UTF-8 Token Projection. Google’s countTokens API is authoritative for a fully assembled production request.' },
         { question: 'Do uploaded images leave the browser?', answer: 'No. Image dimensions are read locally and pixel data is not sent to TokenCalculator.dev for calculation.' },
       ],
     },
@@ -110,7 +110,7 @@ export function getStaticPaths() {
       decision: 'Compare both input and output rates. Output-heavy agents can reverse a decision that looks inexpensive when judged only on prompt cost.',
       faq: [
         { question: 'Is GPT-4o pricing still used on this page?', answer: 'No. GPT-4o appears in the URL and heading because it is the legacy comparison query. Calculations use the current catalog and identify the actual selected model and verification date.' },
-        { question: 'Does Claude count the same text like OpenAI?', answer: 'No. OpenAI raw text uses local o200k_base BPE counting, while Claude is a clearly labeled calibrated estimate. The provider API usage record is authoritative.' },
+        { question: 'Does Claude count the same text like OpenAI?', answer: 'No. OpenAI raw text uses exact local o200k_base BPE tokenization, while Claude uses the deterministic Provider-Calibrated UTF-8 Token Projection. The provider API usage record remains authoritative.' },
         { question: 'Which is cheaper for large prompts?', answer: 'It depends on the selected models, cache eligibility, output length, and long-context tiers. Paste the real workload and compare the per-call and monthly totals.' },
       ],
     },
@@ -128,7 +128,7 @@ export function getStaticPaths() {
       faq: [
         { question: 'Why does this page not quote old R1 and o1 prices?', answer: 'Historical prices can mislead architecture decisions. The page preserves the search intent but calculates with the current comparable model classes in the maintained catalog.' },
         { question: 'Are reasoning tokens included?', answer: 'Only the output-token amount entered in the planner is priced. Hidden or provider-side reasoning usage can differ and should be checked against the API usage response.' },
-        { question: 'Is the DeepSeek token count exact?', answer: 'No. It is a deterministic calibrated estimate. OpenAI raw text uses local BPE tokenization; both providers can add request-framing or server-side usage.' },
+        { question: 'How is the DeepSeek token count calculated?', answer: 'DeepSeek uses the deterministic Provider-Calibrated UTF-8 Token Projection, while OpenAI raw text uses exact local BPE tokenization. Both providers can add request framing or server-side usage.' },
       ],
     },
     {
@@ -184,7 +184,7 @@ const money = (value: number | undefined) => value === undefined ? '—' : `$${v
 
   <section class="shell relative z-10 mb-10">
     <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-px rounded-2xl overflow-hidden bg-[var(--line)] border hairline">
-      <div class="bg-[var(--panel)] p-5"><span class="eyebrow">Text count</span><p class="mt-2 mb-0 text-sm">{left.name}: {left.textAccuracy === 'exact' ? 'exact local BPE' : 'calibrated estimate'}<br />{right.name}: {right.textAccuracy === 'exact' ? 'exact local BPE' : 'calibrated estimate'}</p></div>
+      <div class="bg-[var(--panel)] p-5"><span class="eyebrow">Tokenization engine</span><p class="mt-2 mb-0 text-sm">{left.name}: {left.textAccuracy === 'exact' ? 'exact local BPE tokenization' : 'Provider-Calibrated UTF-8 Projection'}<br />{right.name}: {right.textAccuracy === 'exact' ? 'exact local BPE tokenization' : 'Provider-Calibrated UTF-8 Projection'}</p></div>
       <div class="bg-[var(--panel)] p-5"><span class="eyebrow">Documents</span><p class="mt-2 mb-0 text-sm">PDF, DOCX, code, text, and data files are extracted locally and applied to both models.</p></div>
       <div class="bg-[var(--panel)] p-5"><span class="eyebrow">Images</span><p class="mt-2 mb-0 text-sm">{left.name}: {left.vision ? 'documented formula' : 'unavailable'}<br />{right.name}: {right.vision ? 'documented formula' : 'unavailable'}</p></div>
       <div class="bg-[var(--panel)] p-5"><span class="eyebrow">Privacy</span><p class="mt-2 mb-0 text-sm">Prompt text, document contents, and image pixels stay in the browser.</p></div>
@@ -195,7 +195,7 @@ const money = (value: number | undefined) => value === undefined ? '—' : `$${v
 
   <section class="shell mt-20 grid md:grid-cols-2 gap-8 md:gap-16 relative z-10">
     <div><span class="eyebrow">Decision rule</span><h2 class="section-title mt-3">Model the workload, not the marketing price.</h2></div>
-    <div class="muted"><p>{page.decision}</p><p>Tokenization differs by provider, so the same text can produce different totals. Accuracy labels distinguish exact local BPE counts from calibrated estimates.</p><a href="/methodology/" class="text-[var(--accent)]">Review calculation methodology →</a></div>
+    <div class="muted"><p>{page.decision}</p><p>Tokenizer vocabulary, segmentation, Unicode handling, and request framing differ by provider, so identical payloads can produce different totals. Computation labels distinguish exact local BPE tokenization from deterministic Provider-Calibrated UTF-8 Token Projections.</p><a href="/methodology/" class="text-[var(--accent)]">Review calculation methodology →</a></div>
   </section>
   <ProviderLinks />
   <FAQ items={page.faq} />

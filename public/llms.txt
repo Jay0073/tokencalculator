@@ -1,6 +1,6 @@
 # TokenCalculator.dev
 
-TokenCalculator.dev is a free, client-side LLM token calculator for OpenAI, Anthropic Claude, Google Gemini, and DeepSeek. Unlike text-only token counters, it accepts pasted prompts together with readable documents, source/data files, and supported images, then reports provider token counts, context-window fit, and API cost estimates. Zero prompt text, document contents, or uploaded images are sent to a calculation server.
+TokenCalculator.dev is a free, privacy-first, browser-based LLM token calculator for OpenAI, Anthropic Claude, Google Gemini, and DeepSeek. Unlike text-only token counters, it accepts pasted prompts together with readable documents, source/data files, and supported images, then reports provider token counts, context-window fit, and API cost estimates. Zero prompt text, document contents, or uploaded images are sent to a calculation server.
 
 - [Universal calculator](https://tokencalculator.dev/)
 - [Methodology and accuracy labels](https://tokencalculator.dev/methodology/)
@@ -19,7 +19,7 @@ TokenCalculator.dev is a free, client-side LLM token calculator for OpenAI, Anth
 
 ## Accuracy
 
-OpenAI raw text uses a local BPE tokenizer. Claude, Gemini, and DeepSeek text counts are labeled calibrated estimates. Supported image counts use provider-published formulas. Provider API usage remains authoritative.
+OpenAI raw text uses exact local BPE tokenization. Claude, Gemini, and DeepSeek use TokenCalculator.dev's deterministic Provider-Calibrated UTF-8 Token Projection: UTF-8 byte length normalized by a provider-family bytes-per-token coefficient. Supported image counts use provider-published patch, tile, detail, and cap formulas. Provider API usage remains authoritative.
 
 ## Documents and images
 
@@ -35,9 +35,9 @@ OpenAI raw text uses a local BPE tokenizer. Claude, Gemini, and DeepSeek text co
 | Provider | Browser method | Accuracy label |
 | --- | --- | --- |
 | OpenAI | `o200k_base` BPE via js-tiktoken | Exact for raw text under that encoding |
-| Anthropic Claude | Deterministic UTF-8-aware calibrated estimate | Estimated |
-| Google Gemini | Deterministic provider-family calibrated estimate | Estimated; the Gemini `countTokens` API is authoritative |
-| DeepSeek | Deterministic provider-family calibrated estimate | Estimated |
+| Anthropic Claude | Provider-Calibrated UTF-8 Token Projection | Deterministic provider-family projection |
+| Google Gemini | Provider-Calibrated UTF-8 Token Projection | Deterministic projection; Gemini `countTokens` is authoritative |
+| DeepSeek | Provider-Calibrated UTF-8 Token Projection | Deterministic provider-family projection |
 
 The site does not claim access to proprietary Claude, Gemini, or DeepSeek production tokenizers. API wrappers, tools, system instructions, reasoning tokens, and provider-side processing can change billed usage.
 

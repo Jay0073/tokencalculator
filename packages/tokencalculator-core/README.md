@@ -1,6 +1,6 @@
 # @jay0073/tokencalculator-core
 
-Dependency-free token cost, workload, and context-window math for Node.js and browser projects.
+Dependency-free token-cost, workload-forecasting, and context-window mathematics for Node.js and browser projects from a privacy-first, browser-based token calculator.
 
 Web GUI: [https://tokencalculator.dev](https://tokencalculator.dev)
 

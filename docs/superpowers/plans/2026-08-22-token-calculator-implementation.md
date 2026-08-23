@@ -7,7 +7,7 @@ Ship the approved static, local-only calculator for OpenAI, Anthropic, Google, a
 ## Checkpoints
 
 1. **Foundation** — Configure Astro, Tailwind v4, sitemap generation, TypeScript, Vitest, global design tokens, and base metadata.
-2. **Calculation domain** — Add typed providers/models, input pricing, context calculations, OpenAI encodings, calibrated estimates, and published vision formulas with unit tests.
+2. **Calculation domain** — Add typed providers/models, input pricing, context calculations, exact OpenAI BPE encodings, deterministic Provider-Calibrated UTF-8 Token Projections, and published vision formulas with unit tests.
 3. **Local files** — Read text formats directly; lazily extract text-based DOCX and PDF content; return typed errors for unsupported or unreadable documents.
 4. **Calculator** — Build the unified mixed-input composer, zero-click live results, provider summaries, exact token inspection, model detail rows, accuracy labels, context rulers, workload planner, share/export actions, theme, responsive behavior, and worker-based local calculation.
 5. **SEO surface** — Generate the universal and four provider pages, methodology/trust pages, visible FAQs, WebApplication/FAQ JSON-LD, sitemap, robots, `llms.txt`, and social assets.

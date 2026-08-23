@@ -4,7 +4,7 @@
 
 TokenCalculator.dev answers one question: how many input tokens will a text prompt, supported document, or image use for a selected LLM, and what will those input tokens cost?
 
-The application is a free, static, browser-only tool. User content never leaves the device. Launch supports OpenAI, Anthropic, Google, and DeepSeek only.
+The application is a free, static, privacy-first browser-based tool. User content never leaves the device. Launch supports OpenAI, Anthropic, Google, and DeepSeek only.
 
 ## Launch scope
 
@@ -38,7 +38,7 @@ Excluded ideas belong in `docs/FUTURE_IDEAS.md` and must not enter the launch im
 ## Accuracy contract
 
 - OpenAI text uses the appropriate local `o200k_base` or `cl100k_base` encoding and is labeled exact.
-- Anthropic, Gemini, and DeepSeek text uses a lightweight official tokenizer only when one is practical in-browser. Otherwise it uses a documented calibrated estimate.
+- Anthropic, Gemini, and DeepSeek text uses a lightweight official tokenizer only when one is practical in-browser. Otherwise it uses the documented, deterministic Provider-Calibrated UTF-8 Token Projection.
 - Vision-capable models use their provider's published image dimension, patch, tile, detail, and cap rules.
 - Models without documented image support reject image calculation rather than inventing a result.
 - Uploaded documents are converted to plain text locally and then counted through the selected model strategy.

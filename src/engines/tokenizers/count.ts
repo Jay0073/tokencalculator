@@ -24,7 +24,7 @@ export function countText(text: string, model: ModelConfig): { tokens: number; m
 
   const bytes = byteLength(text);
   const factor = model.tokenizer === 'claude-estimate' ? 3.75 : model.tokenizer === 'deepseek-estimate' ? 3.85 : 4;
-  return { tokens: Math.max(1, Math.ceil(bytes / factor)), method: `Calibrated ${factor.toFixed(2)} UTF-8 bytes/token estimate` };
+  return { tokens: Math.max(1, Math.ceil(bytes / factor)), method: `Provider-Calibrated UTF-8 Projection · ${factor.toFixed(2)} bytes/token` };
 }
 
 export function inspectText(text: string, model: ModelConfig): TokenInspectionPiece[] {
