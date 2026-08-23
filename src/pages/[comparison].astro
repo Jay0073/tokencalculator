@@ -1,0 +1,118 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Calculator from '../components/calculator/Calculator.astro';
+import FAQ from '../components/seo/FAQ.astro';
+import Breadcrumbs from '../components/seo/Breadcrumbs.astro';
+import ProviderLinks from '../components/seo/ProviderLinks.astro';
+import { getModel } from '../data/models';
+
+interface ComparisonPage {
+  slug: string;
+  title: string;
+  description: string;
+  eyebrow: string;
+  heading: string;
+  intro: string;
+  legacyTerms: string;
+  leftId: string;
+  rightId: string;
+  decision: string;
+  faq: { question: string; answer: string }[];
+}
+
+export function getStaticPaths() {
+  const pages: ComparisonPage[] = [
+    {
+      slug: 'claude-vs-gpt4o-token-cost',
+      title: 'Claude vs GPT-4o Token Cost Calculator | TokenCalculator.dev',
+      description: 'Compare Claude and GPT token costs with current model rates, local token measurement, context limits, and transparent accuracy labels.',
+      eyebrow: 'Claude vs OpenAI cost',
+      heading: 'Claude vs GPT-4o token cost.',
+      intro: 'Answer the legacy GPT-4o comparison query, then measure the same workload against the current balanced Claude and OpenAI models.',
+      legacyTerms: 'GPT-4o is a legacy comparison term. The live calculator below uses Claude Sonnet 5 and GPT-5.6 Terra as the current balanced model classes in this catalog.',
+      leftId: 'claude-sonnet-5',
+      rightId: 'gpt-5.6-terra',
+      decision: 'Compare both input and output rates. Output-heavy agents can reverse a decision that looks inexpensive when judged only on prompt cost.',
+      faq: [
+        { question: 'Is GPT-4o pricing still used on this page?', answer: 'No. GPT-4o appears in the URL and heading because it is the legacy comparison query. Calculations use the current catalog and identify the actual selected model and verification date.' },
+        { question: 'Does Claude count the same text like OpenAI?', answer: 'No. OpenAI raw text uses local o200k_base BPE counting, while Claude is a clearly labeled calibrated estimate. The provider API usage record is authoritative.' },
+        { question: 'Which is cheaper for large prompts?', answer: 'It depends on the selected models, cache eligibility, output length, and long-context tiers. Paste the real workload and compare the per-call and monthly totals.' },
+      ],
+    },
+    {
+      slug: 'deepseek-r1-vs-openai-o1-cost-calculator',
+      title: 'DeepSeek R1 vs OpenAI o1 Cost Calculator | TokenCalculator.dev',
+      description: 'Compare DeepSeek and OpenAI reasoning-model costs using current rates, output assumptions, and workload projections.',
+      eyebrow: 'Reasoning model cost',
+      heading: 'DeepSeek R1 vs OpenAI o1 cost calculator.',
+      intro: 'Use the familiar R1-versus-o1 query to compare today’s higher-capability DeepSeek and OpenAI model classes.',
+      legacyTerms: 'R1 and o1 are legacy comparison terms. The current calculation pair is DeepSeek V4 Pro and GPT-5.6 Sol; each result shows its live model name and rate source.',
+      leftId: 'deepseek-v4-pro',
+      rightId: 'gpt-5.6-sol',
+      decision: 'Reasoning workloads are often output-heavy. Set a realistic output-token budget in the workload planner before comparing daily or monthly spend.',
+      faq: [
+        { question: 'Why does this page not quote old R1 and o1 prices?', answer: 'Historical prices can mislead architecture decisions. The page preserves the search intent but calculates with the current comparable model classes in the maintained catalog.' },
+        { question: 'Are reasoning tokens included?', answer: 'Only the output-token amount entered in the planner is priced. Hidden or provider-side reasoning usage can differ and should be checked against the API usage response.' },
+        { question: 'Is the DeepSeek token count exact?', answer: 'No. It is a deterministic calibrated estimate. OpenAI raw text uses local BPE tokenization; both providers can add request-framing or server-side usage.' },
+      ],
+    },
+    {
+      slug: 'gemini-flash-vs-gpt-4o-mini-pricing',
+      title: 'Gemini Flash vs GPT-4o Mini Pricing | TokenCalculator.dev',
+      description: 'Compare high-volume Gemini and OpenAI model pricing for prompts, outputs, cached input, and monthly request workloads.',
+      eyebrow: 'High-volume model pricing',
+      heading: 'Gemini Flash vs GPT-4o mini pricing.',
+      intro: 'Compare the current low-cost Gemini and OpenAI model classes for high-volume production workloads.',
+      legacyTerms: 'GPT-4o mini is a legacy comparison term. The live pair is Gemini 3.1 Flash-Lite and GPT-5.6 Luna, the current high-volume options in this catalog.',
+      leftId: 'gemini-3.1-flash-lite',
+      rightId: 'gpt-5.6-luna',
+      decision: 'At high request volumes, small output-rate and cache-rate differences compound quickly. Use the requests-per-day slider rather than comparing headline input prices alone.',
+      faq: [
+        { question: 'Is Gemini Flash always cheaper than GPT-4o mini?', answer: 'No universal answer applies. Model generation, output length, cache usage, and provider tiers matter. This page uses current successors instead of treating old rates as current.' },
+        { question: 'How are Gemini tokens counted?', answer: 'The browser uses a deterministic provider-family estimate. Google’s countTokens API is authoritative for a fully assembled Gemini request.' },
+        { question: 'Can I compare monthly cost?', answer: 'Yes. Paste the workload, open Workload and Scaling Planner, then set expected output tokens and requests per day to see per-call, daily, and monthly projections.' },
+      ],
+    },
+  ];
+  return pages.map((page) => ({ params: { comparison: page.slug }, props: page }));
+}
+
+const page = Astro.props as ComparisonPage;
+const left = getModel(page.leftId);
+const right = getModel(page.rightId);
+const canonical = `/${page.slug}/`;
+const breadcrumbs = [{ label: 'Token calculator', href: '/' }, { label: page.eyebrow }];
+const money = (value: number | undefined) => value === undefined ? '—' : `$${value.toLocaleString('en-US', { maximumFractionDigits: 6 })}`;
+---
+<BaseLayout title={page.title} description={page.description} {canonical} faq={page.faq} {breadcrumbs} application>
+  <Breadcrumbs items={breadcrumbs} />
+  <section class="shell max-w-4xl pt-12 sm:pt-16 pb-8 relative z-10">
+    <span class="eyebrow">{page.eyebrow}</span>
+    <h1 class="m-0 mt-4 text-[clamp(2.25rem,5vw,3.75rem)] leading-[1.02] tracking-[-.055em] max-w-4xl">{page.heading}</h1>
+    <p class="muted text-[16px] sm:text-[17px] mt-4 mb-0 max-w-3xl">{page.intro}</p>
+  </section>
+
+  <section class="shell relative z-10 mb-8">
+    <div class="panel p-5 sm:p-7">
+      <p class="text-sm text-[var(--warn)] m-0 mb-5"><strong>Current-model note:</strong> {page.legacyTerms}</p>
+      <div class="overflow-x-auto">
+        <table class="w-full min-w-[620px] text-left text-sm">
+          <thead><tr class="muted"><th class="pb-3">Current model</th><th class="pb-3">Input / 1M</th><th class="pb-3">Cached / 1M</th><th class="pb-3">Output / 1M</th><th class="pb-3">Context</th></tr></thead>
+          <tbody>
+            {[left, right].map((model) => <tr class="border-t hairline"><th class="py-4 pr-5"><span class="block">{model.name}</span><a class="text-xs text-[var(--accent)] font-normal" href={model.pricingUrl} target="_blank" rel="noreferrer">Official pricing ↗</a></th><td>{money(model.inputPerMillion)}</td><td>{money(model.cachedInputPerMillion)}</td><td>{money(model.outputPerMillion)}</td><td>{model.contextWindow.toLocaleString()}</td></tr>)}
+          </tbody>
+        </table>
+      </div>
+      <p class="muted text-xs mb-0 mt-4">Bundled rates verified {left.verifiedAt === right.verifiedAt ? left.verifiedAt : `${left.verifiedAt} / ${right.verifiedAt}`}. The browser may refresh them from Models.dev. Provider pricing and tiers remain authoritative.</p>
+    </div>
+  </section>
+
+  <Calculator />
+
+  <section class="shell mt-20 grid md:grid-cols-2 gap-8 md:gap-16 relative z-10">
+    <div><span class="eyebrow">Decision rule</span><h2 class="section-title mt-3">Model the workload, not the marketing price.</h2></div>
+    <div class="muted"><p>{page.decision}</p><p>Tokenization differs by provider, so the same text can produce different totals. Accuracy labels distinguish exact local BPE counts from calibrated estimates.</p><a href="/methodology/" class="text-[var(--accent)]">Review calculation methodology →</a></div>
+  </section>
+  <ProviderLinks />
+  <FAQ items={page.faq} />
+</BaseLayout>

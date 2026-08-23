@@ -1,5 +1,7 @@
 # TokenCalculator.dev
 
+Web GUI: [https://tokencalculator.dev](https://tokencalculator.dev)
+
 A browser-only LLM token calculator for OpenAI, Anthropic Claude, Google Gemini, and DeepSeek. It measures text, readable documents, and supported images, then reports token usage, context-window fit, and API cost estimates.
 
 ## Features
@@ -37,3 +39,7 @@ npm run build
 - Models.dev pricing refresh with a bundled offline fallback
 
 Provider pricing and tokenization behavior can change. Results identify whether they are exact, based on a provider formula, or estimated; provider API usage and invoices remain authoritative.
+
+## Companion package
+
+The public `@jay0073/tokencalculator-core` package provides dependency-free token-cost and workload math for Node.js and browser projects. Its source lives in [`packages/tokencalculator-core`](packages/tokencalculator-core).

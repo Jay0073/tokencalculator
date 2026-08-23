@@ -2,6 +2,7 @@
   "name": "tokencalculator-dev",
   "version": "0.1.0",
   "private": true,
+  "homepage": "https://tokencalculator.dev",
   "type": "module",
   "scripts": {
     "dev": "astro dev",
@@ -9,7 +10,9 @@
     "preview": "astro preview",
     "check": "astro check",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "build:core": "tsc -p packages/tokencalculator-core/tsconfig.json",
+    "pack:core": "npm pack --dry-run --workspace @jay0073/tokencalculator-core"
   },
   "dependencies": {
     "@astrojs/sitemap": "latest",
@@ -24,5 +27,6 @@
     "@astrojs/check": "latest",
     "typescript": "latest",
     "vitest": "latest"
-  }
+  },
+  "workspaces": ["packages/*"]
 }

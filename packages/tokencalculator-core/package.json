@@ -1,0 +1,19 @@
+{
+  "name": "@jay0073/tokencalculator-core",
+  "version": "0.1.0",
+  "description": "Dependency-free LLM token cost and workload calculations from TokenCalculator.dev",
+  "type": "module",
+  "homepage": "https://tokencalculator.dev",
+  "repository": { "type": "git", "url": "git+https://github.com/Jay0073/tokencalculator.git", "directory": "packages/tokencalculator-core" },
+  "bugs": "https://github.com/Jay0073/tokencalculator/issues",
+  "license": "MIT",
+  "keywords": ["llm", "tokens", "openai", "claude", "gemini", "deepseek", "cost-calculator"],
+  "files": ["dist", "README.md", "LICENSE"],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": { ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" } },
+  "scripts": { "build": "tsc -p tsconfig.json", "prepublishOnly": "npm run build" },
+  "publishConfig": { "access": "public" },
+  "engines": { "node": ">=18" },
+  "sideEffects": false
+}

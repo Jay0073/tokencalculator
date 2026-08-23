@@ -8,6 +8,9 @@ TokenCalculator.dev is a free, client-side LLM token calculator for OpenAI, Anth
 - [Claude token counter](https://tokencalculator.dev/claude-token-counter/)
 - [Gemini token counter](https://tokencalculator.dev/gemini-token-counter/)
 - [DeepSeek token counter](https://tokencalculator.dev/deepseek-token-counter/)
+- [Claude vs GPT-4o token cost](https://tokencalculator.dev/claude-vs-gpt4o-token-cost/)
+- [DeepSeek R1 vs OpenAI o1 cost calculator](https://tokencalculator.dev/deepseek-r1-vs-openai-o1-cost-calculator/)
+- [Gemini Flash vs GPT-4o mini pricing](https://tokencalculator.dev/gemini-flash-vs-gpt-4o-mini-pricing/)
 - [About and editorial responsibility](https://tokencalculator.dev/about/)
 - [Privacy and local processing](https://tokencalculator.dev/privacy-policy/)
 - [Contact and corrections](https://tokencalculator.dev/contact/)
@@ -15,3 +18,33 @@ TokenCalculator.dev is a free, client-side LLM token calculator for OpenAI, Anth
 ## Accuracy
 
 OpenAI raw text uses a local BPE tokenizer. Claude, Gemini, and DeepSeek text counts are labeled calibrated estimates. Supported image counts use provider-published formulas. Provider API usage remains authoritative.
+
+## Tokenization methods
+
+| Provider | Browser method | Accuracy label |
+| --- | --- | --- |
+| OpenAI | `o200k_base` BPE via js-tiktoken | Exact for raw text under that encoding |
+| Anthropic Claude | Deterministic UTF-8-aware calibrated estimate | Estimated |
+| Google Gemini | Deterministic provider-family calibrated estimate | Estimated; the Gemini `countTokens` API is authoritative |
+| DeepSeek | Deterministic provider-family calibrated estimate | Estimated |
+
+The site does not claim access to proprietary Claude, Gemini, or DeepSeek production tokenizers. API wrappers, tools, system instructions, reasoning tokens, and provider-side processing can change billed usage.
+
+## Bundled pricing snapshot
+
+The browser refreshes pricing from Models.dev when available and falls back to a bundled registry. The bundled snapshot was verified on 2026-08-22. Prices below are USD per one million tokens; long-context tiers and provider terms may change the final bill.
+
+| Model | Input | Cached input | Output | Context |
+| --- | ---: | ---: | ---: | ---: |
+| GPT-5.6 Sol | $5.00 | $0.50 | $30.00 | 1,050,000 |
+| GPT-5.6 Terra | $2.00 | $0.20 | $12.00 | 1,050,000 |
+| GPT-5.6 Luna | $0.20 | $0.02 | $1.20 | 1,050,000 |
+| Claude Opus 4.8 | $5.00 | $0.50 | $25.00 | 1,000,000 |
+| Claude Sonnet 5 | $2.00 | $0.20 | $10.00 | 1,000,000 |
+| Claude Haiku 4.5 | $1.00 | $0.10 | $5.00 | 200,000 |
+| Gemini 3.1 Flash-Lite | $0.25 | $0.025 | $1.50 | 1,048,576 |
+| Gemini 2.5 Pro | $1.25 | $0.125 | $10.00 | 1,048,576 |
+| DeepSeek V4 Flash | $0.14 | $0.0028 | $0.28 | 1,000,000 |
+| DeepSeek V4 Pro | $0.435 | $0.003625 | $0.87 | 1,000,000 |
+
+Always confirm a production estimate against the model's official pricing link shown in the calculator.
