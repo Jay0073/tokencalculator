@@ -58,6 +58,16 @@ const providerCopy:Record<ProviderId,{method:string;difference:string;image:stri
       </figure>
     </section>
 
+    <section class="content-band shell relative z-10" aria-labelledby="file-counter-title">
+      <div class="content-heading"><span class="eyebrow">Document token counter</span><h2 id="file-counter-title" class="section-title mt-3">Calculate tokens from a PDF, Word file, codebase excerpt, or data file</h2></div>
+      <div class="content-copy muted"><p>Upload a text-based PDF or DOCX document instead of copying its contents page by page. TokenCalculator.dev extracts readable text inside the browser, combines it with anything in the prompt editor, and immediately recalculates every provider result.</p><p>Plain text, Markdown, CSV, JSON, JavaScript, TypeScript, Python, Go, Rust, Java, C/C++, HTML, CSS, XML, YAML, TOML, SQL, and shell files are also supported up to 12 MB per file. Scanned PDFs need OCR and are intentionally rejected rather than returning a misleading zero-token result.</p><p><strong>Privacy:</strong> document contents never leave the device. No prompt or uploaded file is sent to a token-counting server.</p></div>
+    </section>
+
+    <section class="content-band shell relative z-10" aria-labelledby="image-counter-title">
+      <div class="content-heading"><span class="eyebrow">Image token calculator</span><h2 id="image-counter-title" class="section-title mt-3">Estimate image tokens before sending a vision request</h2></div>
+      <div class="content-copy muted"><p>Add a PNG, JPEG, WebP, or GIF to compare its visual-token footprint across supported OpenAI, Claude, and Gemini models. The calculator reads width and height locally and applies the selected provider’s documented tile, patch, or media-token rule.</p><p>Image tokens are added to extracted document text and pasted prompt text, so a multimodal request can be planned as one workload. If a selected model has no documented vision rule, the result says image unavailable instead of presenting a fabricated estimate.</p><p>This is an image-token and cost estimate, not OCR. Pixel data is not uploaded, retained, or used to extract words from an image.</p></div>
+    </section>
+
     <section class="shell mt-20 relative z-10" aria-labelledby="accuracy-title">
       <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-7"><div><span class="eyebrow">Accuracy contract</span><h2 id="accuracy-title" class="section-title mt-3">Exact where possible. Labeled where estimated.</h2></div><p class="mono text-xs muted m-0">Registry reviewed {reviewed}</p></div>
       <div class="table-shell overflow-x-auto"><table class="seo-table"><thead><tr><th>Provider</th><th>Text method</th><th>Image method</th><th>Result label</th></tr></thead><tbody>

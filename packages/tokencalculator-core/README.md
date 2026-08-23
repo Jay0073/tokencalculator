@@ -4,6 +4,8 @@ Dependency-free token cost, workload, and context-window math for Node.js and br
 
 Web GUI: [https://tokencalculator.dev](https://tokencalculator.dev)
 
+The web GUI also counts combined workloads from pasted text, readable PDF and DOCX documents, source/data files, and supported images. Document extraction and image-dimension processing stay in the browser.
+
 ```bash
 npm install @jay0073/tokencalculator-core
 ```

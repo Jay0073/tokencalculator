@@ -1,6 +1,6 @@
 # TokenCalculator.dev
 
-TokenCalculator.dev is a free, client-side LLM token calculator for OpenAI, Anthropic Claude, Google Gemini, and DeepSeek. It measures text, readable documents, and supported images, then reports provider token counts, context-window fit, and API cost estimates. User content stays in the browser.
+TokenCalculator.dev is a free, client-side LLM token calculator for OpenAI, Anthropic Claude, Google Gemini, and DeepSeek. Unlike text-only token counters, it accepts pasted prompts together with readable documents, source/data files, and supported images, then reports provider token counts, context-window fit, and API cost estimates. Zero prompt text, document contents, or uploaded images are sent to a calculation server.
 
 - [Universal calculator](https://tokencalculator.dev/)
 - [Methodology and accuracy labels](https://tokencalculator.dev/methodology/)
@@ -8,9 +8,11 @@ TokenCalculator.dev is a free, client-side LLM token calculator for OpenAI, Anth
 - [Claude token counter](https://tokencalculator.dev/claude-token-counter/)
 - [Gemini token counter](https://tokencalculator.dev/gemini-token-counter/)
 - [DeepSeek token counter](https://tokencalculator.dev/deepseek-token-counter/)
-- [Claude vs GPT-4o token cost](https://tokencalculator.dev/claude-vs-gpt4o-token-cost/)
-- [DeepSeek R1 vs OpenAI o1 cost calculator](https://tokencalculator.dev/deepseek-r1-vs-openai-o1-cost-calculator/)
-- [Gemini Flash vs GPT-4o mini pricing](https://tokencalculator.dev/gemini-flash-vs-gpt-4o-mini-pricing/)
+- [GPT-5.6 Sol vs Claude Opus 4.8 cost](https://tokencalculator.dev/gpt-5-6-sol-vs-claude-opus-4-8-cost/)
+- [GPT-5.6 Terra vs Claude Sonnet 5 pricing](https://tokencalculator.dev/gpt-5-6-terra-vs-claude-sonnet-5-pricing/)
+- [DeepSeek V4 Pro vs GPT-5.6 Sol cost](https://tokencalculator.dev/deepseek-v4-pro-vs-gpt-5-6-sol-cost/)
+- [DeepSeek V4 Flash vs GPT-5.6 Luna pricing](https://tokencalculator.dev/deepseek-v4-flash-vs-gpt-5-6-luna-pricing/)
+- [Gemini 3.1 Flash-Lite vs GPT-5.6 Luna cost](https://tokencalculator.dev/gemini-3-1-flash-lite-vs-gpt-5-6-luna-cost/)
 - [About and editorial responsibility](https://tokencalculator.dev/about/)
 - [Privacy and local processing](https://tokencalculator.dev/privacy-policy/)
 - [Contact and corrections](https://tokencalculator.dev/contact/)
@@ -18,6 +20,15 @@ TokenCalculator.dev is a free, client-side LLM token calculator for OpenAI, Anth
 ## Accuracy
 
 OpenAI raw text uses a local BPE tokenizer. Claude, Gemini, and DeepSeek text counts are labeled calibrated estimates. Supported image counts use provider-published formulas. Provider API usage remains authoritative.
+
+## Documents and images
+
+- Text documents: TXT, Markdown, CSV, JSON, common source-code formats, HTML, XML, YAML, TOML, SQL, and shell scripts.
+- Rich documents: readable PDF and DOCX text is extracted locally. Scanned PDFs require OCR and are not supported.
+- Images: PNG, JPEG, WebP, and GIF dimensions are read locally. OpenAI, Claude, and Gemini visual tokens use documented provider formulas; unsupported models are reported as unavailable.
+- Combined workloads: pasted text, extracted file text, and supported image tokens are added into the same model result and cost projection.
+- File limit: 12 MB per file.
+- Privacy: processing is browser-only. No prompt, file contents, or image pixels are sent to TokenCalculator.dev for calculation.
 
 ## Tokenization methods
 
@@ -44,7 +55,9 @@ The browser refreshes pricing from Models.dev when available and falls back to a
 | Claude Haiku 4.5 | $1.00 | $0.10 | $5.00 | 200,000 |
 | Gemini 3.1 Flash-Lite | $0.25 | $0.025 | $1.50 | 1,048,576 |
 | Gemini 2.5 Pro | $1.25 | $0.125 | $10.00 | 1,048,576 |
-| DeepSeek V4 Flash | $0.14 | $0.0028 | $0.28 | 1,000,000 |
-| DeepSeek V4 Pro | $0.435 | $0.003625 | $0.87 | 1,000,000 |
+| DeepSeek V4 Flash (peak rate) | $0.44 | $0.014 | $1.32 | 1,000,000 |
+| DeepSeek V4 Pro (peak rate) | $1.32 | $0.044 | $3.96 | 1,000,000 |
+
+DeepSeek publishes lower off-peak rates. The bundled fallback uses the conservative peak rate; the official pricing page defines the current time windows and discounts.
 
 Always confirm a production estimate against the model's official pricing link shown in the calculator.

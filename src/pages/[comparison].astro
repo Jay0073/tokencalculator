@@ -23,6 +23,81 @@ interface ComparisonPage {
 export function getStaticPaths() {
   const pages: ComparisonPage[] = [
     {
+      slug: 'gpt-5-6-sol-vs-claude-opus-4-8-cost',
+      title: 'GPT-5.6 Sol vs Claude Opus 4.8 Cost Calculator | TokenCalculator.dev',
+      description: 'Compare GPT-5.6 Sol and Claude Opus 4.8 token cost for text, PDF, DOCX, code, and image workloads with private browser-only processing.',
+      eyebrow: 'Frontier model comparison', heading: 'GPT-5.6 Sol vs Claude Opus 4.8 cost.',
+      intro: 'Measure a real text, document, code, or image workload against the current frontier OpenAI and Claude models.',
+      legacyTerms: 'This page uses GPT-5.6 Sol and Claude Opus 4.8 from the current maintained catalog. Rates, context limits, and verification dates are visible below.',
+      leftId: 'gpt-5.6-sol', rightId: 'claude-opus-4.8',
+      decision: 'Both are frontier models, so compare output cost, long-context behavior, token-count confidence, and vision support—not input price alone.',
+      faq: [
+        { question: 'Which costs less, GPT-5.6 Sol or Claude Opus 4.8?', answer: 'It depends on input size, output length, caching, and long-context tiers. Add the actual prompt, documents, and images, then use the workload planner for a comparable monthly estimate.' },
+        { question: 'Can this comparison count a PDF or DOCX?', answer: 'Yes. Text-based PDF and DOCX contents are extracted locally and included in both model totals. Scanned PDFs require OCR and are not supported.' },
+        { question: 'Are files uploaded to compare these models?', answer: 'No. Prompt text, document extraction, image dimensions, token counting, and cost calculations run in the browser.' },
+      ],
+    },
+    {
+      slug: 'gpt-5-6-terra-vs-claude-sonnet-5-pricing',
+      title: 'GPT-5.6 Terra vs Claude Sonnet 5 Pricing | TokenCalculator.dev',
+      description: 'Compare GPT-5.6 Terra and Claude Sonnet 5 costs, context limits, document tokens, image tokens, and monthly workloads locally.',
+      eyebrow: 'Balanced model comparison', heading: 'GPT-5.6 Terra vs Claude Sonnet 5 pricing.',
+      intro: 'Compare two current balanced production models using the same prompt, uploaded documents, supported images, and output assumptions.',
+      legacyTerms: 'The active pair is GPT-5.6 Terra and Claude Sonnet 5. The calculator identifies exact local OpenAI BPE counts separately from calibrated Claude estimates.',
+      leftId: 'gpt-5.6-terra', rightId: 'claude-sonnet-5',
+      decision: 'For production agents, test the full system prompt and representative files. Small per-call output differences compound at scale.',
+      faq: [
+        { question: 'Does identical text use the same tokens on Terra and Sonnet?', answer: 'Not necessarily. OpenAI raw text uses local o200k_base BPE counting here; Claude uses a clearly labeled calibrated estimate because its production tokenizer is not distributed for offline browser use.' },
+        { question: 'Can I include source code and JSON files?', answer: 'Yes. Add supported source, JSON, CSV, Markdown, PDF, or DOCX files and their locally extracted text is included in both results.' },
+        { question: 'Which model is better for a large document workflow?', answer: 'Cost is only one factor. Compare context fit, output budget, provider features, and quality on your workload, then confirm final usage with each provider API.' },
+      ],
+    },
+    {
+      slug: 'deepseek-v4-pro-vs-gpt-5-6-sol-cost',
+      title: 'DeepSeek V4 Pro vs GPT-5.6 Sol Cost Calculator | TokenCalculator.dev',
+      description: 'Compare DeepSeek V4 Pro and GPT-5.6 Sol cost for prompts, documents, code, and scaled reasoning workloads.',
+      eyebrow: 'Reasoning model comparison', heading: 'DeepSeek V4 Pro vs GPT-5.6 Sol cost.',
+      intro: 'Compare current high-capability reasoning models with realistic input files, output length, caching, and request volume.',
+      legacyTerms: 'DeepSeek has time-dependent pricing. The bundled DeepSeek fallback uses the conservative official peak rate; off-peak rates can be lower.',
+      leftId: 'deepseek-v4-pro', rightId: 'gpt-5.6-sol',
+      decision: 'Reasoning workloads can be output-heavy. Model expected output and verify DeepSeek’s current time window before committing to a monthly budget.',
+      faq: [
+        { question: 'Does this page use DeepSeek V4 Pro peak or off-peak pricing?', answer: 'The bundled fallback uses the conservative peak rate. DeepSeek publishes lower off-peak rates and defines the active windows on its official pricing page.' },
+        { question: 'Are reasoning tokens included?', answer: 'The planner prices the output-token amount you enter. Hidden or provider-side reasoning usage can differ, so the API usage response remains authoritative.' },
+        { question: 'Can I compare a code file without uploading it?', answer: 'Yes. Supported source files are read and counted locally in the browser; their contents are not sent to TokenCalculator.dev.' },
+      ],
+    },
+    {
+      slug: 'deepseek-v4-flash-vs-gpt-5-6-luna-pricing',
+      title: 'DeepSeek V4 Flash vs GPT-5.6 Luna Pricing | TokenCalculator.dev',
+      description: 'Compare DeepSeek V4 Flash and GPT-5.6 Luna token cost for high-volume prompts, documents, code, and monthly requests.',
+      eyebrow: 'High-volume model comparison', heading: 'DeepSeek V4 Flash vs GPT-5.6 Luna pricing.',
+      intro: 'Test current fast model classes against a representative prompt or file workload, then project daily and monthly spend.',
+      legacyTerms: 'The DeepSeek fallback below uses its official peak rate to avoid understating cost. Its published off-peak rate may be lower.',
+      leftId: 'deepseek-v4-flash', rightId: 'gpt-5.6-luna',
+      decision: 'At volume, cached input eligibility and output length can matter more than the headline input price. Test both conservative and expected traffic assumptions.',
+      faq: [
+        { question: 'Which is cheaper at high volume?', answer: 'Use the planner with realistic output tokens, cache assumptions, and requests per day. DeepSeek’s rate also varies by its published peak and off-peak schedule.' },
+        { question: 'Can this calculate tokens in CSV or JSON?', answer: 'Yes. CSV, JSON, code, text, PDF, and DOCX contents are read locally and added to the selected workload.' },
+        { question: 'Is the DeepSeek count exact?', answer: 'No. It is a deterministic calibrated estimate and is labeled accordingly. Provider-reported API usage is authoritative.' },
+      ],
+    },
+    {
+      slug: 'gemini-3-1-flash-lite-vs-gpt-5-6-luna-cost',
+      title: 'Gemini 3.1 Flash-Lite vs GPT-5.6 Luna Cost | TokenCalculator.dev',
+      description: 'Compare Gemini 3.1 Flash-Lite and GPT-5.6 Luna pricing for text, PDF, DOCX, code, images, and high-volume API workloads.',
+      eyebrow: 'Multimodal value comparison', heading: 'Gemini 3.1 Flash-Lite vs GPT-5.6 Luna cost.',
+      intro: 'Compare current high-volume models with the same text, document, and supported image workload in one browser-only calculation.',
+      legacyTerms: 'The active pair is Gemini 3.1 Flash-Lite and GPT-5.6 Luna. Image dimensions and document text are processed locally.',
+      leftId: 'gemini-3.1-flash-lite', rightId: 'gpt-5.6-luna',
+      decision: 'For multimodal pipelines, include representative image sizes as well as text. Vision-token rules differ, so text-only price tables can hide the real request cost.',
+      faq: [
+        { question: 'Can I compare image token cost on both models?', answer: 'Yes. Add PNG, JPEG, WebP, or GIF images. The browser reads dimensions and applies each provider’s documented visual-token method.' },
+        { question: 'Are Gemini token counts exact?', answer: 'Gemini results are deterministic calibrated estimates. Google’s countTokens API is authoritative for a fully assembled production request.' },
+        { question: 'Do uploaded images leave the browser?', answer: 'No. Image dimensions are read locally and pixel data is not sent to TokenCalculator.dev for calculation.' },
+      ],
+    },
+    {
       slug: 'claude-vs-gpt4o-token-cost',
       title: 'Claude vs GPT-4o Token Cost Calculator | TokenCalculator.dev',
       description: 'Compare Claude and GPT token costs with current model rates, local token measurement, context limits, and transparent accuracy labels.',
@@ -104,6 +179,15 @@ const money = (value: number | undefined) => value === undefined ? '—' : `$${v
         </table>
       </div>
       <p class="muted text-xs mb-0 mt-4">Bundled rates verified {left.verifiedAt === right.verifiedAt ? left.verifiedAt : `${left.verifiedAt} / ${right.verifiedAt}`}. The browser may refresh them from Models.dev. Provider pricing and tiers remain authoritative.</p>
+    </div>
+  </section>
+
+  <section class="shell relative z-10 mb-10">
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-px rounded-2xl overflow-hidden bg-[var(--line)] border hairline">
+      <div class="bg-[var(--panel)] p-5"><span class="eyebrow">Text count</span><p class="mt-2 mb-0 text-sm">{left.name}: {left.textAccuracy === 'exact' ? 'exact local BPE' : 'calibrated estimate'}<br />{right.name}: {right.textAccuracy === 'exact' ? 'exact local BPE' : 'calibrated estimate'}</p></div>
+      <div class="bg-[var(--panel)] p-5"><span class="eyebrow">Documents</span><p class="mt-2 mb-0 text-sm">PDF, DOCX, code, text, and data files are extracted locally and applied to both models.</p></div>
+      <div class="bg-[var(--panel)] p-5"><span class="eyebrow">Images</span><p class="mt-2 mb-0 text-sm">{left.name}: {left.vision ? 'documented formula' : 'unavailable'}<br />{right.name}: {right.vision ? 'documented formula' : 'unavailable'}</p></div>
+      <div class="bg-[var(--panel)] p-5"><span class="eyebrow">Privacy</span><p class="mt-2 mb-0 text-sm">Prompt text, document contents, and image pixels stay in the browser.</p></div>
     </div>
   </section>
 

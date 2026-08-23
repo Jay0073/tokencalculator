@@ -13,9 +13,10 @@ const faq=[
   ...additionalFaq,
   {question:'What is a token in an AI model?',answer:'A token is a small unit of content processed by a language model. It may be a whole word, part of a word, punctuation, whitespace, or—in multimodal models—a unit assigned to an image. Different providers can split the same input differently.'},
   {question:'How is LLM API input cost calculated?',answer:'Input cost is calculated as input tokens divided by one million, multiplied by the selected model’s input price per million tokens. Provider tiers, cached input, tools, and message wrappers can affect final billing.'},
-  {question:'Does this tool upload my prompt or files?',answer:'No. Text, document extraction, image dimensions, and token calculations run in your browser. Your content is not sent to TokenCalculator.dev.'},
+  {question:'Does this tool upload my prompt, document, or image?',answer:'No. Text, PDF and DOCX extraction, image-dimension reading, and token calculations run in your browser. Zero prompts, document contents, or uploaded images are sent to TokenCalculator.dev or another calculation server.'},
   {question:'Are the token counts exact?',answer:'OpenAI text counts use the matching local BPE encoding. Other providers are clearly labeled estimates unless they publish a deterministic local formula. Image counts use provider-published rules.'},
-  {question:'Can I count tokens in PDF and DOCX files?',answer:'Text-based PDF and DOCX files are read locally. Scanned or encrypted PDFs require OCR and are not supported.'},
+  {question:'How do I count tokens in a PDF or Word document?',answer:'Attach a text-based PDF or DOCX file and the browser extracts its readable text locally, then counts it with every selected provider model. Scanned or encrypted PDFs require OCR and are not supported.'},
+  {question:'Can I calculate image tokens and vision-model cost?',answer:'Yes. Add a PNG, JPEG, WebP, or GIF. For supported vision models, the calculator reads its pixel dimensions locally and applies the provider-published image token formula. It reports unavailable instead of inventing a value when a provider has no documented rule.'},
   {question:'Why can the API report a slightly different count?',answer:'Providers can add message wrappers, system instructions, tools, or model-specific processing. The accuracy badge and methodology explain what this calculator includes.'},
 ];
 const providerLabels:Partial<Record<ProviderId,string>>={openai:'OpenAI',anthropic:'Claude',google:'Gemini',deepseek:'DeepSeek'};
