@@ -11,7 +11,7 @@ const hasLocalizedEquivalent=currentPath==='/' || locales.some((item)=>currentPa
 const localeDestination=(item:Locale)=>localizedPath(hasLocalizedEquivalent?currentPath:'/',item);
 ---
 <header class="site-header relative z-20">
-  <div class="shell h-[76px] grid grid-cols-[1fr_auto] md:grid-cols-[1fr_auto_1fr] items-center gap-5">
+  <div class="shell h-[76px] grid grid-cols-[1fr_auto] md:grid-cols-[1fr_auto_1fr] items-center gap-2 sm:gap-5">
     <a href={localizedPath('/',locale)} class="flex items-center gap-3.5 no-underline w-max" aria-label="TokenCalculator.dev home">
       <BrandMark size={36}/>
       <span class="font-semibold tracking-[-.04em] text-[17px] sm:text-[18px]">TokenCalculator<span class="text-[var(--accent)]">.dev</span></span>
@@ -22,14 +22,21 @@ const localeDestination=(item:Locale)=>localizedPath(hasLocalizedEquivalent?curr
       <a class="nav-provider" href="/gemini-token-counter/"><ProviderIcon provider="google"/>Gemini</a>
       <a class="nav-provider" href="/deepseek-token-counter/"><ProviderIcon provider="deepseek"/>DeepSeek</a>
     </nav>
-    <div class="flex items-center justify-end gap-2 sm:gap-4">
-      <span class="flex items-center gap-2 text-xs muted sm:border-l hairline sm:pl-4"><span class="size-1.5 rounded-full bg-[var(--success)]"></span><span class="hidden sm:inline">{copy.localProcessing}</span><span class="sm:hidden">{copy.localShort}</span></span>
-      <label class="relative" aria-label={copy.language}>
-        <span class="sr-only">{copy.language}</span>
-        <select id="language-select" class="h-9 max-w-32 rounded-full border hairline bg-[var(--panel)] px-3 text-xs text-[var(--muted)]" aria-label={copy.language}>
-          {locales.map((item)=><option value={localeDestination(item)} selected={item===locale}>{localeNames[item]}</option>)}
-        </select>
-      </label>
+    <div class="flex items-center justify-end gap-2">
+      <span class="hidden xl:inline-flex h-9 items-center gap-2 rounded-full border hairline bg-[var(--panel)] px-3 text-xs font-medium text-[var(--muted)]" title={copy.privacyDetail}>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 5 6v5c0 4.6 2.8 8 7 10 4.2-2 7-5.4 7-10V6l-7-3Z"/><path d="m9.5 12 1.7 1.7 3.5-3.7"/></svg>
+        <span>{copy.privacyFirst}</span>
+      </span>
+      <details id="language-menu" class="language-menu relative w-[112px] sm:w-[132px]">
+        <summary class="flex h-9 cursor-pointer list-none items-center rounded-full border hairline bg-[var(--panel)] px-3 text-xs font-medium text-[var(--muted)] transition-colors hover:text-[var(--text)]" aria-label={copy.language}>
+          <svg class="shrink-0" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.2 2.5 3.3 5.5 3.3 9S14.2 18.5 12 21M12 3c-2.2 2.5-3.3 5.5-3.3 9S9.8 18.5 12 21"/></svg>
+          <span class="min-w-0 flex-1 truncate px-2">{localeNames[locale]}</span>
+          <svg class="language-chevron shrink-0 transition-transform duration-200" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 4.5 3 3 3-3"/></svg>
+        </summary>
+        <div class="language-popover absolute right-0 top-[calc(100%+.55rem)] z-50 w-[188px] overflow-hidden rounded-xl border hairline bg-[var(--panel-raised)] p-1.5 shadow-[var(--shadow)]" role="menu" aria-label={copy.language}>
+          {locales.map((item)=><a class="language-option relative flex min-h-9 items-center rounded-lg px-3 text-sm no-underline" data-active={item===locale ? 'true' : 'false'} data-locale-name={localeNames[item]} href={localeDestination(item)} role="menuitem" aria-current={item===locale ? 'page' : undefined}><span>{localeNames[item]}</span>{item===locale && <svg class="ml-auto text-[var(--accent)]" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3.5 8.5 3 3 6-7"/></svg>}</a>)}
+        </div>
+      </details>
       <button id="theme-toggle" class="size-9 grid place-items-center border hairline rounded-full bg-[var(--panel)] text-[var(--muted)] hover:text-[var(--text)]" type="button" aria-label={copy.theme}>
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9c-5 2-11-4-9-9Z"/></svg>
       </button>
@@ -53,11 +60,17 @@ const localeDestination=(item:Locale)=>localizedPath(hasLocalizedEquivalent?curr
     root.classList.toggle('light');
     localStorage.setItem('theme', root.classList.contains('light') ? 'light' : 'dark');
   });
-  document.querySelector('#language-select')?.addEventListener('change', (event) => {
-    const select = event.currentTarget;
-    if (select instanceof HTMLSelectElement) {
-      localStorage.setItem('preferred-locale', select.options[select.selectedIndex]?.text ?? '');
-      window.location.assign(select.value);
+  const languageMenu = document.querySelector('#language-menu');
+  languageMenu?.querySelectorAll('[data-locale-name]').forEach((link) => {
+    link.addEventListener('click', () => localStorage.setItem('preferred-locale', link.getAttribute('data-locale-name') ?? ''));
+  });
+  document.addEventListener('click', (event) => {
+    if (languageMenu instanceof HTMLDetailsElement && !languageMenu.contains(event.target)) languageMenu.open = false;
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && languageMenu instanceof HTMLDetailsElement) {
+      languageMenu.open = false;
+      languageMenu.querySelector('summary')?.focus();
     }
   });
   const supported = { es: ['es'], ja: ['ja'], de: ['de'], 'pt-BR': ['pt-br', 'pt'] };
