@@ -6,11 +6,15 @@ import ProviderLinks from './seo/ProviderLinks.astro';
 import Breadcrumbs from './seo/Breadcrumbs.astro';
 import KnowledgeSections from './seo/KnowledgeSections.astro';
 import type { ProviderId } from '../domain/models';
+import type { Locale } from '../i18n/config';
+import { homeCopy } from '../i18n/home';
 
-interface Props { provider?:ProviderId; title:string; description:string; eyebrow:string; heading:string; intro:string; canonical:string; methodology:string; additionalFaq?:{question:string;answer:string}[] }
-const { provider,title,description,eyebrow,heading,intro,canonical,methodology,additionalFaq=[] }=Astro.props;
+interface Props { provider?:ProviderId; title:string; description:string; eyebrow:string; heading:string; intro:string; canonical:string; methodology:string; locale?:Locale; additionalFaq?:{question:string;answer:string}[] }
+const { provider,title,description,eyebrow,heading,intro,canonical,methodology,locale='en',additionalFaq=[] }=Astro.props;
+const copy=homeCopy[locale];
 const faq=[
   ...additionalFaq,
+  ...(locale === 'en' ? [
   {question:'What is a token in an AI model?',answer:'A token is a small unit of content processed by a language model. It may be a whole word, part of a word, punctuation, whitespace, or—in multimodal models—a unit assigned to an image. Different providers can split the same input differently.'},
   {question:'How is LLM API input cost calculated?',answer:'Input cost is calculated as input tokens divided by one million, multiplied by the selected model’s input price per million tokens. Provider tiers, cached input, tools, and message wrappers can affect final billing.'},
   {question:'Does this tool upload my prompt, document, or image?',answer:'No. Text, PDF and DOCX extraction, image-dimension reading, and token calculations run in your browser. Zero prompts, document contents, or uploaded images are sent to TokenCalculator.dev or another calculation server.'},
@@ -18,23 +22,24 @@ const faq=[
   {question:'How do I count tokens in a PDF or Word document?',answer:'Attach a text-based PDF or DOCX file and the browser extracts its readable text locally, then counts it with every selected provider model. Scanned or encrypted PDFs require OCR and are not supported.'},
   {question:'Can I calculate image tokens and vision-model cost?',answer:'Yes. Add a PNG, JPEG, WebP, or GIF. For supported vision models, the calculator reads its pixel dimensions locally and applies the provider-published image token formula. It reports unavailable instead of inventing a value when a provider has no documented rule.'},
   {question:'Why can the API report a slightly different count?',answer:'Providers can add message wrappers, system instructions, tools, or model-specific processing. The accuracy badge and methodology explain what this calculator includes.'},
+  ] : []),
 ];
 const providerLabels:Partial<Record<ProviderId,string>>={openai:'OpenAI',anthropic:'Claude',google:'Gemini',deepseek:'DeepSeek'};
 const pageLabel=provider ? `${providerLabels[provider]} token counter` : 'Token calculator';
 const breadcrumbs=provider ? [{label:'Token calculator',href:'/'},{label:pageLabel}] : [];
 ---
-<BaseLayout {title} {description} {canonical} {faq} {breadcrumbs} application>
+<BaseLayout {title} {description} {canonical} {faq} {breadcrumbs} {locale} application>
   {provider && <Breadcrumbs items={breadcrumbs}/>} 
   <section class="shell max-w-4xl pt-12 sm:pt-16 pb-7 relative z-10">
     <span class="eyebrow">{eyebrow}</span>
     <h1 class="m-0 mt-4 text-[clamp(2.25rem,5vw,3.75rem)] leading-[1.02] tracking-[-.055em] max-w-3xl">{heading}</h1>
     <p class="muted text-[16px] sm:text-[17px] mt-4 mb-0 max-w-2xl">{intro}</p>
   </section>
-  <Calculator {provider}/>
+  <Calculator {provider} {locale}/>
   <section class="shell mt-24 grid md:grid-cols-2 gap-10 md:gap-20 relative z-10">
-    <div><span class="eyebrow">How it works</span><h2 class="section-title mt-3">A measurement, not a guess disguised as fact.</h2></div>
-    <div class="muted"><p>{methodology}</p><p>Every result identifies its method and accuracy level. Pricing is refreshed from Models.dev with the bundled registry available as an offline fallback.</p><a href="/methodology/" class="text-[var(--accent)]">Read the complete methodology →</a></div>
+    <div><span class="eyebrow">{copy.howItWorks}</span><h2 class="section-title mt-3">{copy.measurementHeading}</h2></div>
+    <div class="muted"><p>{methodology}</p><p>{copy.pricingNote}</p><a href="/methodology/" class="text-[var(--accent)]">{copy.methodologyLink}</a></div>
   </section>
-  <KnowledgeSections {provider}/>
-  <ProviderLinks/><FAQ items={faq}/>
+  {locale === 'en' && <KnowledgeSections {provider}/>}
+  {locale === 'en' && <ProviderLinks/>}<FAQ items={faq} {locale}/>
 </BaseLayout>

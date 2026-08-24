@@ -1,10 +1,18 @@
 ---
 import BrandMark from './BrandMark.astro';
 import ProviderIcon from './ProviderIcon.astro';
+import { localeNames, locales, localizedPath, type Locale } from '../../i18n/config';
+import { homeCopy } from '../../i18n/home';
+interface Props { locale?: Locale }
+const { locale='en' } = Astro.props;
+const copy=homeCopy[locale];
+const currentPath=Astro.url.pathname;
+const hasLocalizedEquivalent=currentPath==='/' || locales.some((item)=>currentPath===`/${item}/`);
+const localeDestination=(item:Locale)=>localizedPath(hasLocalizedEquivalent?currentPath:'/',item);
 ---
 <header class="site-header relative z-20">
   <div class="shell h-[76px] grid grid-cols-[1fr_auto] md:grid-cols-[1fr_auto_1fr] items-center gap-5">
-    <a href="/" class="flex items-center gap-3.5 no-underline w-max" aria-label="TokenCalculator.dev home">
+    <a href={localizedPath('/',locale)} class="flex items-center gap-3.5 no-underline w-max" aria-label="TokenCalculator.dev home">
       <BrandMark size={36}/>
       <span class="font-semibold tracking-[-.04em] text-[17px] sm:text-[18px]">TokenCalculator<span class="text-[var(--accent)]">.dev</span></span>
     </a>
@@ -15,13 +23,27 @@ import ProviderIcon from './ProviderIcon.astro';
       <a class="nav-provider" href="/deepseek-token-counter/"><ProviderIcon provider="deepseek"/>DeepSeek</a>
     </nav>
     <div class="flex items-center justify-end gap-2 sm:gap-4">
-      <span class="flex items-center gap-2 text-xs muted sm:border-l hairline sm:pl-4"><span class="size-1.5 rounded-full bg-[var(--success)]"></span><span class="hidden sm:inline">Local processing</span><span class="sm:hidden">Local</span></span>
-      <button id="theme-toggle" class="size-9 grid place-items-center border hairline rounded-full bg-[var(--panel)] text-[var(--muted)] hover:text-[var(--text)]" type="button" aria-label="Toggle color theme">
+      <span class="flex items-center gap-2 text-xs muted sm:border-l hairline sm:pl-4"><span class="size-1.5 rounded-full bg-[var(--success)]"></span><span class="hidden sm:inline">{copy.localProcessing}</span><span class="sm:hidden">{copy.localShort}</span></span>
+      <label class="relative" aria-label={copy.language}>
+        <span class="sr-only">{copy.language}</span>
+        <select id="language-select" class="h-9 max-w-32 rounded-full border hairline bg-[var(--panel)] px-3 text-xs text-[var(--muted)]" aria-label={copy.language}>
+          {locales.map((item)=><option value={localeDestination(item)} selected={item===locale}>{localeNames[item]}</option>)}
+        </select>
+      </label>
+      <button id="theme-toggle" class="size-9 grid place-items-center border hairline rounded-full bg-[var(--panel)] text-[var(--muted)] hover:text-[var(--text)]" type="button" aria-label={copy.theme}>
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9c-5 2-11-4-9-9Z"/></svg>
       </button>
     </div>
   </div>
 </header>
+
+<aside id="locale-suggestion" class="hidden fixed z-50 bottom-4 left-4 right-4 sm:left-auto sm:max-w-sm panel rounded-xl p-4 shadow-xl" aria-live="polite">
+  <p id="locale-suggestion-text" class="text-sm m-0"></p>
+  <div class="flex justify-end gap-2 mt-3">
+    <button id="locale-stay" class="soft-button rounded-full px-4 py-2 text-xs" type="button">Stay in English</button>
+    <a id="locale-switch" class="primary-button rounded-full px-4 py-2 text-xs no-underline" href="/">Switch language</a>
+  </div>
+</aside>
 
 <script is:inline>
   const root = document.documentElement;
@@ -30,5 +52,34 @@ import ProviderIcon from './ProviderIcon.astro';
   document.querySelector('#theme-toggle')?.addEventListener('click', () => {
     root.classList.toggle('light');
     localStorage.setItem('theme', root.classList.contains('light') ? 'light' : 'dark');
+  });
+  document.querySelector('#language-select')?.addEventListener('change', (event) => {
+    const select = event.currentTarget;
+    if (select instanceof HTMLSelectElement) {
+      localStorage.setItem('preferred-locale', select.options[select.selectedIndex]?.text ?? '');
+      window.location.assign(select.value);
+    }
+  });
+  const supported = { es: ['es'], ja: ['ja'], de: ['de'], 'pt-BR': ['pt-br', 'pt'] };
+  const currentLocale = document.documentElement.lang;
+  const dismissed = localStorage.getItem('locale-suggestion-dismissed');
+  const preferred = navigator.languages?.map((item) => item.toLowerCase()) ?? [];
+  const match = Object.entries(supported).find(([, codes]) => preferred.some((item) => codes.some((code) => item === code || item.startsWith(`${code}-`))));
+  if (!dismissed && currentLocale === 'en' && match) {
+    const [locale] = match;
+    const labels = { es: 'Español', ja: '日本語', de: 'Deutsch', 'pt-BR': 'Português (Brasil)' };
+    const panel = document.querySelector('#locale-suggestion');
+    const message = document.querySelector('#locale-suggestion-text');
+    const link = document.querySelector('#locale-switch');
+    if (panel && message && link instanceof HTMLAnchorElement) {
+      message.textContent = `Prefer ${labels[locale]}? TokenCalculator.dev is available in your browser language.`;
+      link.textContent = `Switch to ${labels[locale]}`;
+      link.href = `/${locale}/`;
+      panel.classList.remove('hidden');
+    }
+  }
+  document.querySelector('#locale-stay')?.addEventListener('click', () => {
+    localStorage.setItem('locale-suggestion-dismissed', 'true');
+    document.querySelector('#locale-suggestion')?.classList.add('hidden');
   });
 </script>

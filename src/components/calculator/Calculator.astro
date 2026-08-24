@@ -3,17 +3,26 @@ import { MODELS } from '../../data/models';
 import { PROVIDERS } from '../../data/providers';
 import ProviderIcon from '../site/ProviderIcon.astro';
 import type { ProviderId } from '../../domain/models';
-interface Props { provider?: ProviderId }
-const { provider } = Astro.props;
+import type { Locale } from '../../i18n/config';
+interface Props { provider?: ProviderId; locale?:Locale }
+const { provider, locale='en' } = Astro.props;
+const translations={
+  en:{drop:'Drop files to add them',text:'Text to count',placeholder:'Paste text, a prompt, or the contents you want to count…',add:'Add files or images',show:'Show tokens',stays:'Everything stays in this browser',below:'Results appear below',live:'Live',types:'Text, code, PDF, DOCX, PNG, JPEG, WebP, or GIF · 12 MB per file',results:'Live token results',measured:'Your input, measured across providers.',choose:'Choose a provider card to inspect every available model.',words:'words',characters:'characters',attachments:'attachments',calculating:'Calculating…',details:'model details',pricing:'Bundled pricing · refreshes on use',planner:'Workload & Scaling Planner',model:'Pricing model',output:'Expected output tokens',requests:'Requests per day',call:'per call',daily:'daily',monthly:'monthly',copy:'Copy Markdown breakdown',share:'Share calculation',remove:'Remove attachment'},
+  es:{drop:'Suelta archivos para añadirlos',text:'Texto que quieres contar',placeholder:'Pega texto, un prompt o el contenido que quieres contar…',add:'Añadir archivos o imágenes',show:'Mostrar tokens',stays:'Todo permanece en este navegador',below:'Los resultados aparecen abajo',live:'En vivo',types:'Texto, código, PDF, DOCX, PNG, JPEG, WebP o GIF · 12 MB por archivo',results:'Resultados de tokens en vivo',measured:'Tu entrada, medida entre proveedores.',choose:'Elige un proveedor para ver todos sus modelos.',words:'palabras',characters:'caracteres',attachments:'archivos',calculating:'Calculando…',details:'detalles del modelo',pricing:'Precios integrados · se actualizan al usar',planner:'Planificador de carga y escala',model:'Modelo de precios',output:'Tokens de salida esperados',requests:'Solicitudes por día',call:'por llamada',daily:'diario',monthly:'mensual',copy:'Copiar desglose Markdown',share:'Compartir cálculo',remove:'Eliminar archivo'},
+  ja:{drop:'ファイルをドロップして追加',text:'計算するテキスト',placeholder:'計算するテキストやプロンプトを貼り付け…',add:'ファイルまたは画像を追加',show:'トークンを表示',stays:'すべてブラウザ内で処理されます',below:'結果は下に表示されます',live:'ライブ',types:'テキスト、コード、PDF、DOCX、PNG、JPEG、WebP、GIF · 1ファイル12 MB',results:'リアルタイムのトークン結果',measured:'入力を各プロバイダーで測定。',choose:'プロバイダーカードを選び、利用可能なモデルを確認します。',words:'単語',characters:'文字',attachments:'添付',calculating:'計算中…',details:'モデル詳細',pricing:'内蔵料金 · 使用時に更新',planner:'ワークロードとスケーリング',model:'料金モデル',output:'予想出力トークン',requests:'1日あたりのリクエスト',call:'1回あたり',daily:'1日',monthly:'1か月',copy:'Markdown内訳をコピー',share:'計算を共有',remove:'添付を削除'},
+  de:{drop:'Dateien hier ablegen',text:'Zu zählender Text',placeholder:'Text, Prompt oder zu zählenden Inhalt einfügen…',add:'Dateien oder Bilder hinzufügen',show:'Tokens anzeigen',stays:'Alles bleibt in diesem Browser',below:'Ergebnisse erscheinen unten',live:'Live',types:'Text, Code, PDF, DOCX, PNG, JPEG, WebP oder GIF · 12 MB pro Datei',results:'Live-Token-Ergebnisse',measured:'Deine Eingabe, über Anbieter hinweg gemessen.',choose:'Wähle einen Anbieter, um alle Modelle zu prüfen.',words:'Wörter',characters:'Zeichen',attachments:'Anhänge',calculating:'Berechnung…',details:'Modelldetails',pricing:'Integrierte Preise · Aktualisierung bei Nutzung',planner:'Arbeitslast- und Skalierungsplaner',model:'Preismodell',output:'Erwartete Ausgabe-Tokens',requests:'Anfragen pro Tag',call:'pro Aufruf',daily:'täglich',monthly:'monatlich',copy:'Markdown-Aufschlüsselung kopieren',share:'Berechnung teilen',remove:'Anhang entfernen'},
+  'pt-BR':{drop:'Solte arquivos para adicionar',text:'Texto para contar',placeholder:'Cole um texto, prompt ou conteúdo que deseja contar…',add:'Adicionar arquivos ou imagens',show:'Mostrar tokens',stays:'Tudo permanece neste navegador',below:'Os resultados aparecem abaixo',live:'Ao vivo',types:'Texto, código, PDF, DOCX, PNG, JPEG, WebP ou GIF · 12 MB por arquivo',results:'Resultados de tokens ao vivo',measured:'Sua entrada, medida entre provedores.',choose:'Escolha um provedor para conferir todos os modelos.',words:'palavras',characters:'caracteres',attachments:'anexos',calculating:'Calculando…',details:'detalhes do modelo',pricing:'Preços integrados · atualizados durante o uso',planner:'Planejador de carga e escala',model:'Modelo de preços',output:'Tokens de saída esperados',requests:'Solicitações por dia',call:'por chamada',daily:'diário',monthly:'mensal',copy:'Copiar detalhamento Markdown',share:'Compartilhar cálculo',remove:'Remover anexo'}
+} as const;
+const t=translations[locale];
 const visibleModels = provider ? MODELS.filter((model) => model.provider === provider) : MODELS;
 const visibleProviders = [...new Set(visibleModels.map((model) => model.provider))];
 ---
 
 <section class="shell relative z-10" data-calculator data-models={JSON.stringify(visibleModels)} data-provider={provider ?? ''}>
   <div id="input-surface" class="max-w-4xl mx-auto panel composer-shadow rounded-xl overflow-hidden relative transition-colors">
-    <div id="drop-overlay" class="hidden absolute inset-0 z-10 border-2 border-dashed border-[var(--accent)] bg-[color-mix(in_srgb,var(--accent)_7%,var(--panel))] place-items-center pointer-events-none"><span class="font-semibold text-[var(--accent)]">Drop files to add them</span></div>
-    <label for="prompt-input" class="sr-only">Text to count</label>
-    <textarea id="prompt-input" class="w-full min-h-52 sm:min-h-64 resize-y bg-transparent px-5 pt-5 sm:px-7 sm:pt-7 outline-none text-[16px] leading-7 placeholder:text-[var(--faint)]" placeholder="Paste text, a prompt, or the contents you want to count…" spellcheck="false"></textarea>
+    <div id="drop-overlay" class="hidden absolute inset-0 z-10 border-2 border-dashed border-[var(--accent)] bg-[color-mix(in_srgb,var(--accent)_7%,var(--panel))] place-items-center pointer-events-none"><span class="font-semibold text-[var(--accent)]">{t.drop}</span></div>
+    <label for="prompt-input" class="sr-only">{t.text}</label>
+    <textarea id="prompt-input" class="w-full min-h-52 sm:min-h-64 resize-y bg-transparent px-5 pt-5 sm:px-7 sm:pt-7 outline-none text-[16px] leading-7 placeholder:text-[var(--faint)]" placeholder={t.placeholder} spellcheck="false"></textarea>
     <div id="token-inspector" class="hidden min-h-52 sm:min-h-64 px-5 py-5 sm:px-7 sm:py-7 mono text-sm leading-7 flex-wrap content-start gap-1 overflow-auto" aria-label="Exact o200k token boundaries"></div>
 
     <div id="attachment-list" class="hidden px-5 sm:px-7 pb-3 flex flex-wrap gap-2" aria-live="polite"></div>
@@ -23,25 +32,25 @@ const visibleProviders = [...new Set(visibleModels.map((model) => model.provider
       <label class="soft-button rounded-full h-10 px-4 flex items-center gap-2 text-sm cursor-pointer hover:border-[var(--line-strong)]">
         <input id="asset-input" class="sr-only" type="file" multiple accept=".txt,.md,.markdown,.json,.csv,.js,.jsx,.ts,.tsx,.py,.go,.rs,.java,.c,.cpp,.h,.hpp,.css,.html,.xml,.yaml,.yml,.toml,.sql,.sh,.pdf,.docx,image/png,image/jpeg,image/webp,image/gif" />
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m20.5 11.5-8.8 8.8a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.2a2 2 0 1 1-2.8-2.8l8.5-8.5"/></svg>
-        Add files or images
+        {t.add}
       </label>
-      <button id="token-toggle" class="soft-button rounded-full h-10 px-4 text-sm" type="button" aria-pressed="false">Show tokens</button>
-      <span class="text-xs muted basis-full sm:basis-auto order-last sm:order-none">Everything stays in this browser</span>
-      <button id="view-results" class="primary-button rounded-full h-10 px-5 text-sm font-semibold inline-flex items-center gap-2 disabled:opacity-40 disabled:cursor-default" type="button" disabled>Results appear below <span aria-hidden="true">↓</span></button>
-      <span id="live-status" class="ml-auto flex items-center gap-2 text-xs text-[var(--success)]"><span class="size-1.5 rounded-full bg-[var(--success)]"></span><span>Live</span></span>
+      <button id="token-toggle" class="soft-button rounded-full h-10 px-4 text-sm" type="button" aria-pressed="false">{t.show}</button>
+      <span class="text-xs muted basis-full sm:basis-auto order-last sm:order-none">{t.stays}</span>
+      <button id="view-results" class="primary-button rounded-full h-10 px-5 text-sm font-semibold inline-flex items-center gap-2 disabled:opacity-40 disabled:cursor-default" type="button" disabled>{t.below} <span aria-hidden="true">↓</span></button>
+      <span id="live-status" class="ml-auto flex items-center gap-2 text-xs text-[var(--success)]"><span class="size-1.5 rounded-full bg-[var(--success)]"></span><span>{t.live}</span></span>
     </div>
   </div>
 
-  <p class="text-center text-xs muted mt-4">Text, code, PDF, DOCX, PNG, JPEG, WebP, or GIF · 12 MB per file</p>
+  <p class="text-center text-xs muted mt-4">{t.types}</p>
 
   <p id="result-announcer" class="sr-only" aria-live="polite"></p>
   <section id="results-dashboard" class="hidden scroll-mt-24 mt-14 sm:mt-16" aria-labelledby="results-title">
     <div class="flex flex-col md:flex-row md:items-end justify-between gap-5 mb-7">
-      <div class="flex items-start gap-4"><span class="result-marker" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M4 16h3l2-8 4 12 2.5-7H20" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><span class="eyebrow">Live token results</span><h2 id="results-title" class="section-title mt-3">Your input, measured across providers.</h2><p class="muted text-sm mt-2 mb-0">Choose a provider card to inspect every available model.</p></div></div>
+      <div class="flex items-start gap-4"><span class="result-marker" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M4 16h3l2-8 4 12 2.5-7H20" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><span class="eyebrow">{t.results}</span><h2 id="results-title" class="section-title mt-3">{t.measured}</h2><p class="muted text-sm mt-2 mb-0">{t.choose}</p></div></div>
       <div class="flex gap-6 text-sm">
-        <div><span id="total-words" class="mono block text-lg">0</span><span class="muted text-xs">words</span></div>
-        <div><span id="total-characters" class="mono block text-lg">0</span><span class="muted text-xs">characters</span></div>
-        <div><span id="total-assets" class="mono block text-lg">0</span><span class="muted text-xs">attachments</span></div>
+        <div><span id="total-words" class="mono block text-lg">0</span><span class="muted text-xs">{t.words}</span></div>
+        <div><span id="total-characters" class="mono block text-lg">0</span><span class="muted text-xs">{t.characters}</span></div>
+        <div><span id="total-assets" class="mono block text-lg">0</span><span class="muted text-xs">{t.attachments}</span></div>
       </div>
     </div>
 
@@ -50,38 +59,38 @@ const visibleProviders = [...new Set(visibleModels.map((model) => model.provider
         <button type="button" class="provider-card panel text-left rounded-xl p-4 sm:p-5 min-h-36 hover:border-[var(--line-strong)]" data-provider-card={providerId} data-active={String(index === 0)} aria-pressed={index === 0}>
           <span class="flex items-center justify-between gap-2"><span class="flex items-center gap-2.5 text-sm font-semibold text-[var(--accent)]"><ProviderIcon provider={providerId}/><span class="text-[var(--text)]">{PROVIDERS[providerId].name}</span></span><span class="mono text-[10px] muted">{PROVIDERS[providerId].short}</span></span>
           <strong class="provider-token mono block text-3xl mt-7 tracking-[-.06em]">—</strong>
-          <span class="provider-label text-xs muted block mt-1">Calculating…</span>
+          <span class="provider-label text-xs muted block mt-1">{t.calculating}</span>
         </button>
       ))}
     </div>
 
     <div class="panel rounded-xl overflow-hidden mt-4">
       <div class="px-5 py-4 sm:px-6 border-b hairline flex flex-wrap items-center justify-between gap-3">
-        <div><span id="detail-provider" class="font-semibold">Provider</span><span class="muted text-sm ml-2">model details</span></div>
-        <span id="pricing-status" class="mono text-[10px] uppercase tracking-wider muted">Bundled pricing · refreshes on use</span>
+        <div><span id="detail-provider" class="font-semibold">Provider</span><span class="muted text-sm ml-2">{t.details}</span></div>
+        <span id="pricing-status" class="mono text-[10px] uppercase tracking-wider muted">{t.pricing}</span>
       </div>
       <div id="model-results" class="divide-y divide-[var(--line)]"></div>
     </div>
 
     <details id="workload-planner" class="panel rounded-xl mt-4 overflow-hidden">
-      <summary class="px-5 py-4 sm:px-6 cursor-pointer font-semibold flex items-center justify-between">Workload &amp; Scaling Planner <span class="text-[var(--accent)]">+</span></summary>
+      <summary class="px-5 py-4 sm:px-6 cursor-pointer font-semibold flex items-center justify-between">{t.planner} <span class="text-[var(--accent)]">+</span></summary>
       <div class="border-t hairline p-5 sm:p-6 grid lg:grid-cols-[1fr_1fr] gap-8">
         <div class="space-y-6">
-          <label class="block"><span class="text-sm block mb-2">Pricing model</span><select id="planner-model" class="w-full soft-button rounded-lg px-3 py-2.5 text-sm"></select></label>
-          <label class="block"><span class="flex justify-between text-sm mb-2"><span>Expected output tokens</span><output id="output-token-value" class="mono">500</output></span><input id="output-token-slider" class="w-full accent-[var(--accent)]" type="range" min="0" max="8000" step="100" value="500" /></label>
-          <label class="block"><span class="flex justify-between text-sm mb-2"><span>Requests per day</span><output id="request-value" class="mono">1,000</output></span><input id="request-slider" class="w-full accent-[var(--accent)]" type="range" min="0" max="10000" step="100" value="1000" /></label>
+          <label class="block"><span class="text-sm block mb-2">{t.model}</span><select id="planner-model" class="w-full soft-button rounded-lg px-3 py-2.5 text-sm"></select></label>
+          <label class="block"><span class="flex justify-between text-sm mb-2"><span>{t.output}</span><output id="output-token-value" class="mono">500</output></span><input id="output-token-slider" class="w-full accent-[var(--accent)]" type="range" min="0" max="8000" step="100" value="500" /></label>
+          <label class="block"><span class="flex justify-between text-sm mb-2"><span>{t.requests}</span><output id="request-value" class="mono">1,000</output></span><input id="request-slider" class="w-full accent-[var(--accent)]" type="range" min="0" max="10000" step="100" value="1000" /></label>
         </div>
         <div class="grid grid-cols-3 gap-px bg-[var(--line)] border hairline rounded-lg overflow-hidden">
-          <div class="bg-[var(--panel)] p-4"><span id="planner-call" class="mono block text-lg">—</span><span class="text-xs muted">per call</span></div>
-          <div class="bg-[var(--panel)] p-4"><span id="planner-daily" class="mono block text-lg">—</span><span class="text-xs muted">daily</span></div>
-          <div class="bg-[var(--panel)] p-4"><span id="planner-monthly" class="mono block text-lg">—</span><span class="text-xs muted">monthly</span></div>
+          <div class="bg-[var(--panel)] p-4"><span id="planner-call" class="mono block text-lg">—</span><span class="text-xs muted">{t.call}</span></div>
+          <div class="bg-[var(--panel)] p-4"><span id="planner-daily" class="mono block text-lg">—</span><span class="text-xs muted">{t.daily}</span></div>
+          <div class="bg-[var(--panel)] p-4"><span id="planner-monthly" class="mono block text-lg">—</span><span class="text-xs muted">{t.monthly}</span></div>
         </div>
       </div>
     </details>
 
     <div class="flex flex-wrap gap-3 mt-4 justify-end">
-      <button id="copy-breakdown" class="soft-button rounded-lg px-4 py-2.5 text-sm" type="button">Copy Markdown breakdown</button>
-      <button id="share-calculation" class="soft-button rounded-lg px-4 py-2.5 text-sm" type="button">Share calculation</button>
+      <button id="copy-breakdown" class="soft-button rounded-lg px-4 py-2.5 text-sm" type="button">{t.copy}</button>
+      <button id="share-calculation" class="soft-button rounded-lg px-4 py-2.5 text-sm" type="button">{t.share}</button>
     </div>
   </section>
 </section>
@@ -89,7 +98,7 @@ const visibleProviders = [...new Set(visibleModels.map((model) => model.provider
 <template id="attachment-template">
   <span class="attachment-chip soft-button rounded-full pl-3 pr-2 py-1.5 text-xs flex items-center gap-2 max-w-full">
     <span class="attachment-name truncate"></span>
-    <button type="button" class="remove-attachment size-5 grid place-items-center rounded-full hover:bg-[var(--line)]" aria-label="Remove attachment">×</button>
+    <button type="button" class="remove-attachment size-5 grid place-items-center rounded-full hover:bg-[var(--line)]" aria-label={t.remove}>×</button>
   </span>
 </template>
 

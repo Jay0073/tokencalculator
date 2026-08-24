@@ -1,4 +1,6 @@
 ---
 import CalculatorPage from '../components/CalculatorPage.astro';
+import { homeCopy } from '../i18n/home';
+const copy = homeCopy.en;
 ---
-<CalculatorPage title="Token Calculator for Text, Documents & Images | TokenCalculator.dev" description="Count LLM tokens and estimate API cost from pasted text, PDF, DOCX, code, data files, and images with privacy-first browser-based processing." canonical="/" eyebrow="Privacy-first · browser-based token calculator" heading="Count tokens in text, documents, and images." intro="Paste a prompt or attach PDF, DOCX, code, data files, and images. Provider results and costs update live without uploading your content." methodology="OpenAI text uses exact local o200k_base BPE tokenization. Claude, Gemini, and DeepSeek use deterministic Provider-Calibrated UTF-8 Token Projections. Supported images follow each provider’s published visual-token formulas, including patch, tile, detail, and model-cap rules." />
+<CalculatorPage {...copy} locale="en" canonical="/" additionalFaq={copy.faq} />

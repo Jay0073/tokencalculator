@@ -1,0 +1,13 @@
+---
+import CalculatorPage from '../../components/CalculatorPage.astro';
+import { homeCopy } from '../../i18n/home';
+import { locales, type Locale } from '../../i18n/config';
+
+export function getStaticPaths() {
+  return locales.filter((locale) => locale !== 'en').map((lang) => ({ params: { lang }, props: { lang } }));
+}
+
+const { lang } = Astro.props as { lang: Locale };
+const copy = homeCopy[lang];
+---
+<CalculatorPage {...copy} locale={lang} canonical={`/${lang}/`} additionalFaq={copy.faq} />
