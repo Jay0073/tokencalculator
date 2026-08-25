@@ -2,6 +2,8 @@
 import type { ProviderId } from '../../domain/models';
 import { MODELS } from '../../data/models';
 import { PROVIDERS } from '../../data/providers';
+import UseCaseReviews from './UseCaseReviews.astro';
+import { FEATURED_REVIEWS } from '../../data/reviews';
 
 interface Props { provider?:ProviderId }
 const { provider }=Astro.props;
@@ -67,6 +69,8 @@ const providerCopy:Record<ProviderId,{method:string;difference:string;image:stri
       <div class="content-heading"><span class="eyebrow">Image token calculator</span><h2 id="image-counter-title" class="section-title mt-3">Estimate image tokens before sending a vision request</h2></div>
       <div class="content-copy muted"><p>Add a PNG, JPEG, WebP, or GIF to compare its visual-token footprint across supported OpenAI, Claude, and Gemini models. The calculator reads width and height locally and applies the selected provider’s documented tile, patch, or media-token rule.</p><p>Image tokens are added to extracted document text and pasted prompt text, so a multimodal request can be planned as one workload. If a selected model has no documented vision rule, the result says image unavailable instead of presenting a fabricated estimate.</p><p>This is an image-token and cost estimate, not OCR. Pixel data is not uploaded, retained, or used to extract words from an image.</p></div>
     </section>
+
+    <UseCaseReviews reviews={FEATURED_REVIEWS}/>
 
     <section class="shell mt-20 relative z-10" aria-labelledby="accuracy-title">
       <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-7"><div><span class="eyebrow">Accuracy contract</span><h2 id="accuracy-title" class="section-title mt-3">Exact where possible. Labeled where estimated.</h2></div><p class="mono text-xs muted m-0">Registry reviewed {reviewed}</p></div>

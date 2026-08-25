@@ -1,0 +1,66 @@
+---
+import type { UserReview } from '../../data/reviews';
+
+interface Props { reviews: UserReview[] }
+const { reviews } = Astro.props;
+const reviewEmail = 'mailto:hello@tokencalculator.dev?subject=TokenCalculator.dev%20workflow%20review&body=What%20did%20you%20calculate%3F%0A%0AWhich%20input%20types%20did%20you%20use%20(text%2C%20PDF%2C%20DOCX%2C%20code%2C%20data%2C%20or%20image)%3F%0A%0AWhich%20models%20or%20providers%20did%20you%20compare%3F%0A%0AWhat%20decision%20did%20the%20result%20help%20you%20make%3F%0A%0ADid%20browser-only%20processing%20matter%20to%20your%20workflow%3F%0A%0AYour%20name%2C%20role%2C%20and%20optional%20company%3A%0A%0AMay%20we%20publish%20your%20quote%20and%20the%20details%20above%20on%20TokenCalculator.dev%3F';
+const representativeWorkflows = [
+  { label:'Document ingestion', inputs:'PDF + prompt', title:'Price a knowledge-base ingestion run', detail:'Extract a text-based PDF locally, measure its complete payload, and compare context fit and input cost across OpenAI, Claude, Gemini, and DeepSeek.' },
+  { label:'Multimodal request', inputs:'Image + text', title:'Budget a vision-model request', detail:'Combine image dimensions with prompt text, then apply documented tile, patch, or media-token rules for each supported vision model.' },
+  { label:'Code analysis', inputs:'TS + JSON + MD', title:'Measure a repository review payload', detail:'Attach code, configuration, and documentation files as one workload before selecting a model with enough context capacity.' },
+  { label:'Data pipeline', inputs:'CSV + instructions', title:'Compare batch-processing economics', detail:'Measure structured data and instructions together to compare provider input rates before committing a recurring workload.' },
+];
+---
+<section class="shell mt-24 relative z-10" aria-labelledby="reviews-title">
+  <div class="review-heading">
+    <div>
+      <span class="eyebrow">Workload field notes</span>
+      <h2 id="reviews-title" class="section-title mt-3">See what you can measure before the API call</h2>
+    </div>
+    <p class="muted review-intro">Representative planning workflows now; attributable developer reviews are added only after their wording and permission are verified.</p>
+  </div>
+
+  <div class="review-carousel" aria-label={reviews.length ? 'Developer reviews' : 'Representative TokenCalculator workflows'}>
+    <div class:list={["review-track", { "review-track-static": reviews.length > 0 }]}>
+      {reviews.length ? reviews.map((item) => (
+        <article class="review-card panel">
+          <div class="review-workload">
+            <span>{item.workload}</span>
+            <span>{item.inputTypes.join(' + ')}</span>
+          </div>
+          <blockquote>“{item.quote}”</blockquote>
+          <footer>
+            <div><strong>{item.name}</strong><span>{item.role}{item.company ? ` · ${item.company}` : ''}</span></div>
+            <div class="review-meta"><span>{item.providers.join(' + ')}</span><time datetime={item.datePublished}>{item.datePublished}</time></div>
+            {item.sourceUrl && <a href={item.sourceUrl} rel="nofollow noreferrer" target="_blank">View original source ↗</a>}
+          </footer>
+        </article>
+      )) : representativeWorkflows.map((item) => (
+        <article class="review-card workflow-card panel">
+          <div class="review-workload"><span>{item.label}</span><span>{item.inputs}</span></div>
+          <div class="workflow-example-label mono">REPRESENTATIVE WORKFLOW · NOT A CUSTOMER REVIEW</div>
+          <h3>{item.title}</h3>
+          <p>{item.detail}</p>
+          <footer><span>Supported today in the browser-based calculator</span></footer>
+        </article>
+      ))}
+      {!reviews.length && representativeWorkflows.map((item) => (
+        <article class="review-card workflow-card panel" aria-hidden="true">
+          <div class="review-workload"><span>{item.label}</span><span>{item.inputs}</span></div>
+          <div class="workflow-example-label mono">REPRESENTATIVE WORKFLOW · NOT A CUSTOMER REVIEW</div>
+          <h3>{item.title}</h3><p>{item.detail}</p>
+          <footer><span>Supported today in the browser-based calculator</span></footer>
+        </article>
+      ))}
+    </div>
+  </div>
+
+  <div class="review-invitation panel">
+    <div>
+      <span class="mono review-status">COMMUNITY WORKFLOW LOG</span>
+      <h3>{reviews.length ? 'Add your workload to the field notes' : 'Be one of the first featured developers'}</h3>
+      <p class="muted">Tell us what you measured, which providers you compared, and what decision the result helped you make. Published reviews include attribution and require explicit permission.</p>
+    </div>
+    <a class="soft-button review-button" href={reviewEmail}>Share your workflow</a>
+  </div>
+</section>

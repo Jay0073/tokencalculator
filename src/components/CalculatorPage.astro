@@ -8,6 +8,7 @@ import KnowledgeSections from './seo/KnowledgeSections.astro';
 import type { ProviderId } from '../domain/models';
 import type { Locale } from '../i18n/config';
 import { homeCopy } from '../i18n/home';
+import { FEATURED_REVIEWS } from '../data/reviews';
 
 interface Props { provider?:ProviderId; title:string; description:string; eyebrow:string; heading:string; intro:string; canonical:string; methodology:string; locale?:Locale; additionalFaq?:{question:string;answer:string}[] }
 const { provider,title,description,eyebrow,heading,intro,canonical,methodology,locale='en',additionalFaq=[] }=Astro.props;
@@ -28,7 +29,7 @@ const providerLabels:Partial<Record<ProviderId,string>>={openai:'OpenAI',anthrop
 const pageLabel=provider ? `${providerLabels[provider]} token counter` : 'Token calculator';
 const breadcrumbs=provider ? [{label:'Token calculator',href:'/'},{label:pageLabel}] : [];
 ---
-<BaseLayout {title} {description} {canonical} {faq} {breadcrumbs} {locale} application>
+<BaseLayout {title} {description} {canonical} {faq} {breadcrumbs} {locale} application reviews={locale === 'en' && !provider ? FEATURED_REVIEWS : []}>
   {provider && <Breadcrumbs items={breadcrumbs}/>} 
   <section class="shell max-w-4xl pt-12 sm:pt-16 pb-7 relative z-10">
     <span class="eyebrow">{eyebrow}</span>
@@ -36,6 +37,12 @@ const breadcrumbs=provider ? [{label:'Token calculator',href:'/'},{label:pageLab
     <p class="muted text-[16px] sm:text-[17px] mt-4 mb-0 max-w-2xl">{intro}</p>
   </section>
   <Calculator {provider} {locale}/>
+  {!provider && locale === 'en' && (
+    <aside class="shell workflow-proof" aria-label="Common TokenCalculator workflows">
+      <span class="mono">BUILT FOR REAL INPUT PAYLOADS</span>
+      <p>Document ingestion · multimodal request planning · code and data cost comparison</p>
+    </aside>
+  )}
   <section class="shell mt-24 grid md:grid-cols-2 gap-10 md:gap-20 relative z-10">
     <div><span class="eyebrow">{copy.howItWorks}</span><h2 class="section-title mt-3">{copy.measurementHeading}</h2></div>
     <div class="muted"><p>{methodology}</p><p>{copy.pricingNote}</p><a href="/methodology/" class="text-[var(--accent)]">{copy.methodologyLink}</a></div>

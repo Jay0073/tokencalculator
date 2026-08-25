@@ -3,10 +3,11 @@ import '../styles/global.css';
 import Header from '../components/site/Header.astro';
 import Footer from '../components/site/Footer.astro';
 import { defaultLocale, locales, localizedPath, type Locale } from '../i18n/config';
+import type { UserReview } from '../data/reviews';
 
 interface Breadcrumb { label:string; href?:string }
-interface Props { title: string; description: string; canonical?: string; locale?:Locale; faq?: { question: string; answer: string }[]; application?:boolean; noindex?:boolean; breadcrumbs?:Breadcrumb[]; socialImage?:string }
-const { title, description, canonical = Astro.url.pathname, locale=defaultLocale, faq = [], application=false, noindex=false, breadcrumbs=[], socialImage='/social/og.svg' } = Astro.props;
+interface Props { title: string; description: string; canonical?: string; locale?:Locale; faq?: { question: string; answer: string }[]; application?:boolean; noindex?:boolean; breadcrumbs?:Breadcrumb[]; socialImage?:string; reviews?:UserReview[] }
+const { title, description, canonical = Astro.url.pathname, locale=defaultLocale, faq = [], application=false, noindex=false, breadcrumbs=[], socialImage='/social/og.svg', reviews=[] } = Astro.props;
 const url = new URL(canonical, Astro.site ?? 'https://tokencalculator.dev');
 const socialByPath:Record<string,string>={
   '/':'/social/token-calculator.png',
@@ -21,7 +22,7 @@ const alternates = localizedHome ? locales.map((item) => ({ locale:item, href:ne
 const schema = [
   { '@context':'https://schema.org', '@type':'WebSite', '@id':'https://tokencalculator.dev/#website', url:'https://tokencalculator.dev/', name:'TokenCalculator.dev', description:'A privacy-first, browser-based token calculator for major LLM providers.', inLanguage:locale, publisher:{ '@id':'https://tokencalculator.dev/#organization' } },
   { '@context':'https://schema.org', '@type':'Organization', '@id':'https://tokencalculator.dev/#organization', name:'TokenCalculator.dev', url:'https://tokencalculator.dev/', logo:{ '@type':'ImageObject', url:'https://tokencalculator.dev/favicon.svg' } },
-  ...(application ? [{ '@context':'https://schema.org', '@type':'WebApplication', name:'TokenCalculator.dev', applicationCategory:'DeveloperApplication', operatingSystem:'All', url:url.href, description, inLanguage:locale, offers:{ '@type':'Offer', price:'0', priceCurrency:'USD' }, featureList:['Local token counting','File token estimation','Image token estimation','Context window measurement'] }] : []),
+  ...(application ? [{ '@context':'https://schema.org', '@type':'WebApplication', '@id':`${url.href}#application`, name:'TokenCalculator.dev', applicationCategory:'DeveloperApplication', operatingSystem:'All', url:url.href, description, inLanguage:locale, offers:{ '@type':'Offer', price:'0', priceCurrency:'USD' }, featureList:['Local token counting','File token estimation','Image token estimation','Context window measurement'], ...(reviews.length ? { review:reviews.map((review) => ({ '@type':'Review', reviewBody:review.quote, datePublished:review.datePublished, author:{ '@type':'Person', name:review.name }, itemReviewed:{ '@id':`${url.href}#application` }, ...(review.sourceUrl ? { url:review.sourceUrl } : {}) })) } : {}) }] : []),
   ...(breadcrumbs.length > 1 ? [{ '@context':'https://schema.org', '@type':'BreadcrumbList', itemListElement:breadcrumbs.map((item,index)=>({ '@type':'ListItem', position:index+1, name:item.label, item:item.href ? new URL(item.href, Astro.site ?? 'https://tokencalculator.dev').href : url.href })) }] : []),
   ...(faq.length ? [{ '@context':'https://schema.org', '@type':'FAQPage', mainEntity:faq.map((item) => ({ '@type':'Question', name:item.question, acceptedAnswer:{ '@type':'Answer', text:item.answer } })) }] : []),
 ];
