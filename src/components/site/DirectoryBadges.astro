@@ -1,0 +1,55 @@
+---
+import { DIRECTORY_BADGES } from '../../data/directory-badges.js';
+
+const badges = DIRECTORY_BADGES
+  .map((badge) => ({
+    name: badge.name,
+    href: badge.href ?? badge.listingUrl,
+    src: badge.src ?? badge.badgeSrc,
+    alt: badge.alt ?? badge.badgeAlt ?? badge.name,
+    width: badge.width,
+    height: badge.height,
+  }))
+  .filter((badge) => badge.name && badge.href && badge.src);
+const shouldAnimate = badges.length >= 4;
+const renderedBadges = shouldAnimate ? [...badges, ...badges] : badges;
+---
+
+{badges.length > 0 && (
+  <section class="directory-badges" aria-labelledby="directory-badges-title">
+    <div class="shell">
+      <div class="directory-badges-heading">
+        <p class="eyebrow">Directory verification</p>
+        <h2 id="directory-badges-title">Listed and verified across the AI tool ecosystem</h2>
+      </div>
+
+      <div class:list={["directory-badges-viewport", { "directory-badges-viewport-static": !shouldAnimate }]}>
+        <div class:list={["directory-badges-track", { "directory-badges-track-static": !shouldAnimate }]}>
+          {renderedBadges.map((badge, index) => {
+            const duplicate = shouldAnimate && index >= badges.length;
+            return (
+              <a
+                class="directory-badge panel"
+                href={badge.href}
+                target="_blank"
+                rel="nofollow noreferrer"
+                aria-hidden={duplicate ? 'true' : undefined}
+                tabindex={duplicate ? '-1' : undefined}
+                title={`View TokenCalculator on ${badge.name}`}
+              >
+                <img
+                  src={badge.src}
+                  alt={duplicate ? '' : badge.alt}
+                  width={badge.width}
+                  height={badge.height}
+                  loading="lazy"
+                  decoding="async"
+                />
+              </a>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  </section>
+)}

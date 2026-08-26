@@ -111,6 +111,20 @@ button,select { cursor:pointer; }
 .review-invitation p { margin:0; font-size:.9rem; }
 .review-button { flex:0 0 auto; padding:.7rem 1rem; border-radius:.65rem; font-size:.85rem; font-weight:700; text-decoration:none; }
 @keyframes review-scroll { to { transform:translateX(calc(-50% - .5rem)); } }
+.directory-badges { padding:2.5rem 0 0; border-bottom:1px solid var(--line); }
+.directory-badges-heading { display:flex; align-items:baseline; justify-content:space-between; gap:1.5rem; margin-bottom:1.25rem; }
+.directory-badges-heading p { margin:0; white-space:nowrap; }
+.directory-badges-heading h2 { margin:0; color:var(--muted); font-size:.82rem; font-weight:500; text-align:right; }
+.directory-badges-viewport { overflow:hidden; padding-bottom:2.5rem; mask-image:linear-gradient(to right,transparent,#000 2rem,#000 calc(100% - 2rem),transparent); }
+.directory-badges-track { display:flex; align-items:center; width:max-content; gap:.8rem; animation:directory-badges-scroll 32s linear infinite; }
+.directory-badges-track:hover,.directory-badges-track:focus-within { animation-play-state:paused; }
+.directory-badges-viewport-static { overflow-x:auto; mask-image:none; }
+.directory-badges-track-static { width:100%; justify-content:center; animation:none; }
+.directory-badge { display:grid; place-items:center; width:13rem; height:4.75rem; flex:0 0 auto; padding:.7rem 1rem; border-radius:.75rem; text-decoration:none; transition:border-color .15s ease,background .15s ease; }
+.directory-badge:hover { border-color:var(--line-strong); background:var(--panel-raised); }
+.directory-badge img { display:block; width:auto; max-width:100%; height:auto; max-height:3.15rem; object-fit:contain; }
+@keyframes directory-badges-scroll { to { transform:translateX(calc(-50% - .4rem)); } }
 @media (max-width:767px) { .content-band { grid-template-columns:1fr; gap:1.25rem; } .flow-desktop { display:none!important; } .flow-mobile { display:grid; gap:0; } .flow-mobile li { position:relative; display:grid; gap:.3rem; padding:1rem 1rem 1rem 3rem; border-bottom:1px solid var(--line); } .flow-mobile li:last-child { border-bottom:0; } .flow-mobile li::before { content:""; position:absolute; left:1rem; top:1.3rem; width:.65rem; height:.65rem; border:2px solid var(--accent); border-radius:50%; background:var(--panel); } .flow-mobile span { color:var(--accent); font:600 .65rem var(--font-mono); letter-spacing:.1em; text-transform:uppercase; } .flow-mobile strong { color:var(--text); font-size:.95rem; } .flow-mobile small { color:var(--muted); } .definition-grid { grid-template-columns:1fr; } }
 @media (max-width:767px) { .workflow-proof,.review-heading,.review-invitation { align-items:flex-start; flex-direction:column; } .workflow-proof p { text-align:left; } .review-carousel { overflow-x:auto; mask-image:none; scroll-snap-type:x mandatory; } .review-track { animation:none; } .review-card { min-height:20rem; } .review-button { width:100%; text-align:center; } }
-@media (prefers-reduced-motion:reduce) { *,*::before,*::after { scroll-behavior:auto!important; transition:none!important; animation:none!important; } .review-carousel { overflow-x:auto; mask-image:none; } }
+@media (max-width:767px) { .directory-badges-heading { align-items:flex-start; flex-direction:column; gap:.45rem; } .directory-badges-heading h2 { text-align:left; } .directory-badges-viewport { overflow-x:auto; mask-image:none; scroll-snap-type:x mandatory; } .directory-badges-track { animation:none; } .directory-badges-track-static { justify-content:flex-start; } .directory-badge { width:11.5rem; scroll-snap-align:start; } }
+@media (prefers-reduced-motion:reduce) { *,*::before,*::after { scroll-behavior:auto!important; transition:none!important; animation:none!important; } .review-carousel,.directory-badges-viewport { overflow-x:auto; mask-image:none; } }
