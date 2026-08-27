@@ -23,7 +23,10 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Build core workspace
+        run: npm run build:core
 
       - name: Test package
         run: npx vitest run tests/n8n-extract-input.test.ts tests/n8n-node-runtime.test.ts
