@@ -20,11 +20,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22.22.2
-          registry-url: https://registry.npmjs.org
           cache: npm
-
-      - name: Update npm for trusted publishing
-        run: npm install --global npm@latest
 
       - name: Install dependencies
         run: npm ci
@@ -39,4 +35,4 @@ jobs:
         run: npm run build --workspace @jay0073/n8n-nodes-tokencalculator
 
       - name: Publish package with provenance
-        run: npm publish --workspace @jay0073/n8n-nodes-tokencalculator --access public --provenance
+        run: npx --yes npm@11.6.2 publish --workspace @jay0073/n8n-nodes-tokencalculator --access public --provenance
