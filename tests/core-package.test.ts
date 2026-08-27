@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { calculateTokenCost, contextUsage, projectWorkload } from '../packages/tokencalculator-core/src/index';
+import {
+  calculateTokenCost,
+  compareModels,
+  contextUsage,
+  countImageTokens,
+  countTextTokens,
+  getModel,
+  projectWorkload,
+} from '../packages/tokencalculator-core/src/index';
 
 describe('companion package', () => {
   it('prices uncached, cached, and output tokens independently', () => {
@@ -23,5 +31,29 @@ describe('companion package', () => {
       { inputTokens: 10, cachedInputTokens: 11 },
       { inputPerMillion: 1, outputPerMillion: 1 },
     )).toThrow('cachedInputTokens cannot exceed inputTokens');
+  });
+
+  it('uses exact local BPE tokenization for supported OpenAI models', async () => {
+    const result = await countTextTokens('TokenCalculator measures workflow inputs locally.', 'gpt-5.6-terra');
+    expect(result.tokens).toBeGreaterThan(5);
+    expect(result.accuracy).toBe('exact');
+    expect(result.method).toContain('o200k_base');
+  });
+
+  it('uses provider image formulas and model-specific pricing', () => {
+    const result = countImageTokens(1024, 1024, 'gpt-5.6-terra', 'high');
+    expect(result.tokens).toBe(765);
+    expect(result.accuracy).toBe('provider-formula');
+    expect(getModel('gpt-5.6-terra').provider).toBe('openai');
+  });
+
+  it('returns comparable, costed measurements for multiple providers', async () => {
+    const results = await compareModels(
+      { text: 'Compare this document payload.', outputTokens: 250 },
+      ['gpt-5.6-terra', 'claude-sonnet-5'],
+    );
+    expect(results).toHaveLength(2);
+    expect(results.every((result) => result.inputTokens > 0 && result.cost.total > 0)).toBe(true);
+    expect(results.map((result) => result.provider)).toEqual(['openai', 'anthropic']);
   });
 });

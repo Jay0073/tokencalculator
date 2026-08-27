@@ -1,0 +1,56 @@
+{
+  "name": "@jay0073/n8n-nodes-tokencalculator",
+  "version": "0.1.1",
+  "description": "Privacy-first local token counting and LLM cost comparison for text, files, and images in n8n",
+  "license": "MIT",
+  "homepage": "https://tokencalculator.dev",
+  "keywords": [
+    "n8n-community-node-package",
+    "n8n",
+    "llm",
+    "token-counter",
+    "openai",
+    "claude",
+    "gemini",
+    "deepseek"
+  ],
+  "author": {
+    "name": "Jay",
+    "email": "jay0073@users.noreply.github.com",
+    "url": "https://tokencalculator.dev"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Jay0073/tokencalculator.git",
+    "directory": "packages/n8n-nodes-tokencalculator"
+  },
+  "bugs": "https://github.com/Jay0073/tokencalculator/issues",
+  "type": "module",
+  "main": "dist/nodes/TokenCalculator/TokenCalculator.node.js",
+  "types": "dist/nodes/TokenCalculator/TokenCalculator.node.d.ts",
+  "files": ["dist", "README.md", "LICENSE"],
+  "scripts": {
+    "build": "n8n-node build",
+    "dev": "n8n-node dev",
+    "lint": "n8n-node lint",
+    "lint:fix": "n8n-node lint --fix",
+    "release": "n8n-node release",
+    "prepublishOnly": "n8n-node prerelease"
+  },
+  "n8n": {
+    "n8nNodesApiVersion": 1,
+    "strict": false,
+    "credentials": [],
+    "nodes": ["dist/nodes/TokenCalculator/TokenCalculator.node.js"]
+  },
+  "dependencies": {
+    "@jay0073/tokencalculator-core": "^0.2.0",
+    "image-size": "^2.0.2",
+    "mammoth": "^1.10.0",
+    "pdfjs-dist": "^5.4.149"
+  },
+  "devDependencies": { "@n8n/node-cli": "^0.45.4", "typescript": "^5.9.3" },
+  "peerDependencies": { "n8n-workflow": "*" },
+  "engines": { "node": ">=20.19" },
+  "publishConfig": { "access": "public" }
+}

@@ -1,0 +1,42 @@
+name: Publish n8n TokenCalculator node
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    name: Build and publish with provenance
+    runs-on: ubuntu-latest
+    environment: npm
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.19.0
+          registry-url: https://registry.npmjs.org
+          cache: npm
+
+      - name: Update npm for trusted publishing
+        run: npm install --global npm@latest
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Test package
+        run: npx vitest run tests/n8n-extract-input.test.ts tests/n8n-node-runtime.test.ts
+
+      - name: Lint package
+        run: npm run lint --workspace @jay0073/n8n-nodes-tokencalculator
+
+      - name: Build package
+        run: npm run build --workspace @jay0073/n8n-nodes-tokencalculator
+
+      - name: Publish package with provenance
+        run: npm publish --workspace @jay0073/n8n-nodes-tokencalculator --access public --provenance

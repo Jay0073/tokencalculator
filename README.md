@@ -42,4 +42,8 @@ Provider pricing and tokenization behavior can change. Results identify whether 
 
 ## Companion package
 
-The public `@jay0073/tokencalculator-core` package provides dependency-free token-cost and workload math for Node.js and browser projects. Its source lives in [`packages/tokencalculator-core`](packages/tokencalculator-core).
+The public `@jay0073/tokencalculator-core` package provides the shared token measurement, cost comparison, image formula, context-window, and workload APIs for Node.js and browser projects. Its source lives in [`packages/tokencalculator-core`](packages/tokencalculator-core).
+
+## n8n community node
+
+`@jay0073/n8n-nodes-tokencalculator` brings local text, PDF, DOCX, source-file, and image measurement into self-hosted n8n workflows. It supports token counting, single-model cost estimation, and multi-model comparisons without sending workflow content to TokenCalculator servers. See [`packages/n8n-nodes-tokencalculator`](packages/n8n-nodes-tokencalculator).

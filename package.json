@@ -12,7 +12,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "build:core": "tsc -p packages/tokencalculator-core/tsconfig.json",
-    "pack:core": "npm pack --dry-run --workspace @jay0073/tokencalculator-core"
+    "pack:core": "npm pack --dry-run --workspace @jay0073/tokencalculator-core",
+    "build:n8n": "npm run build --workspace @jay0073/n8n-nodes-tokencalculator",
+    "pack:n8n": "npm pack --dry-run --workspace @jay0073/n8n-nodes-tokencalculator"
   },
   "dependencies": {
     "@astrojs/sitemap": "latest",

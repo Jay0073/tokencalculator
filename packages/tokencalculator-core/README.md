@@ -1,6 +1,6 @@
 # @jay0073/tokencalculator-core
 
-Dependency-free token-cost, workload-forecasting, and context-window mathematics for Node.js and browser projects from a privacy-first, browser-based token calculator.
+The shared TypeScript calculation engine behind a privacy-first, browser-based token calculator. It provides local token measurement, model cost comparison, image-token formulas, context-window analysis, and workload forecasting for Node.js and browser projects.
 
 Web GUI: [https://tokencalculator.dev](https://tokencalculator.dev)
 
@@ -11,15 +11,23 @@ npm install @jay0073/tokencalculator-core
 ```
 
 ```ts
-import { calculateTokenCost, projectWorkload } from '@jay0073/tokencalculator-core';
+import { compareModels, measureModel, projectWorkload } from '@jay0073/tokencalculator-core';
 
-const cost = calculateTokenCost(
-  { inputTokens: 500_000, outputTokens: 2_000, cachedInputTokens: 100_000 },
-  { inputPerMillion: 2, outputPerMillion: 12, cachedInputPerMillion: 0.2 },
+const measurement = await measureModel(
+  { text: 'A prompt or extracted document body', outputTokens: 2_000 },
+  'gpt-5.6-terra',
 );
-const workload = projectWorkload(cost.total, 1_000);
+
+const comparison = await compareModels(
+  { text: 'The same workload', outputTokens: 2_000 },
+  ['gpt-5.6-terra', 'claude-sonnet-5', 'gemini-3.1-flash-lite'],
+);
+
+const monthly = projectWorkload(measurement.cost.total, 1_000);
 ```
 
-This package accepts pricing as input instead of freezing fast-changing rates into application code. The [TokenCalculator.dev web GUI](https://tokencalculator.dev) maintains the model catalog and shows each rate's source and verification date.
+OpenAI-compatible text uses exact local `o200k_base` BPE tokenization through `js-tiktoken`. Other tokenizer families use deterministic Provider-Calibrated UTF-8 Token Projections, and images use provider-family formulas. Low-level helpers such as `calculateTokenCost`, `calculateContextUsage`, and `resolveModelRates` are also exported.
+
+The bundled catalog supplies convenient model defaults. Pricing and model limits change frequently, so production callers can override rates and should treat provider invoices as authoritative.
 
 All calculations are local. No prompt, token count, or file content is transmitted.
