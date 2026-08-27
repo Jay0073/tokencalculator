@@ -38,4 +38,6 @@ jobs:
         run: npm run build --workspace @jay0073/n8n-nodes-tokencalculator
 
       - name: Publish package with provenance
+        env:
+          RELEASE_MODE: "true"
         run: npx --yes npm@11.6.2 publish --workspace @jay0073/n8n-nodes-tokencalculator --access public --provenance
