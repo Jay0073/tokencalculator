@@ -1,0 +1,13 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumbs from '../components/seo/Breadcrumbs.astro';
+import CostLab from '../components/estimators/CostLab.astro';
+const breadcrumbs=[{label:'Home',href:'/'},{label:'Cost Lab'}];
+const faq=[{question:'Do repository files leave my browser?',answer:'No. Supported source, data, PDF, and DOCX files are read, extracted, and tokenized in the browser. Their contents are not uploaded for calculation.'},{question:'Are these production invoices?',answer:'No. These are planning models based on explicit workload assumptions and the verified model catalog. Provider usage metadata remains authoritative.'},{question:'Why are the estimators on one page?',answer:'They share one normalized model registry and calculation engine, preventing pricing and context-window facts from drifting between separate tools.'}];
+---
+<BaseLayout title="LLM Cost Estimators: RAG, Agents, Files, Vision & Models" description="Privacy-first LLM cost lab for local repository and document token analysis, monthly API workloads, RAG, prompt caching, image batches, agents, embeddings, self-hosting, and model comparison." canonical="/estimators/" {breadcrumbs} {faq} application>
+  <Breadcrumbs items={breadcrumbs}/>
+  <section class="shell cost-lab-hero pt-12"><span class="eyebrow">TokenCalculator Cost Lab</span><h1>Model the whole AI workload—not one token price.</h1><p>Analyze private repositories and documents locally, then project recurring API, RAG, cache, vision, agent, embedding, and infrastructure costs with every assumption visible.</p><div class="pipeline-strip mono"><span>LOCAL INPUT</span><i></i><span>WORKLOAD SHAPE</span><i></i><span>VERIFIED MODEL DATA</span><i></i><span>MONTHLY ECONOMICS</span></div></section>
+  <CostLab/>
+  <section class="shell content-band"><div><span class="eyebrow">Interpretation boundary</span><h2 class="section-title mt-3">Planning telemetry, not fabricated certainty.</h2></div><div class="content-copy muted"><p>Repository, document, text, and supported image calculations reuse TokenCalculator.dev's browser-local engines. Recurring workload tools apply the values entered above. Provider wrappers, tool serialization, cache writes, OCR, retries, taxes, gateway fees, storage operations, and measured hardware throughput can change production cost.</p><p>Use these results to compare scenarios, then reconcile representative non-sensitive traffic against provider usage metadata and invoices.</p><a href="/methodology/">Read the calculation methodology</a> · <a href="/docs/privacy-architecture/">Review the privacy architecture</a></div></section>
+</BaseLayout>

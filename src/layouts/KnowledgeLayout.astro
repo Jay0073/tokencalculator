@@ -1,0 +1,26 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import Breadcrumbs from '../components/seo/Breadcrumbs.astro';
+interface Props { title:string; description:string; heading:string; eyebrow:string; datePublished:string; dateModified:string; section:string; keywords?:string[]; type?:'BlogPosting'|'TechArticle'; toc?:{id:string;label:string}[] }
+const { title,description,heading,eyebrow,datePublished,dateModified,section,keywords=[],type='BlogPosting',toc=[] }=Astro.props;
+const root=type==='TechArticle'?'/docs/':'/blog/';
+const rootLabel=type==='TechArticle'?'Docs':'Blog';
+const breadcrumbs=[{label:'Home',href:'/'},{label:rootLabel,href:root},{label:heading}];
+const article={headline:heading,datePublished,dateModified,section,keywords,type};
+const formatted=new Intl.DateTimeFormat('en-US',{year:'numeric',month:'long',day:'numeric'}).format(new Date(`${dateModified}T00:00:00Z`));
+---
+<BaseLayout {title} {description} {breadcrumbs} {article} socialImage="/social/token-calculator.png">
+  <Breadcrumbs items={breadcrumbs}/>
+  <article class="knowledge-shell shell pt-12 relative z-10">
+    <header class="knowledge-header">
+      <span class="eyebrow">{eyebrow}</span>
+      <h1>{heading}</h1>
+      <p class="knowledge-deck">{description}</p>
+      <div class="knowledge-byline"><span>TokenCalculator.dev Engineering</span><span>Reviewed {formatted}</span><span>{type==='TechArticle'?'Technical reference':'Engineering guide'}</span></div>
+    </header>
+    <div class="knowledge-grid">
+      {toc.length>0 && <aside class="knowledge-toc" aria-label="On this page"><span class="eyebrow">On this page</span><ol>{toc.map(item=><li><a href={`#${item.id}`}>{item.label}</a></li>)}</ol></aside>}
+      <div class="prose-content knowledge-prose"><slot/></div>
+    </div>
+  </article>
+</BaseLayout>

@@ -9,6 +9,7 @@ const badges = DIRECTORY_BADGES
     alt: badge.alt ?? badge.badgeAlt ?? badge.name,
     width: badge.width,
     height: badge.height,
+    srcset: badge.srcset,
   }))
   .filter((badge) => badge.name && badge.href && badge.src);
 const shouldAnimate = badges.length >= 4;
@@ -32,16 +33,22 @@ const renderedBadges = shouldAnimate ? [...badges, ...badges] : badges;
                 class="directory-badge panel"
                 href={badge.href}
                 target="_blank"
-                rel="nofollow noreferrer"
+                rel="noopener noreferrer"
                 aria-hidden={duplicate ? 'true' : undefined}
                 tabindex={duplicate ? '-1' : undefined}
                 title={`View TokenCalculator on ${badge.name}`}
               >
+                <span class="directory-badge-fallback" aria-hidden="true">
+                  <small>Listed on</small>
+                  <strong>{badge.name}</strong>
+                </span>
                 <img
+                  data-directory-badge-image
                   src={badge.src}
                   alt={duplicate ? '' : badge.alt}
                   width={badge.width}
                   height={badge.height}
+                  srcset={badge.srcset}
                   loading="lazy"
                   decoding="async"
                 />
@@ -53,3 +60,44 @@ const renderedBadges = shouldAnimate ? [...badges, ...badges] : badges;
     </div>
   </section>
 )}
+
+<script>
+  const hideBrokenBadge = (image: Element) => {
+    if (image instanceof HTMLImageElement) image.hidden = true;
+  };
+  document.querySelectorAll('[data-directory-badge-image]').forEach((image) => {
+    image.addEventListener('error', () => hideBrokenBadge(image));
+    if (image instanceof HTMLImageElement && image.complete && image.naturalWidth === 0) hideBrokenBadge(image);
+  });
+</script>
+
+<style>
+  .directory-badges { padding: 3.5rem 0 2.5rem; border-top: 1px solid var(--line); overflow: hidden; }
+  .directory-badges-heading { display: flex; align-items: end; justify-content: space-between; gap: 2rem; margin-bottom: 1.5rem; }
+  .directory-badges-heading p { margin: 0 0 .35rem; }
+  .directory-badges-heading h2 { max-width: 680px; margin: 0; font-size: clamp(1.35rem, 2.5vw, 2rem); line-height: 1.05; }
+  .directory-badges-viewport { position: relative; overflow: hidden; mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent); }
+  .directory-badges-track { display: flex; align-items: stretch; width: max-content; animation: directory-marquee 42s linear infinite; }
+  .directory-badges-track:hover { animation-play-state: paused; }
+  .directory-badge { display: grid; flex: 0 0 240px; place-items: center; min-height: 86px; margin-right: .75rem; padding: .8rem 1rem; text-decoration: none; transition: border-color .2s ease, transform .2s ease, background-color .2s ease; }
+  .directory-badge:hover { border-color: var(--ink); transform: translateY(-2px); }
+  .directory-badge img, .directory-badge-fallback { grid-area: 1 / 1; }
+  .directory-badge img { position: relative; z-index: 1; display: block; width: auto; max-width: 210px; height: auto; max-height: 58px; object-fit: contain; background: var(--panel); }
+  .directory-badge img[hidden] { display: none; }
+  .directory-badge-fallback { display: flex; flex-direction: column; align-items: center; color: var(--ink); line-height: 1.1; text-align: center; }
+  .directory-badge-fallback small { margin-bottom: .25rem; color: var(--muted); font-family: var(--mono); font-size: .58rem; letter-spacing: .12em; text-transform: uppercase; }
+  .directory-badge-fallback strong { font-size: 1rem; }
+  .directory-badges-viewport-static { mask-image: none; }
+  .directory-badges-track-static { width: 100%; flex-wrap: wrap; animation: none; }
+  @keyframes directory-marquee { to { transform: translateX(-50%); } }
+  @media (max-width: 640px) {
+    .directory-badges { padding: 2.5rem 0 2rem; }
+    .directory-badges-heading { display: block; }
+    .directory-badge { flex-basis: 205px; min-height: 76px; }
+    .directory-badge img { max-width: 180px; max-height: 52px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .directory-badges-viewport { overflow-x: auto; mask-image: none; }
+    .directory-badges-track { animation: none; }
+  }
+</style>

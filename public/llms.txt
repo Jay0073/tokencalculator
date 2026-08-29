@@ -3,7 +3,15 @@
 TokenCalculator.dev is a free, privacy-first, browser-based LLM token calculator for OpenAI, Anthropic Claude, Google Gemini, and DeepSeek. Unlike text-only token counters, it accepts pasted prompts together with readable documents, source/data files, and supported images, then reports provider token counts, context-window fit, and API cost estimates. Zero prompt text, document contents, or uploaded images are sent to a calculation server.
 
 - [Universal calculator](https://tokencalculator.dev/)
+- [LLM Cost Lab: repositories, workloads, RAG, caching, vision, agents, embeddings, self-hosting, and model comparison](https://tokencalculator.dev/estimators/)
 - [Methodology and accuracy labels](https://tokencalculator.dev/methodology/)
+- [Technical documentation](https://tokencalculator.dev/docs/)
+- [Privacy architecture for confidential LLM inputs](https://tokencalculator.dev/docs/privacy-architecture/)
+- [Token engineering blog](https://tokencalculator.dev/blog/)
+- [Private LLM token counting for enterprise prompts, files, and code](https://tokencalculator.dev/blog/private-llm-token-counting-enterprise/)
+- [Calculate tokens in PDFs, DOCX, code, and images](https://tokencalculator.dev/blog/calculate-pdf-docx-code-image-tokens/)
+- [Image token calculation across OpenAI, Claude, and Gemini](https://tokencalculator.dev/blog/image-token-calculation-openai-claude-gemini/)
+- [Why a token count is not the same as an API bill](https://tokencalculator.dev/blog/token-count-vs-api-bill/)
 - [OpenAI token counter](https://tokencalculator.dev/openai-token-counter/)
 - [Claude token counter](https://tokencalculator.dev/claude-token-counter/)
 - [Gemini token counter](https://tokencalculator.dev/gemini-token-counter/)
@@ -19,6 +27,15 @@ TokenCalculator.dev is a free, privacy-first, browser-based LLM token calculator
 
 ## Accuracy
 
+## Developer API and local SDK
+
+- [Free developer API and playground](https://tokencalculator.dev/developers/api/)
+- [Developer API reference](https://tokencalculator.dev/docs/api/)
+- [OpenAPI 3.1 contract](https://tokencalculator.dev/openapi.json)
+- [Local npm core package](https://www.npmjs.com/package/@jay0073/tokencalculator-core)
+
+The public HTTP API measures text, chat messages, already-extracted file or source-code contents, and image geometry across supported models. It can return token usage, per-part breakdowns, cost, context-window utilization, calculation methods, verified pricing, batch results, and multi-model comparisons. HTTP payloads necessarily reach the TokenCalculator.dev edge Worker; use the browser calculator or `@jay0073/tokencalculator-core` for privacy-first local processing of confidential prompts, documents, and code.
+
 OpenAI raw text uses exact local BPE tokenization. Claude, Gemini, and DeepSeek use TokenCalculator.dev's deterministic Provider-Calibrated UTF-8 Token Projection: UTF-8 byte length normalized by a provider-family bytes-per-token coefficient. Supported image counts use provider-published patch, tile, detail, and cap formulas. Provider API usage remains authoritative.
 
 ## Documents and images
@@ -29,6 +46,8 @@ OpenAI raw text uses exact local BPE tokenization. Claude, Gemini, and DeepSeek 
 - Combined workloads: pasted text, extracted file text, and supported image tokens are added into the same model result and cost projection.
 - File limit: 12 MB per file.
 - Privacy: processing is browser-only. No prompt, file contents, or image pixels are sent to TokenCalculator.dev for calculation.
+- Enterprise use: confidential system prompts, internal documents, proprietary source code, logs, and datasets can be preflighted without uploading their contents to a separate token-counting service.
+- Network boundary: public pricing metadata and privacy-disclosed analytics may be requested, but neither receives submitted content, derived token counts, or cost results.
 
 ## Tokenization methods
 

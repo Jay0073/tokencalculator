@@ -1,0 +1,12 @@
+---
+import KnowledgeLayout from '../../layouts/KnowledgeLayout.astro';
+const toc=[{id:'formats',label:'Supported formats'},{id:'pdf',label:'PDF extraction'},{id:'docx',label:'DOCX extraction'},{id:'limits',label:'Limits'}];
+---
+<KnowledgeLayout title="PDF, DOCX, Code & Data File Token Calculator Docs" description="Documentation for local PDF and DOCX text extraction, source-code and data-file token counting, supported formats, privacy boundaries, and extraction limits." heading="PDF, DOCX, and data-file processing" eyebrow="Docs · Input pipeline 02" datePublished="2026-08-28" dateModified="2026-08-28" section="Documentation" type="TechArticle" keywords={['PDF token calculator','DOCX tokens','file token counter']} {toc}>
+  <p class="knowledge-lead">Files are processed in the active browser session. TokenCalculator.dev extracts readable content locally and passes only the resulting text to the selected model-counting method.</p>
+  <h2 id="formats">Supported input classes</h2><p>Direct text decoding covers TXT, Markdown, CSV, JSON, HTML, XML, YAML, TOML, SQL, shell scripts, and common source-code extensions. Rich-document extraction supports readable PDF and DOCX content. The per-file limit is 12 MB.</p>
+  <h2 id="pdf">PDF extraction</h2><p>The local parser reconstructs strings from the PDF text layer. Reading order can differ in multi-column layouts, tables, headers, and positioned diagrams. Raster-only scanned pages contain pixels rather than extractable text; OCR is not performed and the file must not receive a fabricated text count.</p>
+  <h2 id="docx">DOCX extraction</h2><p>DOCX is an Open Packaging Convention archive containing XML parts. The browser extracts readable paragraph content. Comments, revisions, embedded objects, headers, footers, and provider-specific conversion may produce a different server-side representation.</p>
+  <h2 id="limits">Accuracy and privacy boundaries</h2><ul><li>No selected file content is sent to the TokenCalculator.dev calculation server.</li><li>Extraction output—not file bytes—is tokenized.</li><li>A provider's own upload or retrieval API may add framing, OCR, chunks, and citations.</li><li>Validate production usage against response metadata.</li></ul>
+  <p><a href="/blog/calculate-pdf-docx-code-image-tokens/">Read the end-to-end file workflow</a> · <a href="/">Count a file locally</a></p>
+</KnowledgeLayout>

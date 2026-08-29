@@ -1,0 +1,16 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/seo/Breadcrumbs.astro';
+import KnowledgeCard from '../../components/knowledge/KnowledgeCard.astro';
+import { docsPages } from '../../data/knowledge';
+const breadcrumbs=[{label:'Home',href:'/'},{label:'Docs'}];
+---
+<BaseLayout title="TokenCalculator.dev Documentation | Text, Files, Images & n8n" description="Technical documentation for local text tokenization, PDF and DOCX extraction, source files, image token formulas, and the TokenCalculator n8n node." {breadcrumbs}>
+  <Breadcrumbs items={breadcrumbs}/><section class="knowledge-index shell pt-12">
+    <span class="eyebrow">Documentation</span><h1>One private pipeline.<br/>No content upload.</h1>
+    <p class="knowledge-index-deck">TokenCalculator.dev combines confidential prompts, readable documents, source and data files, and image-token formulas in the browser. These references document the calculation mechanics, privacy boundary, and points where provider-side usage can differ.</p>
+    <div class="pipeline-strip mono"><span>INPUT</span><i></i><span>LOCAL EXTRACTION</span><i></i><span>MODEL METHOD</span><i></i><span>COST + CONTEXT</span></div>
+    <div class="knowledge-card-grid">{docsPages.map((entry,index)=><KnowledgeCard {entry} {index}/>)}</div>
+    <div class="knowledge-principle"><span class="mono">Accuracy boundary</span><p>OpenAI raw text can be counted with the selected local BPE vocabulary. Proprietary provider tokenizers and API-added framing remain authoritative at the provider endpoint.</p></div>
+  </section>
+</BaseLayout>

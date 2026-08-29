@@ -1,0 +1,12 @@
+---
+import KnowledgeLayout from '../../layouts/KnowledgeLayout.astro';
+const toc=[{id:'text',label:'Text pipeline'},{id:'openai',label:'Exact BPE path'},{id:'projection',label:'Projection path'},{id:'code',label:'Code characteristics'}];
+---
+<KnowledgeLayout title="Text and Source-Code Token Counting Docs" description="Technical reference for browser-based text and source-code token counting, OpenAI BPE vocabularies, UTF-8 projections, and result accuracy labels." heading="Text and source-code token counting" eyebrow="Docs · Input pipeline 01" datePublished="2026-08-28" dateModified="2026-08-28" section="Documentation" type="TechArticle" keywords={['tokenizer','BPE','source code token counter']} {toc}>
+  <p class="knowledge-lead">Text remains in the browser. The calculator selects either a local tokenizer vocabulary or a disclosed deterministic provider-family projection, then reports the method next to the result.</p>
+  <h2 id="text">Text pipeline</h2><ol><li>Decode pasted or file text into a JavaScript Unicode string.</li><li>Encode with the selected local BPE vocabulary, or measure UTF-8 bytes for the provider projection.</li><li>Add extracted text across supported files.</li><li>Apply the selected model's price and context limit.</li></ol>
+  <h2 id="openai">Exact local BPE path</h2><p>OpenAI-family raw text uses <code>js-tiktoken</code> with the model registry's configured encoding, including <code>o200k_base</code> where applicable. “Exact” describes segmentation of that raw string under that vocabulary. It does not include chat framing, tools, hosted file processing, or server instructions.</p>
+  <h2 id="projection">Provider-calibrated UTF-8 projection</h2><p>When a provider does not distribute an equivalent offline production tokenizer, the calculator divides UTF-8 byte length by a versioned provider-family coefficient. This path is deterministic and reproducible, but it is a projection. Claude, Gemini, and DeepSeek API usage remains authoritative.</p>
+  <h2 id="code">Why code behaves differently</h2><p>Identifiers, punctuation, whitespace, escaped strings, hashes, and minified content change segmentation density. Count the real artifact rather than converting characters or words with a universal ratio. Supported source files enter the same text pipeline without remote upload.</p>
+  <p><a href="/">Open the calculator</a> · <a href="/methodology/">Read the complete methodology</a></p>
+</KnowledgeLayout>

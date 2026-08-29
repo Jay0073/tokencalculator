@@ -1,0 +1,15 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/seo/Breadcrumbs.astro';
+import KnowledgeCard from '../../components/knowledge/KnowledgeCard.astro';
+import { blogPosts } from '../../data/knowledge';
+const breadcrumbs=[{label:'Home',href:'/'},{label:'Blog'}];
+---
+<BaseLayout title="LLM Token Engineering Blog | TokenCalculator.dev" description="Primary-source technical guides for measuring text, document, source-code, and image tokens and projecting LLM API cost." {breadcrumbs}>
+  <Breadcrumbs items={breadcrumbs}/><section class="knowledge-index shell pt-12">
+    <span class="eyebrow">Token engineering notes</span><h1>Measure the workload<br/>the API will actually see.</h1>
+    <p class="knowledge-index-deck">Original, source-linked explanations of privacy-first multimodal token accounting: confidential prompts, extracted document text, source files, image geometry, context fit, and the boundary between a browser-local count and a provider invoice.</p>
+    <div class="knowledge-card-grid">{blogPosts.map((entry,index)=><KnowledgeCard {entry} {index}/>)}</div>
+    <div class="knowledge-principle"><span class="mono">Editorial protocol</span><p>Every guide identifies calculation boundaries, links to primary provider documentation, carries a visible review date, and is updated only when the underlying method or source changes.</p></div>
+  </section>
+</BaseLayout>

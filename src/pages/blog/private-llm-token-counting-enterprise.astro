@@ -1,0 +1,35 @@
+---
+import KnowledgeLayout from '../../layouts/KnowledgeLayout.astro';
+const toc=[{id:'problem',label:'The enterprise problem'},{id:'architecture',label:'How local counting works'},{id:'inputs',label:'Prompts, files, and code'},{id:'verify',label:'How to verify it'},{id:'limits',label:'What it does not promise'}];
+---
+<KnowledgeLayout title="Private LLM Token Counting for Enterprise Files & Code" description="How enterprises can calculate tokens for confidential prompts, PDF and DOCX documents, source code, data files, and images locally in the browser without uploading content to a token-counting service." heading="Private LLM token counting for enterprise prompts, files, and code" eyebrow="Privacy architecture · Engineering guide" datePublished="2026-08-28" dateModified="2026-08-28" section="Token engineering" keywords={['enterprise token calculator','confidential prompt token count','source code token counter','private document token calculator']} {toc}>
+  <p class="knowledge-lead">Token budgeting creates an awkward enterprise problem: the material that needs measuring is often the material a team is least willing to upload. System prompts can encode internal policy, source files can contain proprietary logic, and reports or datasets can carry regulated or commercially sensitive information.</p>
+  <div class="technical-callout"><span>Design property</span><code>content disclosure to counting service = 0 bytes</code></div>
+
+  <h2 id="problem">The token-counter disclosure problem</h2>
+  <p>A text-only counter solves only the simplest workload. Real AI requests are assembled from instructions, retrieved document passages, repository files, structured data, and images. Sending those inputs to a separate counter creates an additional processor and disclosure path before the material even reaches an organization's approved AI system.</p>
+  <p>TokenCalculator.dev removes that extra content transfer from the preflight step. One hundred percent of submitted prompt, document, code, data, and image content stays in the active browser session during calculation.</p>
+
+  <h2 id="architecture">How browser-local counting works</h2>
+  <p>The calculator is delivered as a web application, but the sensitive workload executes locally. Text encoding, document extraction, image-dimension inspection, model-rule selection, aggregation, context-fit calculation, and price multiplication run in browser JavaScript and a Web Worker. The server delivers application assets; it does not receive the calculation payload.</p>
+  <p>OpenAI-family raw text uses a locally loaded BPE rank vocabulary. Claude, Gemini, and DeepSeek text results use a clearly identified provider-calibrated UTF-8 projection because their production tokenizers are not presented as locally available exact encoders. This preserves privacy without misrepresenting estimation accuracy.</p>
+
+  <h2 id="inputs">What can be measured without uploading it</h2>
+  <ul>
+    <li><strong>Private prompts:</strong> system instructions, agent policies, few-shot examples, and user-message templates.</li>
+    <li><strong>Documents:</strong> readable PDF and DOCX files are parsed in the browser; scanned PDFs require OCR and are rejected rather than assigned a fabricated count.</li>
+    <li><strong>Source code:</strong> common JavaScript, TypeScript, Python, Go, Rust, Java, C/C++, HTML, CSS, SQL, shell, and configuration formats are decoded as text without summarization.</li>
+    <li><strong>Structured data:</strong> JSON, CSV, XML, YAML, TOML, logs, and other readable payloads preserve their punctuation, keys, identifiers, and whitespace for counting.</li>
+    <li><strong>Images:</strong> dimensions feed provider-specific tile, patch, resize, detail, and cap formulas; the pixels are not uploaded to a model.</li>
+  </ul>
+  <p>This supports repository-review planning, document-batch estimation, RAG chunk design, contract or report analysis, image-processing budgets, and context-window checks without reducing every workflow to pasted prose.</p>
+
+  <h2 id="verify">How an enterprise reviewer can verify the boundary</h2>
+  <ol><li>Open browser developer tools and select the Network panel.</li><li>Use a synthetic prompt and sample file—not confidential production data—for the test.</li><li>Run the calculation and inspect request payloads. Public asset, analytics, and pricing-metadata requests can occur, but no request should contain the submitted content or result.</li><li>Reload the page and confirm the active workload is gone.</li><li>Review the <a href="/docs/privacy-architecture/">privacy architecture</a>, <a href="/methodology/">calculation methodology</a>, and organizational browser controls before approving a workflow.</li></ol>
+
+  <h2 id="limits">What “privacy-first” does and does not promise</h2>
+  <p>Browser-local content processing does not make a public website air-gapped, certify regulatory compliance, or override endpoint monitoring and browser extensions. It also does not observe provider-added system tokens, tool schemas, OCR, retrieval wrappers, or final billed usage. The value is specific and substantial: confidential input does not need to be disclosed to a separate token-counting backend.</p>
+  <p>For production cost reconciliation, validate a non-sensitive representative workload against the approved model provider's token-count endpoint or response usage fields. Read <a href="/blog/token-count-vs-api-bill/">why the local token count and API bill can differ</a>.</p>
+
+  <div class="source-ledger"><h2>Evidence ledger</h2><p><strong>Reviewed:</strong> 28 August 2026 · <strong>Scope:</strong> enterprise preflight and local processing</p><ul><li><a href="/docs/privacy-architecture/">TokenCalculator.dev privacy architecture</a></li><li><a href="/docs/files/">Local PDF, DOCX, code, and data-file processing</a></li><li><a href="/docs/images/">Local image-token calculation</a></li><li><a href="/privacy-policy/">Privacy policy</a></li></ul></div>
+</KnowledgeLayout>

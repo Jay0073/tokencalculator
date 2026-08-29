@@ -1,0 +1,10 @@
+---
+import type { KnowledgeEntry } from '../../data/knowledge';
+interface Props { entry:KnowledgeEntry; index?:number }
+const {entry,index=0}=Astro.props;
+---
+<a class="knowledge-card panel" href={entry.href}>
+  <div class="knowledge-card-top"><span class="mono">{String(index+1).padStart(2,'0')}</span><span>{entry.label}</span></div>
+  <h2>{entry.title}</h2><p>{entry.description}</p>
+  <footer><span>{entry.readTime}</span><span aria-hidden="true">Read →</span></footer>
+</a>

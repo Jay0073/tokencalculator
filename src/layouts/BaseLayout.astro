@@ -6,8 +6,9 @@ import { defaultLocale, locales, localizedPath, type Locale } from '../i18n/conf
 import type { UserReview } from '../data/reviews';
 
 interface Breadcrumb { label:string; href?:string }
-interface Props { title: string; description: string; canonical?: string; locale?:Locale; faq?: { question: string; answer: string }[]; application?:boolean; noindex?:boolean; breadcrumbs?:Breadcrumb[]; socialImage?:string; reviews?:UserReview[] }
-const { title, description, canonical = Astro.url.pathname, locale=defaultLocale, faq = [], application=false, noindex=false, breadcrumbs=[], socialImage='/social/og.svg', reviews=[] } = Astro.props;
+interface ArticleMeta { headline:string; datePublished:string; dateModified:string; section:string; keywords?:string[]; type?:'BlogPosting'|'TechArticle' }
+interface Props { title: string; description: string; canonical?: string; locale?:Locale; faq?: { question: string; answer: string }[]; application?:boolean; noindex?:boolean; breadcrumbs?:Breadcrumb[]; socialImage?:string; reviews?:UserReview[]; article?:ArticleMeta }
+const { title, description, canonical = Astro.url.pathname, locale=defaultLocale, faq = [], application=false, noindex=false, breadcrumbs=[], socialImage='/social/og.svg', reviews=[], article } = Astro.props;
 const url = new URL(canonical, Astro.site ?? 'https://tokencalculator.dev');
 const socialByPath:Record<string,string>={
   '/':'/social/token-calculator.png',
@@ -25,6 +26,7 @@ const schema = [
   ...(application ? [{ '@context':'https://schema.org', '@type':'WebApplication', '@id':`${url.href}#application`, name:'TokenCalculator.dev', applicationCategory:'DeveloperApplication', operatingSystem:'All', url:url.href, description, inLanguage:locale, offers:{ '@type':'Offer', price:'0', priceCurrency:'USD' }, featureList:['Local token counting','File token estimation','Image token estimation','Context window measurement'], ...(reviews.length ? { review:reviews.map((review) => ({ '@type':'Review', reviewBody:review.quote, datePublished:review.datePublished, author:{ '@type':'Person', name:review.name }, itemReviewed:{ '@id':`${url.href}#application` }, ...(review.sourceUrl ? { url:review.sourceUrl } : {}) })) } : {}) }] : []),
   ...(breadcrumbs.length > 1 ? [{ '@context':'https://schema.org', '@type':'BreadcrumbList', itemListElement:breadcrumbs.map((item,index)=>({ '@type':'ListItem', position:index+1, name:item.label, item:item.href ? new URL(item.href, Astro.site ?? 'https://tokencalculator.dev').href : url.href })) }] : []),
   ...(faq.length ? [{ '@context':'https://schema.org', '@type':'FAQPage', mainEntity:faq.map((item) => ({ '@type':'Question', name:item.question, acceptedAnswer:{ '@type':'Answer', text:item.answer } })) }] : []),
+  ...(article ? [{ '@context':'https://schema.org', '@type':article.type ?? 'BlogPosting', '@id':`${url.href}#article`, headline:article.headline, description, datePublished:article.datePublished, dateModified:article.dateModified, articleSection:article.section, keywords:article.keywords?.join(', '), inLanguage:locale, mainEntityOfPage:{ '@type':'WebPage', '@id':url.href }, author:{ '@type':'Organization', name:'TokenCalculator.dev Engineering', url:'https://tokencalculator.dev/about/' }, publisher:{ '@id':'https://tokencalculator.dev/#organization' }, image:imageUrl.href }] : []),
 ];
 ---
 <!doctype html>
@@ -47,7 +49,8 @@ const schema = [
     <link rel="canonical" href={url} />
     {alternates.map((item) => <link rel="alternate" hreflang={item.locale} href={item.href} />)}
     {localizedHome && <link rel="alternate" hreflang="x-default" href={new URL('/', Astro.site ?? 'https://tokencalculator.dev')} />}
-    <meta property="og:type" content="website" /><meta property="og:site_name" content="TokenCalculator.dev" /><meta property="og:title" content={title} /><meta property="og:description" content={description} /><meta property="og:url" content={url} /><meta property="og:image" content={imageUrl} /><meta property="og:image:alt" content="TokenCalculator.dev token measurement interface" />
+    <meta property="og:type" content={article ? 'article' : 'website'} /><meta property="og:site_name" content="TokenCalculator.dev" /><meta property="og:title" content={title} /><meta property="og:description" content={description} /><meta property="og:url" content={url} /><meta property="og:image" content={imageUrl} /><meta property="og:image:alt" content="TokenCalculator.dev token measurement interface" />
+    {article && <meta property="article:published_time" content={article.datePublished} />}{article && <meta property="article:modified_time" content={article.dateModified} />}{article && <meta property="article:section" content={article.section} />}
     <meta name="twitter:card" content="summary_large_image" /><meta name="twitter:title" content={title} /><meta name="twitter:description" content={description} /><meta name="twitter:image" content={imageUrl} /><meta name="twitter:image:alt" content="TokenCalculator.dev token measurement interface" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="icon" href="/favicon-32x32.png" sizes="32x32" type="image/png" />

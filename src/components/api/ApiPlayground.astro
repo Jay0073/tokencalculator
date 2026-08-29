@@ -1,0 +1,51 @@
+---
+import { MODELS } from '../../data/models';
+const starter={model:'gpt-5.6-terra',input:{text:'Summarize this architecture decision record.',messages:[{role:'system',content:'You are a concise software architecture reviewer.'}],files:[{name:'cache.ts',media_type:'text/typescript',content:'export const ttl = 300;'}],images:[{width:1920,height:1080,detail:'high'}]},output_tokens:600,cached_input_tokens:0,options:{include:['usage','breakdown','cost','context','method','pricing']},metadata:{environment:'playground'}};
+---
+<section class="api-console panel" data-api-console data-models={JSON.stringify(MODELS.map(model=>({id:model.id,name:model.name})))}>
+  <div class="api-console-bar"><div><i></i><span class="mono">POST /api/v1/count</span></div><span class="mono">No API key · 60 req/min</span></div>
+  <div class="api-console-grid">
+    <div class="api-editor-pane">
+      <div class="api-pane-head"><label for="api-request">Request JSON</label><div><button type="button" data-api-format>Format</button><button type="button" data-api-reset>Reset</button></div></div>
+      <textarea id="api-request" spellcheck="false" aria-label="API request JSON">{JSON.stringify(starter,null,2)}</textarea>
+      <div class="api-run-row"><button type="button" class="primary-button" data-api-run>Send request</button><span class="mono" data-api-status>Ready. This HTTP test sends the payload to the edge API.</span></div>
+    </div>
+    <div class="api-response-pane">
+      <div class="api-pane-head"><span>Response</span><button type="button" data-copy-target="api-response">Copy JSON</button></div>
+      <pre id="api-response" aria-live="polite"><code>{JSON.stringify({object:'token_measurement',status:'Run the request to see a live response.'},null,2)}</code></pre>
+    </div>
+  </div>
+  <div class="api-snippets">
+    <div class="api-snippet-tabs" role="tablist" aria-label="Integration snippets">
+      {['cURL','JavaScript','Python','Local npm SDK'].map((label,index)=><button type="button" role="tab" aria-selected={index===0?'true':'false'} data-snippet-tab={index}>{label}</button>)}
+    </div>
+    <div class="api-snippet-code"><button type="button" data-copy-snippet>Copy code</button><pre><code data-snippet-output></code></pre></div>
+  </div>
+</section>
+
+<script>
+  const root=document.querySelector('[data-api-console]');
+  if(root instanceof HTMLElement){
+    const editor=root.querySelector('#api-request'); const response=root.querySelector('#api-response code'); const status=root.querySelector('[data-api-status]'); const snippet=root.querySelector('[data-snippet-output]');
+    const starter=editor instanceof HTMLTextAreaElement?editor.value:''; let active=0;
+    const getBody=()=>editor instanceof HTMLTextAreaElement?editor.value:'{}';
+    const snippets=()=>{
+      let compact='{}'; try{compact=JSON.stringify(JSON.parse(getBody()),null,2)}catch{}
+      const escaped=compact.replace(/'/g,"'\\''");
+      return [
+        `curl https://tokencalculator.dev/api/v1/count \\\n  -H "Content-Type: application/json" \\\n  -d '${escaped}'`,
+        `const result = await fetch('https://tokencalculator.dev/api/v1/count', {\n  method: 'POST',\n  headers: { 'Content-Type': 'application/json' },\n  body: JSON.stringify(${compact}),\n}).then(response => response.json());\n\nconsole.log(result.usage.total_tokens);`,
+        `import json\nimport requests\n\npayload = json.loads(${JSON.stringify(compact)})\nresult = requests.post(\n    'https://tokencalculator.dev/api/v1/count',\n    json=payload,\n    timeout=15,\n).json()\nprint(result['usage']['total_tokens'])`,
+        `import { measureModel } from '@jay0073/tokencalculator-core';\n\n// Runs locally: text is not sent to TokenCalculator.dev.\nconst result = await measureModel({\n  text: 'Confidential prompt or extracted file text',\n  image: { width: 1920, height: 1080, detail: 'high' },\n  outputTokens: 600,\n}, 'gpt-5.6-terra');\n\nconsole.log(result.inputTokens, result.cost.total);`,
+      ];
+    };
+    const renderSnippet=()=>{if(snippet)snippet.textContent=snippets()[active]}; renderSnippet();
+    root.querySelectorAll('[data-snippet-tab]').forEach((button,index)=>button.addEventListener('click',()=>{active=index;root.querySelectorAll('[data-snippet-tab]').forEach((item,i)=>item.setAttribute('aria-selected',String(i===index)));renderSnippet()}));
+    root.querySelector('[data-api-format]')?.addEventListener('click',()=>{if(editor instanceof HTMLTextAreaElement){try{editor.value=JSON.stringify(JSON.parse(editor.value),null,2);renderSnippet()}catch{if(status)status.textContent='Invalid JSON — fix the syntax before sending.'}}});
+    root.querySelector('[data-api-reset]')?.addEventListener('click',()=>{if(editor instanceof HTMLTextAreaElement){editor.value=starter;if(status)status.textContent='Starter request restored.';renderSnippet()}});
+    editor?.addEventListener('input',renderSnippet);
+    root.querySelector('[data-api-run]')?.addEventListener('click',async(event)=>{const button=event.currentTarget;if(!(button instanceof HTMLButtonElement))return;let body;try{body=JSON.parse(getBody())}catch{if(status)status.textContent='Invalid JSON — request not sent.';return}button.disabled=true;if(status)status.textContent='Sending to /api/v1/count…';try{const started=performance.now();const result=await fetch('/api/v1/count',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const payload=await result.json();if(response)response.textContent=JSON.stringify(payload,null,2);if(status)status.textContent=`HTTP ${result.status} · ${Math.round(performance.now()-started)} ms · ${result.headers.get('x-request-id')??'request complete'}`}catch(error){if(status)status.textContent=`Request failed: ${error instanceof Error?error.message:'network error'}`}finally{button.disabled=false}});
+    root.querySelectorAll('[data-copy-target]').forEach(button=>button.addEventListener('click',async()=>{const id=button.getAttribute('data-copy-target');const target=id?document.getElementById(id):null;await navigator.clipboard.writeText(target?.textContent??'');button.textContent='Copied'}));
+    root.querySelector('[data-copy-snippet]')?.addEventListener('click',async(event)=>{await navigator.clipboard.writeText(snippet?.textContent??'');if(event.currentTarget instanceof HTMLElement)event.currentTarget.textContent='Copied'});
+  }
+</script>

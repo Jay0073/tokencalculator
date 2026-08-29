@@ -1,0 +1,117 @@
+---
+import { MODELS } from '../../data/models';
+const publicModels=MODELS.map(({id,name,provider,description,contextWindow,maxOutput,inputPerMillion,cachedInputPerMillion,outputPerMillion,vision,verifiedAt,pricingUrl,tokenizer,textAccuracy})=>({id,name,provider,description,contextWindow,maxOutput,inputPerMillion,cachedInputPerMillion,outputPerMillion,vision,verifiedAt,pricingUrl,tokenizer,textAccuracy}));
+---
+<section class="cost-lab shell" data-models={JSON.stringify(publicModels)}>
+  <div class="lab-nav" role="tablist" aria-label="Cost Lab calculators">
+    {['Repository','Workload','RAG','Caching','Vision batch','Agents','Embeddings','Self-hosted','Compare models'].map((label,index)=><button type="button" role="tab" aria-selected={index===0?'true':'false'} data-lab-tab={index}>{label}</button>)}
+  </div>
+
+  <div class="lab-panel panel" data-lab-panel="0">
+    <header><span class="eyebrow">Local repository preflight</span><h2>Measure source code and documents before they leave your browser.</h2><p>Select repository files or a directory. Supported text, source, PDF, and DOCX files are extracted and counted locally with the selected model method.</p></header>
+    <div class="lab-form">
+      <label class="lab-file">Repository or document files<input id="repo-files" type="file" multiple data-directory-input/><span>Select a directory or multiple files · 12 MB per file</span></label>
+      <label>Model<select id="repo-model">{MODELS.map(model=><option value={model.id}>{model.name}</option>)}</select></label>
+      <label>Expected output per run<input id="repo-output" type="number" min="0" value="2000"/><span>tokens</span></label>
+      <label>Runs per month<input id="repo-runs" type="number" min="1" value="1"/></label>
+    </div>
+    <button class="lab-action primary-button" id="repo-calculate" type="button">Analyze locally</button>
+    <p class="lab-status mono" id="repo-status">No files read yet. File contents never enter a network request.</p>
+    <div class="lab-results" id="repo-results" aria-live="polite"></div>
+  </div>
+
+  <div class="lab-panel panel" data-lab-panel="1" hidden>
+    <header><span class="eyebrow">Recurring API workload</span><h2>Convert one request shape into monthly and annual spend.</h2><p>Includes cached input, retry amplification, and separate input/output rates.</p></header>
+    <div class="lab-form"><label>Model<select id="work-model">{MODELS.map(model=><option value={model.id}>{model.name}</option>)}</select></label><label>Input tokens/request<input id="work-input" type="number" min="0" value="12000"/></label><label>Output tokens/request<input id="work-output" type="number" min="0" value="1200"/></label><label>Requests/month<input id="work-requests" type="number" min="0" value="100000"/></label><label>Cacheable input share<input id="work-cache-share" type="number" min="0" max="100" value="40"/><span>%</span></label><label>Cache hit rate<input id="work-cache-hit" type="number" min="0" max="100" value="75"/><span>%</span></label><label>Retry rate<input id="work-retries" type="number" min="0" value="3"/><span>%</span></label></div>
+    <button class="lab-action primary-button" data-calc="work" type="button">Calculate workload</button><div class="lab-results" id="work-results" aria-live="polite"></div>
+  </div>
+
+  <div class="lab-panel panel" data-lab-panel="2" hidden>
+    <header><span class="eyebrow">RAG lifecycle</span><h2>Separate ingestion cost from recurring retrieval and generation.</h2><p>Models document indexing, embedding, retrieved context, generation, and vector infrastructure without hiding one-time costs inside a monthly total.</p></header>
+    <div class="lab-form"><label>Generation model<select id="rag-model">{MODELS.map(model=><option value={model.id}>{model.name}</option>)}</select></label><label>Documents<input id="rag-docs" type="number" min="0" value="10000"/></label><label>Extracted tokens/document<input id="rag-doc-tokens" type="number" min="0" value="6000"/></label><label>Full re-indexes/month<input id="rag-reindex" type="number" min="0" step=".1" value=".25"/></label><label>Embedding $/1M tokens<input id="rag-embed-price" type="number" min="0" step=".001" value=".02"/></label><label>Queries/month<input id="rag-queries" type="number" min="0" value="100000"/></label><label>Retrieved tokens/query<input id="rag-context" type="number" min="0" value="6000"/></label><label>Output tokens/query<input id="rag-output" type="number" min="0" value="500"/></label><label>Vector DB/month<input id="rag-vector" type="number" min="0" step="1" value="70"/><span>USD</span></label></div>
+    <button class="lab-action primary-button" data-calc="rag" type="button">Calculate RAG lifecycle</button><div class="lab-results" id="rag-results" aria-live="polite"></div>
+  </div>
+
+  <div class="lab-panel panel" data-lab-panel="3" hidden>
+    <header><span class="eyebrow">Prompt cache economics</span><h2>Find the monthly value of a reusable prefix.</h2><p>Compares uncached list input with cache-read pricing. Cache-write fees and minimum lifetime rules vary by provider and remain outside this simplified comparison.</p></header>
+    <div class="lab-form"><label>Model<select id="cache-model">{MODELS.map(model=><option value={model.id}>{model.name}</option>)}</select></label><label>Total input/request<input id="cache-input" type="number" min="0" value="20000"/></label><label>Reusable prefix<input id="cache-prefix" type="number" min="0" value="12000"/></label><label>Requests/month<input id="cache-requests" type="number" min="0" value="50000"/></label><label>Cache hit rate<input id="cache-hit" type="number" min="0" max="100" value="80"/><span>%</span></label></div>
+    <button class="lab-action primary-button" data-calc="cache" type="button">Calculate cache savings</button><div class="lab-results" id="cache-results" aria-live="polite"></div>
+  </div>
+
+  <div class="lab-panel panel" data-lab-panel="4" hidden>
+    <header><span class="eyebrow">Vision workload</span><h2>Project image tokens from geometry, detail, and batch volume.</h2><p>Uses the same provider-specific tile and patch engine as the main calculator.</p></header>
+    <div class="lab-form"><label>Vision model<select id="vision-model">{MODELS.filter(model=>model.vision).map(model=><option value={model.id}>{model.name}</option>)}</select></label><label>Width<input id="vision-width" type="number" min="1" value="1920"/><span>px</span></label><label>Height<input id="vision-height" type="number" min="1" value="1080"/><span>px</span></label><label>Detail<select id="vision-detail"><option value="high">High / automatic formula</option><option value="low">Low</option></select></label><label>Images/month<input id="vision-images" type="number" min="0" value="10000"/></label><label>Text tokens/request<input id="vision-text" type="number" min="0" value="300"/></label><label>Output tokens/request<input id="vision-output" type="number" min="0" value="300"/></label></div>
+    <button class="lab-action primary-button" data-calc="vision" type="button">Calculate vision batch</button><div class="lab-results" id="vision-results" aria-live="polite"></div>
+  </div>
+
+  <div class="lab-panel panel" data-lab-panel="5" hidden>
+    <header><span class="eyebrow">Agent loop simulator</span><h2>Expose the multiplication hidden inside agent iterations.</h2><p>Each iteration can resend history, tool schemas, and tool results. This planner applies an explicit history-growth assumption rather than presenting a false exact bill.</p></header>
+    <div class="lab-form"><label>Model<select id="agent-model">{MODELS.map(model=><option value={model.id}>{model.name}</option>)}</select></label><label>Base prompt tokens<input id="agent-base" type="number" min="0" value="4000"/></label><label>Tool schemas<input id="agent-tools" type="number" min="0" value="1800"/></label><label>Tool result/iteration<input id="agent-results-token" type="number" min="0" value="2500"/></label><label>Output/iteration<input id="agent-output" type="number" min="0" value="600"/></label><label>Iterations/run<input id="agent-iterations" type="number" min="1" value="5"/></label><label>Runs/month<input id="agent-runs" type="number" min="0" value="10000"/></label><label>History retained<input id="agent-history" type="number" min="0" max="100" value="100"/><span>%</span></label></div>
+    <button class="lab-action primary-button" data-calc="agent" type="button">Simulate agent cost</button><div class="lab-results" id="agent-results" aria-live="polite"></div>
+  </div>
+
+  <div class="lab-panel panel" data-lab-panel="6" hidden>
+    <header><span class="eyebrow">Embedding corpus</span><h2>Estimate chunk volume, overlap amplification, and re-index cost.</h2><p>Enter the embedding price from the provider you plan to use; the calculator does not silently bind this result to a generation model.</p></header>
+    <div class="lab-form"><label>Corpus tokens<input id="embed-tokens" type="number" min="0" value="50000000"/></label><label>Chunk size<input id="embed-chunk" type="number" min="1" value="800"/></label><label>Chunk overlap<input id="embed-overlap" type="number" min="0" value="120"/></label><label>Embedding $/1M<input id="embed-price" type="number" min="0" step=".001" value=".02"/></label><label>Full indexes/month<input id="embed-indexes" type="number" min="0" step=".1" value=".25"/></label><label>Vector dimensions<input id="embed-dimensions" type="number" min="1" value="1536"/></label></div>
+    <button class="lab-action primary-button" data-calc="embed" type="button">Calculate embedding workload</button><div class="lab-results" id="embed-results" aria-live="polite"></div>
+  </div>
+
+  <div class="lab-panel panel" data-lab-panel="7" hidden>
+    <header><span class="eyebrow">Self-hosted planning model</span><h2>Estimate weight memory and operating cost—with assumptions visible.</h2><p>This is a capacity worksheet, not a throughput benchmark. Runtime frameworks, MoE activation, KV formats, batching, parallelism, and real utilization can materially change the result.</p></header>
+    <div class="lab-form"><label>Model parameters<input id="host-params" type="number" min="0" step=".1" value="70"/><span>billion</span></label><label>Weight precision<input id="host-bits" type="number" min="1" value="4"/><span>bits</span></label><label>Runtime overhead<input id="host-overhead" type="number" min="0" value="20"/><span>%</span></label><label>KV/cache allowance<input id="host-kv" type="number" min="0" value="8"/><span>GB</span></label><label>GPU VRAM each<input id="host-vram" type="number" min="1" value="24"/><span>GB</span></label><label>GPU hourly price<input id="host-hourly" type="number" min="0" step=".01" value="1.2"/><span>USD</span></label><label>Active hours/month<input id="host-hours" type="number" min="0" value="730"/></label><label>Power draw/GPU<input id="host-watts" type="number" min="0" value="350"/><span>W</span></label><label>Electricity price<input id="host-electricity" type="number" min="0" step=".01" value=".15"/><span>$/kWh</span></label></div>
+    <button class="lab-action primary-button" data-calc="host" type="button">Calculate capacity plan</button><div class="lab-results" id="host-results" aria-live="polite"></div>
+  </div>
+
+  <div class="lab-panel panel" data-lab-panel="8" hidden>
+    <header><span class="eyebrow">Normalized model explorer</span><h2>Compare the same workload across every verified catalog entry.</h2><p>Prices, context limits, accuracy labels, and source links come from the shared model registry—not duplicated page copy.</p></header>
+    <div class="lab-form"><label>Input tokens/request<input id="compare-input" type="number" min="0" value="12000"/></label><label>Output tokens/request<input id="compare-output" type="number" min="0" value="1200"/></label><label>Requests/month<input id="compare-requests" type="number" min="0" value="100000"/></label><label>Cached input share<input id="compare-cached" type="number" min="0" max="100" value="0"/><span>%</span></label></div>
+    <button class="lab-action primary-button" data-calc="compare" type="button">Compare models</button><div class="comparison-shell" id="compare-results" aria-live="polite"></div>
+  </div>
+</section>
+
+<script>
+  import { MODELS, getModel } from '../../data/models';
+  import { extractDocument } from '../../engines/documents/extract';
+  import { countText } from '../../engines/tokenizers/count';
+  import { countImage } from '../../engines/vision/count';
+
+  const q=<T extends HTMLElement>(selector:string)=>document.querySelector<T>(selector)!;
+  const number=(id:string)=>Math.max(0,Number(q<HTMLInputElement>(`#${id}`).value)||0);
+  const model=(id:string)=>getModel(q<HTMLSelectElement>(`#${id}`).value);
+  const usd=(value:number)=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:value<1?4:2}).format(value);
+  const integer=(value:number)=>Math.round(value).toLocaleString('en-US');
+  const effectiveRates=(m:ReturnType<typeof getModel>,input:number)=>{
+    const tier=m.pricingTiers?.filter(t=>input>t.aboveInputTokens).sort((a,b)=>b.aboveInputTokens-a.aboveInputTokens)[0];
+    return tier?{input:tier.inputPerMillion,cached:tier.cachedInputPerMillion??tier.inputPerMillion,output:tier.outputPerMillion}:{input:m.inputPerMillion,cached:m.cachedInputPerMillion??m.inputPerMillion,output:m.outputPerMillion};
+  };
+  const cost=(m:ReturnType<typeof getModel>,input:number,output:number,cached=0)=>{const r=effectiveRates(m,input);return ((input-cached)*r.input+cached*r.cached+output*r.output)/1e6};
+  const cards=(items:{label:string,value:string,note?:string}[])=>items.map(item=>`<div class="lab-result"><span>${item.label}</span><strong>${item.value}</strong>${item.note?`<small>${item.note}</small>`:''}</div>`).join('');
+  q<HTMLInputElement>('[data-directory-input]').setAttribute('webkitdirectory','');
+
+  document.querySelectorAll<HTMLButtonElement>('[data-lab-tab]').forEach(button=>button.addEventListener('click',()=>{
+    document.querySelectorAll<HTMLButtonElement>('[data-lab-tab]').forEach(tab=>tab.setAttribute('aria-selected',String(tab===button)));
+    document.querySelectorAll<HTMLElement>('[data-lab-panel]').forEach(panel=>panel.hidden=panel.dataset.labPanel!==button.dataset.labTab);
+  }));
+
+  q<HTMLButtonElement>('#repo-calculate').addEventListener('click',async()=>{
+    const files=[...q<HTMLInputElement>('#repo-files').files??[]],m=model('repo-model'),status=q('#repo-status'),target=q('#repo-results');
+    if(!files.length){status.textContent='Select a directory or one or more supported files first.';return;}
+    status.textContent=`Reading ${files.length} file(s) locally…`; target.innerHTML='';
+    let tokens=0,characters=0,read=0; const skipped:string[]=[];
+    for(const file of files){try{const text=await extractDocument(file);characters+=text.length;tokens+=countText(text,m).tokens;read++;status.textContent=`Processed ${read+skipped.length} of ${files.length} locally…`;}catch{skipped.push(file.name);}}
+    const output=number('repo-output'),runs=number('repo-runs'),monthly=cost(m,tokens,output)*runs;
+    target.innerHTML=cards([{label:'Readable files',value:`${read} / ${files.length}`,note:skipped.length?`${skipped.length} unsupported or unreadable`:undefined},{label:'Extracted characters',value:integer(characters)},{label:'Input tokens',value:integer(tokens),note:m.textAccuracy==='exact'?'Local BPE':'Provider-calibrated projection'},{label:'Context occupancy',value:`${Math.min(999,(tokens/m.contextWindow)*100).toFixed(1)}%`},{label:'Monthly projected cost',value:usd(monthly),note:`${integer(runs)} run(s)`}]);
+    status.textContent='Complete. Content remained in browser memory and was not uploaded.';
+  });
+
+  const calculateWork=()=>{const m=model('work-model'),i=number('work-input'),o=number('work-output'),requests=number('work-requests')*(1+number('work-retries')/100),cached=i*(number('work-cache-share')/100)*(number('work-cache-hit')/100),monthly=cost(m,i,o,cached)*requests;q('#work-results').innerHTML=cards([{label:'Effective requests',value:integer(requests)},{label:'Cached tokens/request',value:integer(cached)},{label:'Monthly cost',value:usd(monthly)},{label:'Annual cost',value:usd(monthly*12)},{label:'Cost / 1K requests',value:usd(monthly/Math.max(1,requests)*1000)}]);};
+  const calculateRag=()=>{const m=model('rag-model'),corpus=number('rag-docs')*number('rag-doc-tokens'),ingest=corpus/1e6*number('rag-embed-price'),monthlyIngest=ingest*number('rag-reindex'),queries=number('rag-queries'),generation=cost(m,number('rag-context'),number('rag-output'))*queries,vector=number('rag-vector'),total=monthlyIngest+generation+vector;q('#rag-results').innerHTML=cards([{label:'Corpus tokens',value:integer(corpus)},{label:'One full embedding pass',value:usd(ingest)},{label:'Monthly generation',value:usd(generation)},{label:'Vector infrastructure',value:usd(vector)},{label:'Total monthly model',value:usd(total),note:'Excludes reranking and data transfer unless included in vector amount'}]);};
+  const calculateCache=()=>{const m=model('cache-model'),input=number('cache-input'),prefix=Math.min(input,number('cache-prefix')),requests=number('cache-requests'),hit=number('cache-hit')/100,baseline=cost(m,input,0)*requests,cachedTokens=prefix*hit,withCache=cost(m,input,0,cachedTokens)*requests,saved=baseline-withCache;q('#cache-results').innerHTML=cards([{label:'Uncached input cost',value:usd(baseline)},{label:'With cache reads',value:usd(withCache)},{label:'Monthly savings',value:usd(saved)},{label:'Savings rate',value:`${baseline?((saved/baseline)*100).toFixed(1):'0.0'}%`},{label:'Cached volume',value:integer(cachedTokens*requests)}]);};
+  const calculateVision=()=>{const m=model('vision-model'),result=countImage({width:number('vision-width'),height:number('vision-height'),detail:q<HTMLSelectElement>('#vision-detail').value as 'low'|'high'},m),images=number('vision-images'),input=result.tokens+number('vision-text'),output=number('vision-output'),monthly=cost(m,input,output)*images;q('#vision-results').innerHTML=cards([{label:'Visual tokens/image',value:integer(result.tokens),note:result.method},{label:'Combined input/request',value:integer(input)},{label:'Monthly visual tokens',value:integer(result.tokens*images)},{label:'Monthly projected cost',value:usd(monthly)},{label:'Context / request',value:`${((input/m.contextWindow)*100).toFixed(2)}%`}]);};
+  const calculateAgent=()=>{const m=model('agent-model'),base=number('agent-base')+number('agent-tools'),tool=number('agent-results-token'),out=number('agent-output'),iterations=Math.max(1,number('agent-iterations')),retained=number('agent-history')/100;let input=0;for(let n=0;n<iterations;n++)input+=base+(tool+out)*n*retained;const output=out*iterations,runs=number('agent-runs'),monthly=cost(m,input,output)*runs;q('#agent-results').innerHTML=cards([{label:'Input tokens/run',value:integer(input)},{label:'Output tokens/run',value:integer(output)},{label:'Total model tokens/month',value:integer((input+output)*runs)},{label:'Monthly projected cost',value:usd(monthly)},{label:'Single run',value:usd(cost(m,input,output))}]);};
+  const calculateEmbed=()=>{const corpus=number('embed-tokens'),chunk=Math.max(1,number('embed-chunk')),overlap=Math.min(chunk-1,number('embed-overlap')),step=Math.max(1,chunk-overlap),chunks=Math.ceil(Math.max(0,corpus-overlap)/step),embedded=Math.min(corpus,chunks*chunk),one=embedded/1e6*number('embed-price'),monthly=one*number('embed-indexes'),storage=chunks*number('embed-dimensions')*4/1024/1024/1024;q('#embed-results').innerHTML=cards([{label:'Estimated chunks',value:integer(chunks)},{label:'Tokens after overlap',value:integer(embedded)},{label:'Overlap amplification',value:`${corpus?((embedded/corpus-1)*100).toFixed(1):'0.0'}%`},{label:'One embedding pass',value:usd(one)},{label:'Monthly re-index cost',value:usd(monthly)},{label:'Raw float32 vectors',value:`${storage.toFixed(2)} GB`,note:'Excludes metadata and index overhead'}]);};
+  const calculateHost=()=>{const weight=number('host-params')*1e9*number('host-bits')/8/1024/1024/1024,required=weight*(1+number('host-overhead')/100)+number('host-kv'),gpus=Math.max(1,Math.ceil(required/Math.max(1,number('host-vram')))),hours=number('host-hours'),cloud=gpus*number('host-hourly')*hours,power=gpus*number('host-watts')/1000*hours*number('host-electricity');q('#host-results').innerHTML=cards([{label:'Raw weight memory',value:`${weight.toFixed(1)} GB`},{label:'Planned memory',value:`${required.toFixed(1)} GB`,note:'Weights + runtime overhead + entered KV allowance'},{label:'Minimum GPUs by capacity',value:integer(gpus)},{label:'Cloud rental/month',value:usd(cloud)},{label:'Electricity/month',value:usd(power),note:'Relevant for owned hardware; do not add to rental unless electricity is excluded'}]);};
+  const calculateCompare=()=>{const input=number('compare-input'),output=number('compare-output'),requests=number('compare-requests'),cached=input*number('compare-cached')/100,rows=MODELS.map(m=>({m,monthly:cost(m,input,output,cached)*requests,per:cost(m,input,output,cached)})).sort((a,b)=>a.monthly-b.monthly);q('#compare-results').innerHTML=`<div class="table-shell overflow-x-auto"><table class="seo-table"><thead><tr><th>Model</th><th>Provider</th><th>Context</th><th>Per request</th><th>Monthly</th><th>Method</th><th>Source</th></tr></thead><tbody>${rows.map(({m,monthly,per})=>`<tr><td><strong>${m.name}</strong><br/><small>${m.description}</small></td><td>${m.provider}</td><td>${integer(m.contextWindow)}</td><td>${usd(per)}</td><td><strong>${usd(monthly)}</strong></td><td>${m.textAccuracy}</td><td><a href="${m.pricingUrl}" target="_blank" rel="noopener">${m.verifiedAt}</a></td></tr>`).join('')}</tbody></table></div>`;};
+  const calculators:Record<string,()=>void>={work:calculateWork,rag:calculateRag,cache:calculateCache,vision:calculateVision,agent:calculateAgent,embed:calculateEmbed,host:calculateHost,compare:calculateCompare};
+  document.querySelectorAll<HTMLButtonElement>('[data-calc]').forEach(button=>button.addEventListener('click',()=>calculators[button.dataset.calc!]()));
+</script>

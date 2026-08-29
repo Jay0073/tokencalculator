@@ -1,0 +1,32 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/seo/Breadcrumbs.astro';
+import ApiPlayground from '../../components/api/ApiPlayground.astro';
+const breadcrumbs=[{label:'Home',href:'/'},{label:'Developer API'}];
+const faq=[
+  {question:'Is the TokenCalculator developer API free?',answer:'Yes. The public v1 API requires no key and currently permits 60 requests per minute per route and Cloudflare edge location. Limits may evolve to protect the shared service.'},
+  {question:'Does the public API keep my prompt private in my browser?',answer:'No. An HTTP API must receive the submitted payload to process it. TokenCalculator.dev does not intentionally persist request bodies, but confidential content should use the browser calculator or local npm package so it remains on-device.'},
+  {question:'Can the API count PDF, DOCX, and source files?',answer:'The HTTP API accepts source code and already-extracted file text. The browser app performs PDF and DOCX extraction locally. This avoids uploading binary confidential documents to the public endpoint.'},
+  {question:'Can I compare the same payload across models?',answer:'Yes. POST /api/v1/compare accepts one request body and up to ten model IDs, returning a normalized measurement for each model.'},
+];
+---
+<BaseLayout title="Free LLM Token Counting API & Developer Playground" description="Free developer API and local npm SDK for LLM token counts, file and code content, image tokens, model pricing, context usage, batch requests, and model comparison." canonical="/developers/api/" {breadcrumbs} {faq} application>
+  <Breadcrumbs items={breadcrumbs}/>
+  <section class="shell api-hero pt-12">
+    <span class="eyebrow">TokenCalculator Developer Platform</span>
+    <h1>One payload.<br/>Measurement you can ship.</h1>
+    <p>Count text, chat content, extracted files, source code, and image geometry; return token usage, cost, context pressure, algorithm details, and verified pricing through a versioned edge API or privacy-first local SDK.</p>
+    <div class="api-choice-grid">
+      <article><span class="mono">PUBLIC HTTP API</span><h2>Zero-key edge endpoint</h2><p>Best for demos, CI checks, server integrations, and non-sensitive workloads. Supports single, batch, and multi-model requests.</p><code>POST /api/v1/count</code></article>
+      <article><span class="mono">LOCAL NPM SDK</span><h2>Content remains on-device</h2><p>Best for enterprise prompts, repositories, and confidential extracted documents. The same measurement core runs inside your process.</p><code>npm i @jay0073/tokencalculator-core</code></article>
+    </div>
+  </section>
+  <section class="shell api-playground-wrap"><div class="api-section-head"><span class="eyebrow">Live request laboratory</span><h2>Change the payload. Inspect every layer.</h2><p>The playground calls the public endpoint. Copy an equivalent cURL, JavaScript, Python, or local npm implementation after the result matches your workload.</p></div><ApiPlayground/></section>
+  <section class="shell api-capability-grid">
+    <article><span>01</span><h2>Composable inputs</h2><p>Combine raw text, chat messages, extracted documents, source files, and multiple image dimensions without flattening the response into one opaque number.</p></article>
+    <article><span>02</span><h2>Selective telemetry</h2><p>Request only usage, per-part breakdown, cost, context, method, or pricing fields. Caller metadata is echoed for correlation.</p></article>
+    <article><span>03</span><h2>Batch + compare</h2><p>Measure up to 25 independent requests in one batch or evaluate one workload across up to ten models with normalized output.</p></article>
+    <article><span>04</span><h2>Operational contracts</h2><p>Version headers, request IDs, RFC 9457 error objects, CORS, explicit size limits, and OpenAPI 3.1 make integration behavior inspectable.</p></article>
+  </section>
+  <section class="shell api-trust-boundary panel"><div><span class="eyebrow">Choose the right trust boundary</span><h2>“Free API” and “browser-local” are not the same promise.</h2></div><div><p>The HTTP service processes request content at the Cloudflare edge and does not intentionally store request bodies in application storage. Infrastructure-level security and abuse metadata may still exist. Do not send secrets, regulated records, proprietary repositories, or private prompts to a public endpoint.</p><p>For sensitive inputs, use the browser calculator or <code>@jay0073/tokencalculator-core</code>. Those paths execute the tokenizer and pricing engine locally; supported files can be extracted in the browser without an upload.</p><a href="/docs/api/">Read the API reference →</a> <a href="/openapi.json">Download OpenAPI →</a></div></section>
+</BaseLayout>

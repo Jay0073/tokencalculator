@@ -1,0 +1,12 @@
+---
+import KnowledgeLayout from '../../layouts/KnowledgeLayout.astro';
+const toc=[{id:'install',label:'Install'},{id:'operations',label:'Operations'},{id:'workflow',label:'Workflow pattern'},{id:'privacy',label:'Runtime boundary'}];
+---
+<KnowledgeLayout title="TokenCalculator n8n Community Node Documentation" description="Install and use the @jay0073/n8n-nodes-tokencalculator community node for text, file, context-window, and LLM cost calculations in n8n workflows." heading="TokenCalculator for n8n" eyebrow="Docs · Automation" datePublished="2026-08-28" dateModified="2026-08-28" section="Documentation" type="TechArticle" keywords={['n8n token calculator','n8n community node','LLM cost workflow']} {toc}>
+  <p class="knowledge-lead">The community node brings the shared TokenCalculator core into repeatable n8n workflows, so prompts and extracted content can be measured before an expensive model step.</p>
+  <h2 id="install">Install the verified package</h2><p>In n8n Community Nodes, install <a href="https://www.npmjs.com/package/@jay0073/n8n-nodes-tokencalculator"><code>@jay0073/n8n-nodes-tokencalculator</code></a>. The package is published from GitHub Actions with npm provenance. Review the installed version and node permissions before use.</p>
+  <h2 id="operations">Operations</h2><p>The node exposes token and cost calculations backed by <a href="https://www.npmjs.com/package/@jay0073/tokencalculator-core"><code>@jay0073/tokencalculator-core</code></a>. Configure the input field, model/provider selection, and output mapping in the node UI.</p>
+  <h2 id="workflow">Recommended workflow pattern</h2><div class="technical-callout"><span>Preflight branch</span><code>Source → Extract → TokenCalculator → IF(context/cost) → LLM</code></div><p>Keep extraction explicit, measure the final text passed downstream, reject or chunk oversized items, then call the model. Persist the preflight count beside response usage metadata to monitor the provider overhead delta.</p>
+  <h2 id="privacy">Runtime boundary</h2><p>The website's browser-only privacy guarantee applies to the web calculator. In n8n, data is processed inside your n8n runtime and follows that deployment's execution-data, logging, and credential policies. The node itself does not require a TokenCalculator.dev API key.</p>
+  <p><a href="https://docs.n8n.io/integrations/community-nodes/installation/">n8n community-node installation docs</a> · <a href="/">Open the browser tool</a></p>
+</KnowledgeLayout>

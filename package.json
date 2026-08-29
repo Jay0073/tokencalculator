@@ -7,6 +7,8 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro check && astro build",
+    "dev:worker": "npm run build && npx wrangler dev",
+    "deploy": "npm run build && npx wrangler deploy",
     "preview": "astro preview",
     "check": "astro check",
     "test": "vitest run",
@@ -28,7 +30,10 @@
   "devDependencies": {
     "@astrojs/check": "latest",
     "typescript": "latest",
-    "vitest": "latest"
+    "vitest": "latest",
+    "wrangler": "^4.127.0"
   },
-  "workspaces": ["packages/*"]
+  "workspaces": [
+    "packages/*"
+  ]
 }

@@ -1,0 +1,11 @@
+---
+import KnowledgeLayout from '../../layouts/KnowledgeLayout.astro';
+const toc=[{id:'pipeline',label:'Local image pipeline'},{id:'variables',label:'Formula variables'},{id:'providers',label:'Provider behavior'},{id:'verify',label:'Verification'}];
+---
+<KnowledgeLayout title="Image and Vision Token Calculator Documentation" description="Technical documentation for local image dimension inspection and OpenAI, Claude, and Gemini visual-token calculations, model support, and verification." heading="Images and vision-token formulas" eyebrow="Docs · Input pipeline 03" datePublished="2026-08-28" dateModified="2026-08-28" section="Documentation" type="TechArticle" keywords={['image token calculator','vision tokens','image dimensions']} {toc}>
+  <p class="knowledge-lead">The browser reads supported PNG, JPEG, WebP, and GIF dimensions locally. It does not upload pixels. A model-specific formula converts the processed geometry into a preflight token budget.</p>
+  <h2 id="pipeline">Local image pipeline</h2><ol><li>Read file metadata and intrinsic dimensions.</li><li>Resolve provider, model generation, and supported detail mode.</li><li>Apply required resizing, tiling, patching, caps, base budgets, or multipliers.</li><li>Add the resulting visual tokens to text and extracted-file tokens.</li></ol>
+  <h2 id="variables">Variables that matter</h2><p>Width, height, aspect ratio, detail/media-resolution mode, maximum bounds, tile or patch dimensions, and model generation can all alter the result. Compressed file size alone is not a token formula.</p>
+  <h2 id="providers">Provider behavior</h2><p>OpenAI uses model-specific low/high-detail budgets and crops. Anthropic documents a dimension-based approximation after resizing. Gemini exposes multimodal <code>countTokens</code> and model-specific media-resolution behavior. Unsupported model/formula combinations are reported rather than silently borrowing a legacy rule.</p>
+  <h2 id="verify">Verification</h2><p>Reconcile the browser result with the exact model endpoint or response usage metadata. Record model ID, dimensions, detail setting, formula revision, and date. Read the <a href="/blog/image-token-calculation-openai-claude-gemini/">full provider comparison</a>.</p>
+</KnowledgeLayout>

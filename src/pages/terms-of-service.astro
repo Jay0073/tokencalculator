@@ -1,4 +1,11 @@
 ---
 import ContentLayout from '../layouts/ContentLayout.astro';
 ---
-<ContentLayout title="Terms of Service | TokenCalculator.dev" description="Terms and accuracy limitations for TokenCalculator.dev." heading="Terms of service"><p>TokenCalculator.dev is an open-web utility provided for planning and informational use without warranties.</p><h2>Calculation accuracy</h2><p>Provider tokenizers, model behavior, limits, and prices can change. Exact badges apply only to the raw text and tokenizer shown; API wrappers, tools, system instructions, and provider processing can add tokens.</p><h2>Pricing accuracy</h2><p>Live and fallback pricing data can be delayed or incomplete. Verify material spending decisions against official provider documentation and actual API usage records.</p></ContentLayout>
+<ContentLayout title="Terms of Service | TokenCalculator.dev" description="Terms, API use, and accuracy limitations for TokenCalculator.dev." heading="Terms of service">
+  <p>TokenCalculator.dev is an open-web utility provided for planning and informational use without warranties.</p>
+  <h2>Calculation accuracy</h2><p>Provider tokenizers, model behavior, limits, and prices can change. Exact badges apply only to the raw text and tokenizer shown; API wrappers, tools, system instructions, and provider processing can add tokens.</p>
+  <h2>Pricing accuracy</h2><p>Live and fallback pricing data can be delayed or incomplete. Verify material spending decisions against official provider documentation and actual API usage records.</p>
+  <h2>Public API use</h2><p>You may use the public developer API in applications, scripts, testing tools, and internal workflows subject to the documented request-size, batch-size, and rate limits. Do not attempt to bypass limits, disrupt service, probe infrastructure, or use the API for unlawful activity. We may throttle or block abusive traffic.</p>
+  <h2>Availability</h2><p>The free API is provided without a service-level agreement. Endpoints, limits, schemas, and model coverage may evolve; versioned breaking changes will use a new API path where practical.</p>
+  <h2>Sensitive data</h2><p>The public HTTP API requires transmitting its payload to TokenCalculator infrastructure. Do not send secrets or regulated data. For confidential prompts, documents, or source code, use the browser-local calculator or local npm package.</p>
+</ContentLayout>

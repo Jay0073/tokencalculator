@@ -1,0 +1,18 @@
+---
+import KnowledgeLayout from '../../layouts/KnowledgeLayout.astro';
+const toc=[{id:'boundary',label:'Measurement boundary'},{id:'overhead',label:'Hidden input overhead'},{id:'pricing',label:'Pricing tiers'},{id:'reconcile',label:'Reconciliation'}];
+---
+<KnowledgeLayout title="Token Count vs API Bill: What Changes the Cost?" description="Why raw text and file token counts can differ from billed LLM usage after message framing, tool schemas, caching, reasoning, output, and long-context pricing." heading="Why a token count is not the same as an API bill" eyebrow="Cost engineering · Engineering guide" datePublished="2026-08-28" dateModified="2026-08-28" section="LLM API cost" keywords={['LLM API cost','token count','cached tokens','reasoning tokens','context pricing']} {toc}>
+  <p class="knowledge-lead">A tokenizer answers “how does this content segment?” An invoice answers “what did this provider process under this API contract?” Those are connected measurements, not interchangeable ones.</p>
+  <div class="technical-callout"><span>Cost model</span><code>C = T<sub>input</sub>P<sub>input</sub> + T<sub>cached</sub>P<sub>cached</sub> + T<sub>output</sub>P<sub>output</sub></code></div>
+  <h2 id="boundary">Start by declaring the measurement boundary</h2>
+  <p>TokenCalculator.dev reports a preflight input measurement for pasted text, locally extracted file text, and supported image formulas. It cannot observe server-injected instructions, provider file conversion, tool-call serialization, internal routing, or the output a model has not generated yet. The result therefore describes client-visible content under a disclosed method.</p>
+  <h2 id="overhead">Input overhead that raw text does not contain</h2>
+  <ul><li><strong>Message framing:</strong> roles, separators, and conversation templates.</li><li><strong>Tools and schemas:</strong> function names, descriptions, JSON Schema, and tool results.</li><li><strong>Hosted file processing:</strong> extraction, OCR, chunking, citations, or retrieval wrappers.</li><li><strong>Images:</strong> provider resizing and visual-token budgets.</li><li><strong>System and product instructions:</strong> additional text applied outside the visible prompt.</li></ul>
+  <h2 id="pricing">One token can have more than one rate</h2>
+  <p>Providers can price uncached input, cached input, output, batch processing, and long-context tiers differently. Some reasoning models expose billed or usage tokens beyond visible output. A correct input count multiplied by the wrong price tier still produces a wrong budget.</p>
+  <h2 id="reconcile">Use a two-stage reconciliation loop</h2>
+  <ol><li><strong>Preflight:</strong> measure locally before sending data, verify context fit, and compare models without uploading the content.</li><li><strong>Postflight:</strong> record provider usage metadata and the applicable price schedule.</li><li><strong>Delta:</strong> compute provider input usage minus local content input. Track that delta by API, model, tool set, and modality.</li></ol>
+  <p>This turns disagreement into an engineering signal instead of hiding it behind an unjustified “exact” badge. Read the <a href="/methodology/">calculation methodology</a> or start with the <a href="/">multimodal calculator</a>.</p>
+  <div class="source-ledger"><h2>Evidence ledger</h2><p><strong>Reviewed:</strong> 28 August 2026 · Pricing is time-sensitive and provider invoices remain authoritative.</p><ul><li><a href="https://platform.openai.com/docs/pricing">OpenAI API pricing</a></li><li><a href="https://docs.anthropic.com/en/docs/about-claude/pricing">Anthropic pricing</a></li><li><a href="https://ai.google.dev/gemini-api/docs/pricing">Gemini API pricing</a></li></ul></div>
+</KnowledgeLayout>

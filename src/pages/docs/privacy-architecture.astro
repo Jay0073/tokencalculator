@@ -1,0 +1,40 @@
+---
+import KnowledgeLayout from '../../layouts/KnowledgeLayout.astro';
+const toc=[{id:'claim',label:'The precise privacy claim'},{id:'pipeline',label:'Local execution path'},{id:'network',label:'Network boundary'},{id:'lifecycle',label:'Data lifecycle'},{id:'enterprise',label:'Enterprise use'}];
+---
+<KnowledgeLayout title="Browser-Local Privacy Architecture | TokenCalculator.dev Docs" description="Technical privacy architecture for counting confidential prompts, PDF and DOCX documents, source code, data files, and images locally in the browser without uploading their contents for calculation." heading="Privacy architecture for confidential LLM inputs" eyebrow="Docs · Trust boundary" datePublished="2026-08-28" dateModified="2026-08-28" section="Documentation" type="TechArticle" keywords={['private token calculator','browser token counter','enterprise LLM privacy','local file token counter']} {toc}>
+  <p class="knowledge-lead">TokenCalculator.dev is a privacy-first, browser-based token calculator. One hundred percent of the prompt text, readable document content, source code, data-file content, and image data submitted for a calculation remains in the active browser session. None of that content is uploaded to TokenCalculator.dev for counting.</p>
+  <div class="technical-callout"><span>Content boundary</span><code>submitted content → browser memory → local extraction → Web Worker → result</code></div>
+
+  <h2 id="claim">The precise privacy claim</h2>
+  <p><strong>Browser-local calculation</strong> means the sensitive payload follows an on-device execution path. It does not mean the public website is an air-gapped application. The page can make ordinary network requests for public assets, privacy-disclosed analytics, and current model-pricing metadata, but those requests do not contain prompts, extracted text, source code, images, token counts, or projected costs.</p>
+  <p>This narrower, testable claim is stronger than a vague “private” label: an enterprise reviewer can inspect the browser network panel and distinguish content processing from public metadata traffic.</p>
+
+  <h2 id="pipeline">Local execution path</h2>
+  <ol>
+    <li><strong>Text and source code:</strong> the browser reads pasted text or supported text-based files. OpenAI-family raw text is encoded with a local BPE vocabulary; supported proprietary families use the disclosed deterministic UTF-8 projection.</li>
+    <li><strong>PDF:</strong> PDF.js reads file bytes in the browser, uses a locally bundled worker, walks the document text layer, and returns extracted strings. Raster-only scanned PDFs are rejected because OCR is not performed.</li>
+    <li><strong>DOCX:</strong> the browser build of Mammoth reads the document package from an <code>ArrayBuffer</code> and extracts readable text locally.</li>
+    <li><strong>Images:</strong> the browser reads image dimensions and applies supported provider tile, patch, resize, detail, and cap rules. Image pixels are not sent to a vision model.</li>
+    <li><strong>Aggregation:</strong> a browser Web Worker combines text, extracted-file, and visual-token contributions, then applies context-window and model-pricing data.</li>
+  </ol>
+
+  <h2 id="network">Network boundary</h2>
+  <p>The pricing layer may fetch the public Models.dev catalog to refresh model names, context limits, and prices. If that request is unavailable, the calculator uses its bundled registry. Google Analytics may receive standard page and session telemetry as described in the <a href="/privacy-policy/">privacy policy</a>. Neither channel receives calculation content or results.</p>
+  <p>TokenCalculator.dev also never forwards the submitted workload to OpenAI, Anthropic, Google, DeepSeek, or another inference provider. A later API request made by the user in a different product is outside this calculator's trust boundary.</p>
+
+  <h2 id="lifecycle">Data lifecycle</h2>
+  <ul>
+    <li>Submitted content and derived counts are held in the current page and worker memory.</li>
+    <li>Calculator content is not written to an application database or server log.</li>
+    <li>Reloading or closing the page discards the active calculation state.</li>
+    <li>Local storage is used for interface preferences such as theme—not prompt or file content.</li>
+    <li>The per-file input limit is 12 MB.</li>
+  </ul>
+
+  <h2 id="enterprise">Enterprise and confidential-input use</h2>
+  <p>The architecture is useful when a team needs a preflight count for unreleased source code, internal system prompts, contracts, reports, logs, datasets, security procedures, or other company material that should not be sent to a third-party counting endpoint. It reduces one disclosure path; it does not replace an organization's data-classification rules, endpoint controls, browser policy, legal review, or approved AI-provider agreement.</p>
+  <p>For high-assurance evaluation, use a managed browser, inspect the network requests, review the open implementation, and compare the local result with approved provider usage metadata using a non-sensitive test fixture.</p>
+
+  <div class="source-ledger"><h2>Implementation ledger</h2><p><strong>Reviewed:</strong> 28 August 2026 · <strong>Scope:</strong> browser calculation trust boundary</p><ul><li><a href="/docs/text-and-code/">Text and code calculation methods</a></li><li><a href="/docs/files/">PDF, DOCX, and file extraction</a></li><li><a href="/docs/images/">Image-token formulas</a></li><li><a href="/methodology/">Methodology and accuracy labels</a></li><li><a href="/privacy-policy/">Privacy policy and telemetry disclosure</a></li></ul></div>
+</KnowledgeLayout>
