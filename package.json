@@ -11,6 +11,7 @@
     "deploy": "npm run build && npx wrangler deploy",
     "preview": "astro preview",
     "check": "astro check",
+    "pretest": "npm run build:core",
     "test": "vitest run",
     "test:watch": "vitest",
     "build:core": "tsc -p packages/tokencalculator-core/tsconfig.json",
