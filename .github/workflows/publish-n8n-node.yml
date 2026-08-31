@@ -41,3 +41,8 @@ jobs:
         env:
           RELEASE_MODE: "true"
         run: npx --yes npm@11.6.2 publish --workspace @jay0073/n8n-nodes-tokencalculator --access public --provenance
+
+      - name: Verify published package with n8n scanner
+        run: |
+          PACKAGE_VERSION=$(node -p "require('./packages/n8n-nodes-tokencalculator/package.json').version")
+          npx --yes @n8n/scan-community-package@beta "@jay0073/n8n-nodes-tokencalculator@$PACKAGE_VERSION"

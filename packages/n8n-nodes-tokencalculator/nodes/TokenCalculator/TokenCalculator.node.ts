@@ -1,6 +1,6 @@
 import type { IExecuteFunctions, INodeExecutionData, INodeType, INodeTypeDescription } from 'n8n-workflow';
 import n8nRuntime from 'n8n-workflow/dist/cjs/index.js';
-import { MODELS, compareModels, measureModel } from '@jay0073/tokencalculator-core';
+import { MODELS, compareModels, measureModel } from './calculator.js';
 import { extractBinaryInput, type ExtractedInput } from './extractInput.js';
 
 // n8n-workflow's ESM bundle currently contains extensionless relative imports,
@@ -18,7 +18,7 @@ export class TokenCalculator implements INodeType {
 		group: ['transform'],
 		version: 1,
 		subtitle: '={{$parameter["operation"]}}',
-		description: 'Count tokens and compare LLM costs locally for text, files, and images',
+		description: 'Count tokens and compare LLM costs locally for text, code files, and images',
 		defaults: { name: 'Token Calculator' },
 		inputs: [NodeConnectionTypes.Main],
 		outputs: [NodeConnectionTypes.Main],
@@ -33,7 +33,7 @@ export class TokenCalculator implements INodeType {
 				{ name:'Text', value:'text' }, { name:'Binary File', value:'binary' }, { name:'Text and Binary File', value:'both' },
 			] },
 			{ displayName:'Text', name:'text', type:'string', typeOptions:{ rows:5 }, default:'={{ $json.text }}', displayOptions:{ show:{ source:['text','both'] } }, description:'Text, prompt, or expression to measure' },
-			{ displayName:'Binary Property', name:'binaryProperty', type:'string', default:'data', displayOptions:{ show:{ source:['binary','both'] } }, description:'Name of the incoming binary property containing a text file, PDF, DOCX, or image' },
+			{ displayName:'Binary Property', name:'binaryProperty', type:'string', default:'data', displayOptions:{ show:{ source:['binary','both'] } }, description:'Name of the incoming binary property containing a UTF-8 text/code file or PNG, JPEG, GIF, or WebP image' },
 			{ displayName:'Model', name:'modelId', type:'options', default:'gpt-5.6-terra', options:modelOptions, displayOptions:{ show:{ operation:['count','cost'] } } },
 			{ displayName:'Models', name:'modelIds', type:'multiOptions', default:['gpt-5.6-terra','claude-sonnet-5','gemini-3.1-flash-lite','deepseek-v4-flash'], options:modelOptions, displayOptions:{ show:{ operation:['compare'] } }, description:'Models included in the comparison' },
 			{ displayName:'Expected Output Tokens', name:'outputTokens', type:'number', default:0, typeOptions:{ minValue:0 }, displayOptions:{ show:{ operation:['cost','compare'] } } },
