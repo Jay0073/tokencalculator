@@ -56,4 +56,22 @@ describe('companion package', () => {
     expect(results.every((result) => result.inputTokens > 0 && result.cost.total > 0)).toBe(true);
     expect(results.map((result) => result.provider)).toEqual(['openai', 'anthropic']);
   });
+
+  it('combines multiple text and image files into one model measurement', async () => {
+    const result = await compareModels(
+      {
+        files: [
+          { text: 'First uploaded document.' },
+          { text: 'Second uploaded document.' },
+          { image: { width: 1024, height: 1024, detail: 'high' } },
+          { image: { width: 512, height: 512, detail: 'low' } },
+        ],
+      },
+      ['gpt-5.6-terra'],
+    );
+    const textOnly = await countTextTokens('First uploaded document.\n\nSecond uploaded document.', 'gpt-5.6-terra');
+    expect(result[0].inputTokens).toBe(textOnly.tokens + 765 + 85);
+    expect(result[0].method).toContain('OpenAI high-detail formula');
+    expect(result[0].method).toContain('OpenAI low-detail fixed image cost');
+  });
 });

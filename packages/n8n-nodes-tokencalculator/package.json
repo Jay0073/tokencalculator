@@ -1,6 +1,6 @@
 {
   "name": "@jay0073/n8n-nodes-tokencalculator",
-  "version": "0.1.3",
+  "version": "0.1.5",
   "description": "Privacy-first local token counting and LLM cost comparison for text, code files, and images in n8n",
   "license": "MIT",
   "homepage": "https://tokencalculator.dev",

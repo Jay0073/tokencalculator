@@ -1,6 +1,6 @@
 {
   "name": "@jay0073/tokencalculator-core",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Privacy-first local LLM token counting, model comparison, and cost calculations from TokenCalculator.dev",
   "type": "module",
   "homepage": "https://tokencalculator.dev",

@@ -17,7 +17,10 @@
     "build:core": "tsc -p packages/tokencalculator-core/tsconfig.json",
     "pack:core": "npm pack --dry-run --workspace @jay0073/tokencalculator-core",
     "build:n8n": "npm run build --workspace @jay0073/n8n-nodes-tokencalculator",
-    "pack:n8n": "npm pack --dry-run --workspace @jay0073/n8n-nodes-tokencalculator"
+    "pack:n8n": "npm pack --dry-run --workspace @jay0073/n8n-nodes-tokencalculator",
+    "build:activepieces": "npm run build --workspace @jay0073/piece-tokencalculator",
+    "pack:activepieces": "npm pack --dry-run --workspace @jay0073/piece-tokencalculator",
+    "test:activepieces": "npm test --workspace @jay0073/piece-tokencalculator"
   },
   "dependencies": {
     "@astrojs/sitemap": "latest",

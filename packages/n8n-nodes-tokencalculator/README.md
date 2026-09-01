@@ -8,6 +8,8 @@ Privacy-first, local token counting and LLM cost comparison for n8n workflows. M
 - **Estimate Cost** — calculate input, cached-input, and expected output cost.
 - **Compare Models** — return side-by-side measurements for selected OpenAI, Anthropic, Google, and DeepSeek models.
 
+For binary input, **Binary Properties** accepts a comma-separated list, a prefix wildcard such as `uploads*`, or `*` for every incoming file. n8n Form Trigger multi-file fields arrive as separate binary properties, so the default `*` processes the complete submission.
+
 The node contains its calculation engine so it can meet n8n Cloud's requirement that verified community nodes have no runtime dependencies.
 
 ## Privacy and accuracy

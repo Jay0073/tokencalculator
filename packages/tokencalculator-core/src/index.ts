@@ -31,6 +31,16 @@ export interface ModelMeasurement {
   context: ReturnType<typeof contextUsage>;
   rates: TokenRates & { label: string };
 }
+export interface ImageInput { width: number; height: number; detail?: 'low' | 'high' }
+export interface ModelInputFile { text?: string; image?: ImageInput }
+export interface ModelInput {
+  text?: string;
+  image?: ImageInput;
+  images?: readonly ImageInput[];
+  files?: readonly ModelInputFile[];
+  outputTokens?: number;
+  cachedInputTokens?: number;
+}
 
 export const MODELS: readonly ModelConfig[] = [
   { id:'gpt-5.6-sol', name:'GPT-5.6 Sol', provider:'openai', description:'Frontier reasoning', tokenizer:'o200k_base', accuracy:'exact', contextWindow:1_050_000, maxOutput:128_000, inputPerMillion:5, cachedInputPerMillion:.5, outputPerMillion:30, pricingTiers:[{aboveInputTokens:272_000,inputPerMillion:10,cachedInputPerMillion:1,outputPerMillion:45,label:'Long-context rate above 272K input tokens'}], vision:'openai-tiles', pricingUrl:'https://developers.openai.com/api/docs/models/compare', verifiedAt:'2026-08-22' },
@@ -111,11 +121,15 @@ export function countImageTokens(width: number, height: number, modelOrId: Model
   return {tokens:tiles*258,accuracy:'provider-formula' as const,method:`Gemini media allocation · ${tiles} tiles`};
 }
 
-export async function measureModel(input: { text?:string; image?:{width:number;height:number;detail?:'low'|'high'}; outputTokens?:number; cachedInputTokens?:number }, modelOrId: ModelConfig | string): Promise<ModelMeasurement> {
+export async function measureModel(input: ModelInput, modelOrId: ModelConfig | string): Promise<ModelMeasurement> {
   const model=typeof modelOrId==='string'?getModel(modelOrId):modelOrId;
-  const text=await countTextTokens(input.text??'',model); const image=input.image?countImageTokens(input.image.width,input.image.height,model,input.image.detail):undefined;
-  const inputTokens=text.tokens+(image?.tokens??0); const outputTokens=Math.max(0,Math.round(input.outputTokens??0)); const rates=resolveModelRates(model,inputTokens);
-  return {modelId:model.id,model:model.name,provider:model.provider,inputTokens,outputTokens,accuracy:image?.accuracy??text.accuracy,method:[text.method,image?.method].filter(Boolean).join(' + '),cost:calculateTokenCost({inputTokens,outputTokens,cachedInputTokens:input.cachedInputTokens},rates),context:contextUsage(inputTokens,model.contextWindow),rates};
+  const fileText=(input.files??[]).map((file)=>file.text).filter((text): text is string=>typeof text==='string'&&text.length>0);
+  const combinedText=[input.text,...fileText].filter((text): text is string=>typeof text==='string'&&text.length>0).join('\n\n');
+  const text=await countTextTokens(combinedText,model);
+  const images=[...(input.image?[input.image]:[]),...(input.images??[]),...(input.files??[]).flatMap((file)=>file.image?[file.image]:[])];
+  const imageMeasurements=images.map((image)=>countImageTokens(image.width,image.height,model,image.detail));
+  const inputTokens=text.tokens+imageMeasurements.reduce((total,image)=>total+image.tokens,0); const outputTokens=Math.max(0,Math.round(input.outputTokens??0)); const rates=resolveModelRates(model,inputTokens);
+  return {modelId:model.id,model:model.name,provider:model.provider,inputTokens,outputTokens,accuracy:imageMeasurements[0]?.accuracy??text.accuracy,method:[text.method,...imageMeasurements.map((image)=>image.method)].filter(Boolean).join(' + '),cost:calculateTokenCost({inputTokens,outputTokens,cachedInputTokens:input.cachedInputTokens},rates),context:contextUsage(inputTokens,model.contextWindow),rates};
 }
 
 export async function compareModels(input: Parameters<typeof measureModel>[0], modelIds: readonly string[] = MODELS.map((model)=>model.id)) {

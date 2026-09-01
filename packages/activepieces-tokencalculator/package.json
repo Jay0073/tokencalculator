@@ -1,0 +1,32 @@
+{
+  "name": "@jay0073/piece-tokencalculator",
+  "version": "0.1.0",
+  "description": "Privacy-first local LLM token counting and model cost comparison for Activepieces",
+  "license": "MIT",
+  "homepage": "https://tokencalculator.dev",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Jay0073/tokencalculator.git",
+    "directory": "packages/activepieces-tokencalculator"
+  },
+  "bugs": "https://github.com/Jay0073/tokencalculator/issues",
+  "keywords": ["activepieces", "activepieces-piece", "llm", "token-counter", "openai", "claude", "gemini", "deepseek"],
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "files": ["dist", "README.md", "LICENSE"],
+  "scripts": {
+    "build": "tsc -p tsconfig.lib.json && node scripts/copy-package.cjs",
+    "test": "vitest run",
+    "prepublishOnly": "npm run test && npm run build"
+  },
+  "dependencies": {
+    "@activepieces/pieces-framework": "^0.32.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.18.0",
+    "typescript": "5.9.3",
+    "vitest": "^3.2.4"
+  },
+  "engines": { "node": ">=20" },
+  "publishConfig": { "access": "public" }
+}

@@ -37,6 +37,19 @@ export interface ExtractedInput {
 	file?: { name: string; mimeType?: string; bytes: number; extraction: string };
 }
 
+export function resolveBinaryPropertyNames(binary: Record<string, unknown>, selector: string): string[] {
+	const available = Object.keys(binary);
+	const requested = selector.split(',').map((value) => value.trim()).filter(Boolean);
+	const resolved = requested.flatMap((value) => {
+		if (value === '*') return available;
+		if (value.endsWith('*')) return available.filter((name) => name.startsWith(value.slice(0, -1)));
+		return available.includes(value) ? [value] : [];
+	});
+	const unique = [...new Set(resolved)];
+	if (unique.length === 0) throw new Error(`No binary properties matched "${selector}". Available properties: ${available.join(', ') || 'none'}`);
+	return unique;
+}
+
 export async function extractBinaryInput(buffer: Buffer, fileName = 'binary', mimeType?: string): Promise<ExtractedInput> {
 	const extension = fileName.split('.').pop()?.toLowerCase() ?? '';
 	const file = { name: fileName, mimeType, bytes: buffer.byteLength, extraction: '' };

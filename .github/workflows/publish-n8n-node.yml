@@ -29,7 +29,7 @@ jobs:
         run: npm run build:core
 
       - name: Test package
-        run: npx vitest run tests/n8n-extract-input.test.ts tests/n8n-node-runtime.test.ts
+        run: npx vitest run tests/n8n-extract-input.test.ts tests/n8n-node-runtime.test.ts tests/n8n-multifile.test.ts
 
       - name: Lint package
         run: npm run lint --workspace @jay0073/n8n-nodes-tokencalculator

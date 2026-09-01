@@ -41,17 +41,18 @@ function imageTokens(width: number, height: number, model: ModelConfig, detail: 
 	return { tokens:tiles*258, method:`Gemini media allocation - ${tiles} tiles` };
 }
 
-export async function measureModel(input: { text?:string; image?:{width:number;height:number;detail?:'low'|'high'}; outputTokens?:number; cachedInputTokens?:number }, modelId: string) {
+export async function measureModel(input: { text?:string; image?:{width:number;height:number;detail?:'low'|'high'}; images?:readonly {width:number;height:number;detail?:'low'|'high'}[]; outputTokens?:number; cachedInputTokens?:number }, modelId: string) {
 	const model=getModel(modelId), text=input.text??'';
 	const textTokens=text ? Math.max(1,Math.ceil(new TextEncoder().encode(text).length/model.bytesPerToken)) : 0;
-	const image=input.image ? imageTokens(input.image.width,input.image.height,model,input.image.detail??'high') : undefined;
-	const inputTokens=textTokens+(image?.tokens??0), outputTokens=Math.max(0,Math.round(input.outputTokens??0));
+	const images=[...(input.images??[]),...(input.image?[input.image]:[])];
+	const imageMeasurements=images.map((image)=>imageTokens(image.width,image.height,model,image.detail??'high'));
+	const inputTokens=textTokens+imageMeasurements.reduce((total,image)=>total+image.tokens,0), outputTokens=Math.max(0,Math.round(input.outputTokens??0));
 	const cachedInputTokens=Math.max(0,Math.round(input.cachedInputTokens??0));
 	if (cachedInputTokens > inputTokens) throw new RangeError('Cached input tokens cannot exceed input tokens');
 	const inputCost=(inputTokens-cachedInputTokens)/1_000_000*model.inputPerMillion;
 	const cachedInput=cachedInputTokens/1_000_000*(model.cachedInputPerMillion??model.inputPerMillion);
 	const output=outputTokens/1_000_000*model.outputPerMillion;
-	return { modelId:model.id, model:model.name, provider:model.provider, inputTokens, outputTokens, accuracy:image?'provider-formula':'estimated', method:[text?'Provider-calibrated UTF-8 projection':'No text input',image?.method].filter(Boolean).join(' + '), cost:{input:inputCost,cachedInput,output,total:inputCost+cachedInput+output}, context:{ratio:inputTokens/model.contextWindow,remaining:Math.max(0,model.contextWindow-inputTokens),overContext:inputTokens>model.contextWindow}, rates:{inputPerMillion:model.inputPerMillion,cachedInputPerMillion:model.cachedInputPerMillion,outputPerMillion:model.outputPerMillion,label:'Standard rate'} };
+	return { modelId:model.id, model:model.name, provider:model.provider, inputTokens, outputTokens, accuracy:imageMeasurements.length?'provider-formula':'estimated', method:[text?'Provider-calibrated UTF-8 projection':'No text input',...imageMeasurements.map((image)=>image.method)].filter(Boolean).join(' + '), cost:{input:inputCost,cachedInput,output,total:inputCost+cachedInput+output}, context:{ratio:inputTokens/model.contextWindow,remaining:Math.max(0,model.contextWindow-inputTokens),overContext:inputTokens>model.contextWindow}, rates:{inputPerMillion:model.inputPerMillion,cachedInputPerMillion:model.cachedInputPerMillion,outputPerMillion:model.outputPerMillion,label:'Standard rate'} };
 }
 
 export async function compareModels(input: Parameters<typeof measureModel>[0], modelIds: readonly string[]) {
