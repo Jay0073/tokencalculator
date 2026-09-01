@@ -1,4 +1,5 @@
 import type { IExecuteFunctions, INodeExecutionData, INodeType, INodeTypeDescription, NodeConnectionType } from 'n8n-workflow';
+import { NodeOperationError } from 'n8n-workflow';
 import { MODELS, compareModels, measureModel } from './calculator.js';
 import { extractBinaryInput, resolveBinaryPropertyNames } from './extractInput.js';
 
@@ -68,7 +69,7 @@ export class TokenCalculator implements INodeType {
 				output.push({json:{operation,privacy:'Processed locally inside the n8n runtime; no content transmitted',source:{characters:text.length,files},result},pairedItem:{item:itemIndex}});
 			} catch(error) {
 				if(this.continueOnFail()) output.push({json:{error:error instanceof Error?error.message:String(error)},pairedItem:{item:itemIndex}});
-				else throw error;
+				else throw new NodeOperationError(this.getNode(), error as Error, { itemIndex });
 			}
 		}
 		return [output];
