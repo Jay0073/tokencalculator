@@ -1,0 +1,76 @@
+---
+import KnowledgeLayout from '../../layouts/KnowledgeLayout.astro';
+import WorkflowDiagram from '../../components/docs/WorkflowDiagram.astro';
+import FAQ from '../../components/seo/FAQ.astro';
+import RelatedDocs from '../../components/docs/RelatedDocs.astro';
+const toc=[{id:'install',label:'Install'},{id:'quick-start',label:'Quick start'},{id:'actions',label:'Actions'},{id:'files',label:'Multiple files'},{id:'recipes',label:'Flow recipes'},{id:'output',label:'Use the output'},{id:'troubleshooting',label:'Troubleshooting'},{id:'privacy',label:'Runtime boundary'}];
+const countOutput=`{
+  "operation": "count_tokens",
+  "source": {
+    "characters": 1240,
+    "files": [{ "name": "prompt.md", "extension": "md", "bytes": 1240, "extraction": "UTF-8 text decoded inside the Activepieces runtime" }]
+  },
+  "result": {
+    "modelId": "gpt-5.6-terra",
+    "inputTokens": 286,
+    "cost": { "input": 0.000572, "output": 0, "total": 0.000572 },
+    "context": { "remaining": 1049714, "overContext": false }
+  }
+}`;
+const faq=[
+  {q:'What is an Activepieces community piece?',a:'A community piece is an Activepieces integration distributed as a public npm package. An administrator installs it, and its actions then appear in the flow builder.'},
+  {q:'Does Token Calculator require an API key or connection?',a:'No. The piece has no authentication step because token and cost calculations run locally inside the Activepieces runtime.'},
+  {q:'How do I process multiple files in Activepieces?',a:'Add one item to the repeatable Files property for each mapped upload. The piece combines every readable text file and adds every supported image allocation.'},
+  {q:'Can I compare OpenAI, Claude, Gemini, and DeepSeek costs in one flow?',a:'Yes. Use Compare Models, select the candidates, and map cheapestModel.id or individual results into a downstream branch or report.'},
+];
+const faqSchema={'@context':'https://schema.org','@type':'FAQPage',mainEntity:faq.map(item=>({'@type':'Question',name:item.q,acceptedAnswer:{'@type':'Answer',text:item.a}}))};
+---
+<KnowledgeLayout title="TokenCalculator Activepieces Integration Documentation" description="Install and use TokenCalculator for Activepieces with mapped text, multiple files, images, cost estimation, and model-comparison flow recipes." heading="TokenCalculator for Activepieces" eyebrow="Docs · Automation" datePublished="2026-09-01" dateModified="2026-09-01" section="Documentation" type="TechArticle" keywords={['Activepieces token calculator','Activepieces community piece','Activepieces multiple files','LLM cost automation']} {toc}>
+  <p class="knowledge-lead">Measure the exact workload assembled by an Activepieces flow before sending it to an LLM. The piece accepts mapped text, repeatable file inputs, and supported images, then returns token, cost, and context-window fields that can drive later branches.</p>
+
+  <h2>What does the Activepieces Token Calculator piece do?</h2>
+  <p>Token Calculator is a community Activepieces piece for LLM token counting and model-cost estimation. It creates a reusable preflight step between content collection and an AI action, helping flows avoid context-limit failures, compare model prices, enforce per-request budgets, and record which uploaded files were included.</p>
+  <WorkflowDiagram title="Cost-aware Activepieces flow" caption="The piece measures the final mapped payload, then exposes structured fields to Branch, Router, storage, notification, or AI steps." steps={[{label:'Trigger',detail:'Webhook, form, or app',tone:'source'},{label:'Map content',detail:'Text and Files rows',tone:'source'},{label:'Token Calculator',detail:'Count or compare',tone:'measure'},{label:'Branch / Router',detail:'Use result fields',tone:'decision'},{label:'AI provider',detail:'Approved request',tone:'action'}]}/>
+
+  <h2 id="install">Install the community piece</h2>
+  <ol><li>Open your Activepieces instance and go to <strong>Settings → My Pieces</strong>.</li><li>Select <strong>Install Piece</strong>.</li><li>Enter <a href="https://www.npmjs.com/package/@jay0073/piece-tokencalculator"><code>@jay0073/piece-tokencalculator</code></a> and install the latest version.</li><li>Create or reopen a flow, add a step, and search for <strong>Token Calculator</strong>.</li></ol>
+  <p>Use version <strong>0.1.1 or later</strong>. No connection or TokenCalculator API key is required. Community npm pieces must be enabled by the deployment administrator; if <strong>Install Piece</strong> is unavailable, ask the administrator to enable or install it.</p>
+
+  <h2 id="quick-start">Quick start: count mapped text</h2>
+  <ol><li>Create a trigger, such as <strong>Webhook</strong>, <strong>Schedule</strong>, or a form/app trigger that returns text.</li><li>Add <strong>Token Calculator → Count Tokens</strong>.</li><li>Click <strong>Text</strong> and map the prompt/message field from the trigger or an earlier step.</li><li>Leave <strong>Files</strong> empty, choose the target model, and test the step.</li></ol>
+  <div class="technical-callout"><span>Flow</span><code>Webhook → Token Calculator / Count Tokens → Branch → LLM</code><span>Map</span><code>Webhook body prompt → Text</code></div>
+  <p>Use the data picker instead of manually guessing a template path. Activepieces inserts the correct reference for the selected trigger or step output.</p>
+
+  <h2 id="actions">Available actions</h2>
+  <h3>Count Tokens</h3><p>Choose one model and measure combined text and files. Use this for a budget check or context-window guard without forecasting generated output.</p>
+  <h3>Estimate Cost</h3><p>Choose one model and provide <strong>Expected Output Tokens</strong>. Optionally enter <strong>Cached Input Tokens</strong>. The result separates normal input, cached input, output, and total USD cost.</p>
+  <h3>Compare Models</h3><p>Select two or more models and enter expected output tokens. The action returns a result per model plus <code>cheapestModel</code> and <code>lowestTokenCount</code> summaries.</p>
+
+  <h2 id="files">Text, images, and multiple files</h2>
+  <p>The <strong>Files</strong> property is a repeatable list:</p>
+  <ol><li>Under <strong>Files</strong>, select <strong>Add Item</strong>.</li><li>Map a file from the trigger or previous step into that row's <strong>File</strong> field.</li><li>Add another item for every additional file.</li><li>Map any prompt or instruction into <strong>Text</strong>; it is combined with all readable files.</li></ol>
+  <div class="technical-callout"><span>Example mapping</span><code>Form file 1 → Files[0].File</code><code>Form file 2 → Files[1].File</code><code>Form instructions → Text</code></div>
+  <p>Supported text formats include TXT, Markdown, JSON, CSV, common source-code formats, HTML/XML, YAML, SQL, shell scripts, and logs. Supported images are PNG, JPEG, GIF, and WebP. Each file may be up to 10 MB.</p>
+  <p>Text files are decoded as UTF-8 and joined with blank lines. Every image is measured separately and added to the input total. <strong>Image Detail</strong> controls OpenAI's low/high image formula; other families use their published rules. Convert PDF and DOCX files to text in an earlier piece and map the result through <strong>Text</strong>.</p>
+  <WorkflowDiagram title="Repeatable file input" caption="Each Files row receives one Activepieces file object. The piece creates one combined measurement while preserving per-file audit metadata." steps={[{label:'Form or app files',detail:'One or many uploads',tone:'source'},{label:'Files rows',detail:'One file per row',tone:'source'},{label:'Local extraction',detail:'UTF-8 or image size',tone:'measure'},{label:'One result',detail:'Tokens, cost, context',tone:'action'}]}/>
+
+  <h2 id="recipes">Practical flow recipes</h2>
+  <h3>Stop expensive requests early</h3><div class="technical-callout"><span>Flow</span><code>Trigger → Count Tokens → Branch → LLM</code><span>Branch field</span><code>result.inputTokens</code><span>Example rule</span><code>Continue when inputTokens ≤ 100000</code></div><p>Route the other branch to a notification, summarization, or chunking step. For the model's absolute limit, branch on <code>result.context.overContext</code>.</p>
+  <h3>Pick the cheapest candidate model</h3><div class="technical-callout"><span>Flow</span><code>Trigger → Compare Models → Branch or Router → Provider action</code><span>Selection field</span><code>cheapestModel.id</code></div><p>Compare the returned ID with provider routes. Keep expected output tokens consistent across candidates.</p>
+  <h3>Measure several uploaded documents</h3><div class="technical-callout"><span>Flow</span><code>Form trigger → Count Tokens → Store result / LLM</code><span>Inputs</span><code>instructions in Text + each upload in a Files row</code></div><p>The action returns one combined token count and a <code>source.files</code> audit list showing exactly which uploads were measured.</p>
+
+  <h2 id="output">Understand and map the result</h2>
+  <pre class="docs-code"><code>{countOutput}</code></pre>
+  <ul><li><code>result.inputTokens</code>: combined token count for text, decoded files, and images.</li><li><code>result.cost.total</code>: estimated total USD cost.</li><li><code>result.context.remaining</code>: available context tokens after the input.</li><li><code>result.context.overContext</code>: boolean suited to a Branch step.</li><li><code>source.characters</code>: combined decoded-text length.</li><li><code>source.files</code>: filename, extension, byte size, and extraction method.</li><li><code>cheapestModel.id</code>: available from Compare Models for provider routing.</li></ul>
+  <p>Test the Token Calculator step once, then use Activepieces' data picker to select these fields downstream. This is more reliable than typing references manually.</p>
+
+  <h2 id="troubleshooting">Troubleshooting</h2>
+  <ul><li><strong>No input:</strong> map text, add at least one Files row, or do both.</li><li><strong>Only one upload counted:</strong> add a separate Files item for every upload; one row accepts one file.</li><li><strong>Unsupported file type:</strong> extract or convert it upstream and map the resulting string to Text.</li><li><strong>Invalid image:</strong> confirm it is a real PNG, JPEG, GIF, or WebP rather than a renamed document.</li><li><strong>Piece not found:</strong> confirm the full scoped package name and that community npm pieces are permitted.</li><li><strong>Old fields:</strong> update to <code>0.1.1</code> or later and refresh the flow editor.</li></ul>
+
+  <FAQ items={faq.map(item=>({question:item.q,answer:item.a}))} compact />
+
+  <h2 id="privacy">Runtime boundary</h2><p>Processing occurs inside the Activepieces runtime. The piece requires no TokenCalculator.dev account and does not transmit workflow content to TokenCalculator.dev. Execution history, file storage, logs, secrets, and network controls follow the deployment's policies.</p>
+  <p><a href="https://www.activepieces.com/docs/build-pieces/sharing-pieces/community">Activepieces community-piece documentation</a> · <a href="/docs/n8n/">n8n guide</a> · <a href="/integrations/">All integrations</a></p>
+  <RelatedDocs hrefs={['/docs/n8n/','/docs/api/','/docs/files/']} />
+  <script is:inline type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
+</KnowledgeLayout>

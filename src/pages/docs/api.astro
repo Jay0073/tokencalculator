@@ -1,10 +1,13 @@
 ---
 import KnowledgeLayout from '../../layouts/KnowledgeLayout.astro';
+import WorkflowDiagram from '../../components/docs/WorkflowDiagram.astro';
+import RelatedDocs from '../../components/docs/RelatedDocs.astro';
 const toc=[{id:'quickstart',label:'Quickstart'},{id:'request',label:'Request schema'},{id:'endpoints',label:'Endpoints'},{id:'response',label:'Response contract'},{id:'privacy',label:'Privacy and limits'},{id:'errors',label:'Errors'},{id:'local-sdk',label:'Local npm SDK'}];
 ---
 <KnowledgeLayout title="Developer API Reference | TokenCalculator.dev Docs" description="Reference for the free TokenCalculator HTTP API: token counts, model usage, extracted file content, image geometry, costs, context, batch requests, comparisons, limits, and local SDK." heading="Developer API reference" eyebrow="HTTP API · v1" datePublished="2026-08-28" dateModified="2026-08-28" section="Developer API" keywords={['token counting API','LLM API cost estimator','tokenizer API','model comparison API','local token SDK']} type="TechArticle" {toc}>
   <p class="knowledge-lead">The TokenCalculator Developer API exposes the same normalized model catalog and measurement mechanics as the web application. Use the HTTP API for non-sensitive remote integrations and the npm SDK when prompts, code, or extracted files must remain inside your environment.</p>
   <div class="technical-callout"><span>Base URL</span><code>https://tokencalculator.dev/api/v1</code><span>Machine contract</span><code>https://tokencalculator.dev/openapi.json</code></div>
+  <WorkflowDiagram title="API measurement lifecycle" caption="Choose the public HTTP boundary for non-sensitive inputs or the local npm SDK when content must remain in your own process." steps={[{label:'Application',detail:'Build normalized input',tone:'source'},{label:'HTTP or SDK',detail:'Choose privacy boundary',tone:'decision'},{label:'Model method',detail:'Text and image rules',tone:'measure'},{label:'Structured result',detail:'Usage, cost, context',tone:'action'}]}/>
   <h2 id="quickstart">Quickstart</h2><p>No API key is required for the initial public v1 service.</p>
   <pre><code>{`curl https://tokencalculator.dev/api/v1/count \\
   -H "Content-Type: application/json" \\
@@ -25,8 +28,14 @@ import { measureModel, compareModels } from '@jay0073/tokencalculator-core';
 
 const result = await measureModel({
   text: privatePrompt,
-  image: { width: 1920, height: 1080, detail: 'high' },
+  files: [
+    { text: extractedContract },
+    { text: extractedSourceCode },
+    { image: { width: 1920, height: 1080, detail: 'high' } },
+  ],
   outputTokens: 500,
-}, 'gpt-5.6-terra');`}</code></pre><p>The SDK currently accepts raw/extracted text and one image measurement per call. Browser-side PDF and DOCX extraction remains part of the web application; pass its extracted content to the SDK if you are building your own private ingestion pipeline.</p>
+}, 'gpt-5.6-terra');`}</code></pre>
+  <p>The SDK accepts raw text plus multiple already-extracted text files and image dimensions. Browser-side PDF and DOCX extraction remains part of the web application; pass extracted content to the SDK when building a private ingestion pipeline.</p>
   <div class="source-ledger"><h2>Standards and runtime references</h2><ul><li><a href="https://spec.openapis.org/oas/v3.1.2.html">OpenAPI Specification 3.1.2</a></li><li><a href="https://www.rfc-editor.org/rfc/rfc9457.html">RFC 9457: Problem Details for HTTP APIs</a></li><li><a href="https://developers.cloudflare.com/workers/static-assets/routing/worker-script/">Cloudflare Workers static assets and API routing</a></li><li><a href="https://developers.cloudflare.com/workers/runtime-apis/bindings/rate-limit/">Cloudflare Workers Rate Limiting binding</a></li></ul></div>
+  <RelatedDocs hrefs={['/docs/privacy-architecture/','/docs/n8n/','/docs/activepieces/']} />
 </KnowledgeLayout>

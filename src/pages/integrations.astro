@@ -1,0 +1,17 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumbs from '../components/seo/Breadcrumbs.astro';
+const breadcrumbs=[{label:'Home',href:'/'},{label:'Integrations'}];
+const integrations=[
+  {name:'n8n',status:'Available',state:'available',description:'Community node for token counting, cost measurement, and model comparison inside self-hosted or cloud workflows.',docs:'/docs/n8n/',packageUrl:'https://www.npmjs.com/package/@jay0073/n8n-nodes-tokencalculator'},
+  {name:'Activepieces',status:'Available',state:'available',description:'Independent piece for local workflow-runtime counting, cost estimation, and multi-model comparisons.',docs:'/docs/activepieces/',packageUrl:null},
+  {name:'Zapier',status:'Planned',state:'planned',description:'Actions for counting, estimating cost, and comparing models in Zaps.',docs:null,packageUrl:null},
+  {name:'Make',status:'Planned',state:'planned',description:'Modules for preflighting LLM workloads before downstream model operations.',docs:null,packageUrl:null},
+];
+---
+<BaseLayout title="TokenCalculator Integrations | n8n, Activepieces, Zapier & Make" description="Connect TokenCalculator token counting and LLM cost estimation with n8n and Activepieces. Zapier and Make integrations are planned." canonical="/integrations/" {breadcrumbs}>
+  <Breadcrumbs items={breadcrumbs}/>
+  <section class="shell integrations-hero pt-12 relative z-10"><span class="eyebrow">Workflow integrations</span><h1>Measure the workload before the model runs.</h1><p>Bring token, context-window, and model-cost preflight checks into automation pipelines. Each integration documents where calculation runs and which input types it supports.</p></section>
+  <section class="shell integration-grid relative z-10" aria-label="Available and planned integrations">{integrations.map((item,index)=><article class="integration-card panel" data-state={item.state}><div class="integration-card-head"><span class="mono">{String(index+1).padStart(2,'0')}</span><span class="integration-status">{item.status}</span></div><h2>{item.name}</h2><p>{item.description}</p><div class="integration-actions">{item.docs ? <a href={item.docs}>Read documentation →</a> : <span>Documentation coming soon</span>}{item.packageUrl && <a href={item.packageUrl}>npm package ↗</a>}</div></article>)}</section>
+  <section class="shell content-band relative z-10"><div><span class="eyebrow">Runtime boundary</span><h2 class="section-title mt-3">Privacy follows the execution environment.</h2></div><div class="content-copy muted"><p>The browser calculator keeps content in the browser. Workflow integrations execute inside n8n, Activepieces, Zapier, or Make, so their deployment, logging, retention, and credential policies apply.</p><p>The integrations do not require a TokenCalculator.dev API key when they use the shared local core package.</p><a href="/docs/privacy-architecture/">Review the browser privacy architecture →</a></div></section>
+</BaseLayout>

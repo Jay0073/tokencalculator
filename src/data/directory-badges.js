@@ -23,6 +23,30 @@
 /** @type {DirectoryBadge[]} */
 export const DIRECTORY_BADGES = [
   {
+    name: 'LaunchBuck',
+    href: 'https://launchbuck.com/p/tokencalculator-dev',
+    src: 'https://launchbuck.com/badges/card-accent.png',
+    alt: 'TokenCalculator.dev — Featured on LaunchBuck',
+    width: 190,
+    height: 58,
+  },
+  {
+    name: 'Direct2App',
+    href: 'https://www.direct2app.com',
+    src: 'https://www.direct2app.com/featured-dark.svg',
+    alt: 'Featured on Direct2App',
+    width: 190,
+    height: 54,
+  },
+  {
+    name: 'Dynamite AI',
+    href: 'https://www.dynamite-ai.com/tools/undefined',
+    src: '/badges/dynamite-ai.svg',
+    alt: 'Featured on Dynamite AI',
+    width: 190,
+    height: 54,
+  },
+  {
     name: 'Submit AI Tools',
     href: 'https://submitaitools.org',
     src: 'https://submitaitools.org/static_submitaitools/images/submitaitools.png',

@@ -12,7 +12,7 @@ No credentials are required. Content is processed inside the Activepieces execut
 
 ## Install from npm
 
-After this package is published publicly, open **Settings → My Pieces → Install Piece** in Activepieces and enter:
+Open **Settings → My Pieces → Install Piece** in Activepieces and enter:
 
 ```text
 @jay0073/piece-tokencalculator

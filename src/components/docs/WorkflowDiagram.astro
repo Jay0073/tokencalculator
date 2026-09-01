@@ -1,0 +1,17 @@
+---
+interface Step { label:string; detail?:string; tone?:'source'|'measure'|'decision'|'action' }
+interface Props { title:string; caption:string; steps:Step[] }
+const { title,caption,steps }=Astro.props;
+---
+<figure class="workflow-figure" aria-label={title}>
+  <div class="workflow-figure__head"><span>Workflow map</span><strong>{title}</strong></div>
+  <div class="workflow-rail">
+    {steps.map((step,index)=><>
+      <div class:list={['workflow-stop',`workflow-stop--${step.tone??'source'}`]}>
+        <span>{String(index+1).padStart(2,'0')}</span><strong>{step.label}</strong>{step.detail&&<small>{step.detail}</small>}
+      </div>
+      {(index < steps.length - 1) && <div class="workflow-arrow" aria-hidden="true">→</div>}
+    </>)}
+  </div>
+  <figcaption>{caption}</figcaption>
+</figure>

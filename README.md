@@ -29,6 +29,8 @@ npm test
 npm run build
 ```
 
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) for repository structure, package-specific checks, pull request guidance, and release expectations. User-facing changes are recorded in [`CHANGELOG.md`](CHANGELOG.md).
+
 ## Architecture
 
 - Astro static-site generation

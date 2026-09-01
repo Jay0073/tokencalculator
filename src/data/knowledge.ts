@@ -16,4 +16,5 @@ export const docsPages:KnowledgeEntry[] = [
   { title:'PDF, DOCX, and data files', description:'Browser extraction, supported formats, scanned-PDF limits, and combined counts.', href:'/docs/files/', label:'Input pipeline 02', published:'2026-08-28', updated:'2026-08-28', readTime:'Reference', kind:'docs' },
   { title:'Images and vision tokens', description:'Dimension inspection and provider-specific visual-token formulas.', href:'/docs/images/', label:'Input pipeline 03', published:'2026-08-28', updated:'2026-08-28', readTime:'Reference', kind:'docs' },
   { title:'n8n community node', description:'Use the published TokenCalculator node in repeatable document and prompt workflows.', href:'/docs/n8n/', label:'Automation', published:'2026-08-28', updated:'2026-08-28', readTime:'Reference', kind:'docs' },
+  { title:'Activepieces integration', description:'Install and use the TokenCalculator piece for local token counting, cost estimation, and model comparison.', href:'/docs/activepieces/', label:'Automation', published:'2026-09-01', updated:'2026-09-01', readTime:'Reference', kind:'docs' },
 ];

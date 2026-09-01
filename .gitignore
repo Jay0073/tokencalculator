@@ -6,3 +6,9 @@ packages/*/dist/
 .wrangler/
 .DS_Store
 *.log
+
+# Local code-graph analysis output
+graphify-out/
+
+# Private Search Console exports
+submission-assets/tokencalculator.dev-Performance-on-Search-*/

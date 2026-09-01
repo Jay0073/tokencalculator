@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="190" height="54" viewBox="0 0 190 54" role="img" aria-labelledby="title desc">
+  <title id="title">Featured on Dynamite AI</title>
+  <desc id="desc">Dynamite AI directory badge</desc>
+  <defs><linearGradient id="surface" x1="0" y1="0" x2="190" y2="54" gradientUnits="userSpaceOnUse"><stop stop-color="#ffffff"/><stop offset="1" stop-color="#f5f3ff"/></linearGradient></defs>
+  <rect x=".5" y=".5" width="189" height="53" rx="7.5" fill="url(#surface)" stroke="#e9d5ff"/>
+  <text x="15" y="32" fill="#581c87" font-family="Arial, sans-serif" font-size="13" font-weight="600">Featured on</text>
+  <text x="88" y="32" fill="#7e22ce" font-family="Arial, sans-serif" font-size="14" font-weight="700">Dynamite AI</text>
+  <path d="M166 20h7v7M173 20l-9 9M170 29v4a2 2 0 0 1-2 2h-9a2 2 0 0 1-2-2v-9a2 2 0 0 1 2-2h4" fill="none" stroke="#9333ea" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

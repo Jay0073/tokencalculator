@@ -1,11 +1,11 @@
 ---
 import type { Locale } from '../../i18n/config';
-interface Props { items: { question:string; answer:string }[]; locale?:Locale }
-const { items, locale='en' } = Astro.props;
+interface Props { items: { question:string; answer:string }[]; locale?:Locale; compact?:boolean }
+const { items, locale='en', compact=false } = Astro.props;
 const labels={en:['Plain answers','Frequently asked questions'],es:['Respuestas claras','Preguntas frecuentes'],ja:['わかりやすい回答','よくある質問'],de:['Klare Antworten','Häufig gestellte Fragen'],'pt-BR':['Respostas claras','Perguntas frequentes']} as const;
 const [eyebrow,title]=labels[locale];
 ---
-<section class="shell mt-24 relative z-10" aria-labelledby="faq-title">
+<section class:list={[!compact&&'shell',compact?'docs-shared-faq':'mt-24','relative','z-10']} aria-labelledby="faq-title">
   <span class="eyebrow">{eyebrow}</span><h2 id="faq-title" class="section-title mt-3 mb-8">{title}</h2>
   <div class="border-t hairline">{items.map((item)=><details class="group border-b hairline py-5"><summary class="font-medium cursor-pointer list-none flex justify-between gap-6">{item.question}<span class="mono text-[var(--accent)] group-open:rotate-45">+</span></summary><p class="muted max-w-3xl mb-0 mt-3">{item.answer}</p></details>)}</div>
 </section>

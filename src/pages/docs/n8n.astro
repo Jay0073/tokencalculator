@@ -1,12 +1,87 @@
 ---
 import KnowledgeLayout from '../../layouts/KnowledgeLayout.astro';
-const toc=[{id:'install',label:'Install'},{id:'operations',label:'Operations'},{id:'workflow',label:'Workflow pattern'},{id:'privacy',label:'Runtime boundary'}];
+import WorkflowDiagram from '../../components/docs/WorkflowDiagram.astro';
+import FAQ from '../../components/seo/FAQ.astro';
+import RelatedDocs from '../../components/docs/RelatedDocs.astro';
+const toc=[{id:'install',label:'Install'},{id:'quick-start',label:'Quick start'},{id:'inputs',label:'Inputs'},{id:'files',label:'Multiple files'},{id:'recipes',label:'Workflow recipes'},{id:'output',label:'Use the output'},{id:'troubleshooting',label:'Troubleshooting'},{id:'privacy',label:'Runtime boundary'}];
+const starterWorkflow=`{
+  "name": "TokenCalculator preflight",
+  "nodes": [
+    { "parameters": {}, "id": "manual-trigger", "name": "Run workflow", "type": "n8n-nodes-base.manualTrigger", "typeVersion": 1, "position": [240, 300] },
+    { "parameters": { "jsCode": "return [{ json: { text: 'Summarize this customer message in three bullets.' } }];" }, "id": "sample-text", "name": "Sample text", "type": "n8n-nodes-base.code", "typeVersion": 2, "position": [460, 300] },
+    { "parameters": { "operation": "count", "source": "text", "text": "={{ $json.text }}", "modelId": "gpt-5.6-terra" }, "id": "token-calculator", "name": "Token Calculator", "type": "@jay0073/n8n-nodes-tokencalculator.tokenCalculator", "typeVersion": 1, "position": [700, 300] }
+  ],
+  "connections": {
+    "Run workflow": { "main": [[{ "node": "Sample text", "type": "main", "index": 0 }]] },
+    "Sample text": { "main": [[{ "node": "Token Calculator", "type": "main", "index": 0 }]] }
+  },
+  "settings": {}
+}`;
+const outputExample=`{
+  "operation": "count",
+  "source": { "characters": 58, "files": [] },
+  "result": {
+    "modelId": "gpt-5.6-terra",
+    "inputTokens": 12,
+    "outputTokens": 0,
+    "cost": { "input": 0.000024, "output": 0, "total": 0.000024 },
+    "context": { "ratio": 0.000011, "remaining": 1049988, "overContext": false }
+  }
+}`;
+const faq=[
+  {q:'Can n8n count tokens before calling OpenAI, Claude, Gemini, or DeepSeek?',a:'Yes. Place Token Calculator before the provider node, map the final text or files, and use its inputTokens, cost, and context fields to decide whether the request should continue.'},
+  {q:'How do I count multiple files from an n8n Form Trigger?',a:'Choose a binary input mode and set Binary Properties to * for every upload, a prefix wildcard such as uploads*, or an explicit comma-separated list of binary properties.'},
+  {q:'Does the n8n token calculator upload my prompt?',a:'No content is sent to TokenCalculator.dev. Calculation runs inside the n8n runtime, although n8n execution logs and retention settings still apply.'},
+  {q:'Can the node read PDF or DOCX files?',a:'Not directly. Extract PDF or DOCX text with an earlier n8n node and map that output into the Text field.'},
+];
+const faqSchema={'@context':'https://schema.org','@type':'FAQPage',mainEntity:faq.map(item=>({'@type':'Question',name:item.q,acceptedAnswer:{'@type':'Answer',text:item.a}}))};
 ---
-<KnowledgeLayout title="TokenCalculator n8n Community Node Documentation" description="Install and use the @jay0073/n8n-nodes-tokencalculator community node for text, file, context-window, and LLM cost calculations in n8n workflows." heading="TokenCalculator for n8n" eyebrow="Docs · Automation" datePublished="2026-08-28" dateModified="2026-08-28" section="Documentation" type="TechArticle" keywords={['n8n token calculator','n8n community node','LLM cost workflow']} {toc}>
-  <p class="knowledge-lead">The community node brings the shared TokenCalculator core into repeatable n8n workflows, so prompts and extracted content can be measured before an expensive model step.</p>
-  <h2 id="install">Install the verified package</h2><p>In n8n Community Nodes, install <a href="https://www.npmjs.com/package/@jay0073/n8n-nodes-tokencalculator"><code>@jay0073/n8n-nodes-tokencalculator</code></a>. The package is published from GitHub Actions with npm provenance. Review the installed version and node permissions before use.</p>
-  <h2 id="operations">Operations</h2><p>The node exposes token and cost calculations backed by <a href="https://www.npmjs.com/package/@jay0073/tokencalculator-core"><code>@jay0073/tokencalculator-core</code></a>. Configure the input field, model/provider selection, and output mapping in the node UI.</p>
-  <h2 id="workflow">Recommended workflow pattern</h2><div class="technical-callout"><span>Preflight branch</span><code>Source → Extract → TokenCalculator → IF(context/cost) → LLM</code></div><p>Keep extraction explicit, measure the final text passed downstream, reject or chunk oversized items, then call the model. Persist the preflight count beside response usage metadata to monitor the provider overhead delta.</p>
-  <h2 id="privacy">Runtime boundary</h2><p>The website's browser-only privacy guarantee applies to the web calculator. In n8n, data is processed inside your n8n runtime and follows that deployment's execution-data, logging, and credential policies. The node itself does not require a TokenCalculator.dev API key.</p>
-  <p><a href="https://docs.n8n.io/integrations/community-nodes/installation/">n8n community-node installation docs</a> · <a href="/">Open the browser tool</a></p>
+<KnowledgeLayout title="TokenCalculator n8n Community Node Documentation" description="Install and use the TokenCalculator n8n community node for text, multiple files, images, token counting, cost estimates, and model comparisons." heading="TokenCalculator for n8n" eyebrow="Docs · Automation" datePublished="2026-08-28" dateModified="2026-09-01" section="Documentation" type="TechArticle" keywords={['n8n token calculator','n8n community node','n8n form multiple files','LLM cost workflow']} {toc}>
+  <p class="knowledge-lead">Add a local preflight step before an LLM call. The node can count mapped text, combine multiple text or source files, apply provider image-token formulas, estimate cost, and compare models without sending the input to TokenCalculator.dev.</p>
+
+  <h2>What is an n8n token calculator?</h2>
+  <p>An n8n token calculator is a workflow step that measures an LLM request before the paid model call. TokenCalculator turns prompts, form uploads, source files, and images into an input-token count, context-window usage, and model cost estimate. It fits AI agents, document-processing forms, support automation, content pipelines, and any n8n workflow that needs a predictable token or spending limit.</p>
+  <WorkflowDiagram title="LLM request preflight" caption="Measure the exact payload after extraction and before the provider call; branch on token, context, or cost fields." steps={[{label:'Trigger or form',detail:'Text and uploads',tone:'source'},{label:'Prepare content',detail:'Extract or combine',tone:'source'},{label:'Token Calculator',detail:'Count and estimate',tone:'measure'},{label:'IF guard',detail:'Budget or context',tone:'decision'},{label:'LLM node',detail:'Approved inputs',tone:'action'}]}/>
+
+  <h2 id="install">Install the community node</h2>
+  <ol><li>In n8n, open <strong>Settings → Community nodes</strong>.</li><li>Select <strong>Install</strong> and enter <a href="https://www.npmjs.com/package/@jay0073/n8n-nodes-tokencalculator"><code>@jay0073/n8n-nodes-tokencalculator</code></a>.</li><li>Accept n8n's community-node notice, install the package, then search the node picker for <strong>Token Calculator</strong>.</li></ol>
+  <p>Use version <strong>0.1.5 or later</strong> for multiple-file Form Trigger support. If your deployment manages community packages through environment variables, the UI cannot remove or update them; change the deployment configuration and restart n8n instead.</p>
+
+  <h2 id="quick-start">Quick start: dynamic text</h2>
+  <ol><li>Add a <strong>Manual Trigger</strong>, then an <strong>Edit Fields</strong> or <strong>Code</strong> node that outputs a field named <code>text</code>.</li><li>Add <strong>Token Calculator</strong> and choose <strong>Count Tokens</strong>.</li><li>Set <strong>Input Source</strong> to <strong>Text</strong>.</li><li>Set <strong>Text</strong> to <code>{'{{ $json.text }}'}</code>, choose a model, and execute the step.</li></ol>
+  <div class="technical-callout"><span>Dynamic expression</span><code>{'{{ $json.text }}'}</code><span>Nested webhook field</span><code>{'{{ $json.body.prompt }}'}</code></div>
+  <p>The expression must resolve to a real field in the incoming item. If the input panel shows <code>undefined</code>, inspect the previous node's JSON and drag the correct field into <strong>Text</strong>.</p>
+  <h3>Importable starter workflow</h3><p>Copy this JSON, choose <strong>Import from clipboard</strong> in n8n, and run it. The community node must already be installed.</p>
+  <pre class="docs-code"><code>{starterWorkflow}</code></pre>
+
+  <h2 id="inputs">Choose the right input mode</h2>
+  <ul><li><strong>Text:</strong> mapped prompts, messages, database fields, webhook bodies, or text assembled by an earlier Code node.</li><li><strong>Binary File:</strong> one or more incoming text/source/data files or supported images.</li><li><strong>Text and Binary File:</strong> combines mapped text with every selected binary file into one measurement.</li></ul>
+  <p>Readable text formats include TXT, Markdown, JSON, CSV, common source-code formats, HTML/XML, YAML, SQL, shell scripts, and logs. Images include PNG, JPEG, GIF, and WebP. Each file is limited to 10 MB. PDF and DOCX extraction is not performed by this node; extract their text in an earlier node and map the result through <strong>Text</strong>.</p>
+
+  <h2 id="files">Form Trigger and multiple files</h2>
+  <p>n8n stores Form Trigger uploads as binary properties. A multi-file field commonly becomes several properties with numeric suffixes. Token Calculator supports all of them:</p>
+  <ol><li>In <strong>Form Trigger</strong>, add a <strong>File</strong> field and enable multiple-file upload.</li><li>Connect it directly to <strong>Token Calculator</strong>.</li><li>Choose <strong>Binary File</strong> or <strong>Text and Binary File</strong>.</li><li>Set <strong>Binary Properties</strong> to <code>*</code> for every incoming file. Use <code>uploads*</code> for properties beginning with <code>uploads</code>, or a comma-separated list such as <code>contract0,contract1</code>.</li></ol>
+  <div class="technical-callout"><span>All files</span><code>*</code><span>One field prefix</span><code>uploads*</code><span>Explicit properties</span><code>document0,document1,image0</code></div>
+  <p>All readable text files are joined with blank lines. Every supported image contributes its own token allocation. The output's <code>source.files</code> array records each filename, size, extraction method, and n8n binary property.</p>
+  <WorkflowDiagram title="Multiple Form Trigger uploads" caption="The Form Trigger keeps several uploads on one n8n item as separate binary properties. A wildcard collects them into one measurement." steps={[{label:'n8n Form',detail:'Allow multiple files',tone:'source'},{label:'Binary properties',detail:'uploads0, uploads1…',tone:'source'},{label:'Selector: uploads*',detail:'Resolve every match',tone:'measure'},{label:'Combined result',detail:'Text + every image',tone:'action'}]}/>
+
+  <h2 id="recipes">Useful workflow recipes</h2>
+  <h3>Reject an oversized prompt before the LLM</h3><div class="technical-callout"><span>Flow</span><code>Webhook → Token Calculator → IF → LLM</code><span>IF expression</span><code>{'{{ $json.result.context.overContext }}'}</code></div><p>Send the <code>false</code> branch to the LLM. Route the <code>true</code> branch to a chunking step, storage, or a clear error response.</p>
+  <h3>Apply a token budget</h3><p>In an IF node, compare <code>{'{{ $json.result.inputTokens }}'}</code> with your limit—for example, <code>100000</code>. This is useful when your operational limit is smaller than the model's maximum context window.</p>
+  <h3>Compare model cost before routing</h3><p>Choose <strong>Compare Models</strong>, select candidate models, and set <strong>Expected Output Tokens</strong>. Inspect each row in <code>result</code> and route based on <code>cost.total</code>.</p>
+
+  <h2 id="output">Understand and reuse the output</h2>
+  <pre class="docs-code"><code>{outputExample}</code></pre>
+  <ul><li><code>result.inputTokens</code>: measured input tokens.</li><li><code>result.cost.total</code>: estimated total USD cost.</li><li><code>result.context.remaining</code>: tokens remaining in the selected model's context window.</li><li><code>result.context.overContext</code>: ready-to-use boolean for an IF node.</li><li><code>source.files</code>: audit metadata for every processed upload.</li></ul>
+  <p>OpenAI-compatible text uses local BPE tokenization. Other provider families are deterministic estimates; images use provider formulas. Provider billing remains authoritative.</p>
+
+  <h2 id="troubleshooting">Troubleshooting</h2>
+  <ul><li><strong>Text shows undefined:</strong> execute the previous node and map a field visible in its output.</li><li><strong>No files were counted:</strong> choose a binary input mode and use <code>*</code>, the correct prefix wildcard, or exact property names.</li><li><strong>Unsupported file type:</strong> extract it first, then pass plain text. PDF/DOCX bytes are not guessed as UTF-8.</li><li><strong>Package cannot be edited in the UI:</strong> it was installed through deployment environment variables.</li><li><strong>Old behavior after updating:</strong> confirm version <code>0.1.5</code> or later, restart n8n, and reopen the editor.</li></ul>
+
+  <FAQ items={faq.map(item=>({question:item.q,answer:item.a}))} compact />
+
+  <h2 id="privacy">Runtime boundary</h2><p>Processing occurs inside your n8n runtime. The node requires no TokenCalculator.dev account or API key and does not send workflow content to TokenCalculator.dev. Your deployment still controls execution-data retention, logs, storage, credentials, and access.</p>
+  <p><a href="https://docs.n8n.io/integrations/community-nodes/installation/">n8n installation documentation</a> · <a href="/docs/activepieces/">Activepieces guide</a> · <a href="/integrations/">All integrations</a></p>
+  <RelatedDocs hrefs={['/docs/activepieces/','/docs/api/','/docs/files/']} />
+  <script is:inline type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
 </KnowledgeLayout>

@@ -1,0 +1,9 @@
+---
+import { docsPages } from '../../data/knowledge';
+interface Props { hrefs:string[] }
+const entries=Astro.props.hrefs.map((href:string)=>docsPages.find(entry=>entry.href===href)).filter(Boolean);
+---
+<section class="related-docs" aria-labelledby="related-docs-title">
+  <div class="related-docs__head"><span class="eyebrow">Continue reading</span><h2 id="related-docs-title">Related documentation</h2></div>
+  <div class="related-docs__grid">{entries.map(entry=><a href={entry!.href}><span>{entry!.label}</span><strong>{entry!.title}</strong><small>{entry!.description}</small><i aria-hidden="true">Read →</i></a>)}</div>
+</section>

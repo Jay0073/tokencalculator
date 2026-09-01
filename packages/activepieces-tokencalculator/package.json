@@ -1,6 +1,6 @@
 {
   "name": "@jay0073/piece-tokencalculator",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Privacy-first local LLM token counting and model cost comparison for Activepieces",
   "license": "MIT",
   "homepage": "https://tokencalculator.dev",

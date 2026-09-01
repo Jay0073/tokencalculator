@@ -1,10 +1,13 @@
 ---
 import KnowledgeLayout from '../../layouts/KnowledgeLayout.astro';
+import WorkflowDiagram from '../../components/docs/WorkflowDiagram.astro';
+import RelatedDocs from '../../components/docs/RelatedDocs.astro';
 const toc=[{id:'claim',label:'The precise privacy claim'},{id:'pipeline',label:'Local execution path'},{id:'network',label:'Network boundary'},{id:'lifecycle',label:'Data lifecycle'},{id:'enterprise',label:'Enterprise use'}];
 ---
 <KnowledgeLayout title="Browser-Local Privacy Architecture | TokenCalculator.dev Docs" description="Technical privacy architecture for counting confidential prompts, PDF and DOCX documents, source code, data files, and images locally in the browser without uploading their contents for calculation." heading="Privacy architecture for confidential LLM inputs" eyebrow="Docs · Trust boundary" datePublished="2026-08-28" dateModified="2026-08-28" section="Documentation" type="TechArticle" keywords={['private token calculator','browser token counter','enterprise LLM privacy','local file token counter']} {toc}>
   <p class="knowledge-lead">TokenCalculator.dev is a privacy-first, browser-based token calculator. One hundred percent of the prompt text, readable document content, source code, data-file content, and image data submitted for a calculation remains in the active browser session. None of that content is uploaded to TokenCalculator.dev for counting.</p>
   <div class="technical-callout"><span>Content boundary</span><code>submitted content → browser memory → local extraction → Web Worker → result</code></div>
+  <WorkflowDiagram title="Browser-local trust boundary" caption="Calculation content stays on the device. Public assets, disclosed analytics, and pricing metadata use separate network paths without the submitted workload." steps={[{label:'Your device',detail:'Prompt, files, images',tone:'source'},{label:'Browser memory',detail:'Temporary input state',tone:'source'},{label:'Local workers',detail:'Extract and count',tone:'measure'},{label:'Result view',detail:'Tokens, cost, context',tone:'action'}]}/>
 
   <h2 id="claim">The precise privacy claim</h2>
   <p><strong>Browser-local calculation</strong> means the sensitive payload follows an on-device execution path. It does not mean the public website is an air-gapped application. The page can make ordinary network requests for public assets, privacy-disclosed analytics, and current model-pricing metadata, but those requests do not contain prompts, extracted text, source code, images, token counts, or projected costs.</p>
@@ -37,4 +40,5 @@ const toc=[{id:'claim',label:'The precise privacy claim'},{id:'pipeline',label:'
   <p>For high-assurance evaluation, use a managed browser, inspect the network requests, review the open implementation, and compare the local result with approved provider usage metadata using a non-sensitive test fixture.</p>
 
   <div class="source-ledger"><h2>Implementation ledger</h2><p><strong>Reviewed:</strong> 28 August 2026 · <strong>Scope:</strong> browser calculation trust boundary</p><ul><li><a href="/docs/text-and-code/">Text and code calculation methods</a></li><li><a href="/docs/files/">PDF, DOCX, and file extraction</a></li><li><a href="/docs/images/">Image-token formulas</a></li><li><a href="/methodology/">Methodology and accuracy labels</a></li><li><a href="/privacy-policy/">Privacy policy and telemetry disclosure</a></li></ul></div>
+  <RelatedDocs hrefs={['/docs/text-and-code/','/docs/files/','/docs/images/']} />
 </KnowledgeLayout>

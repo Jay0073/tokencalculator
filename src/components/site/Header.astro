@@ -1,6 +1,7 @@
 ---
 import BrandMark from './BrandMark.astro';
 import ProviderIcon from './ProviderIcon.astro';
+import UiIcon from './UiIcon.astro';
 import { localeNames, locales, localizedPath, type Locale } from '../../i18n/config';
 import { homeCopy } from '../../i18n/home';
 interface Props { locale?: Locale }
@@ -11,35 +12,97 @@ const hasLocalizedEquivalent=currentPath==='/' || locales.some((item)=>currentPa
 const localeDestination=(item:Locale)=>localizedPath(hasLocalizedEquivalent?currentPath:'/',item);
 ---
 <header class="site-header relative z-20">
-  <div class="shell header-shell h-[76px] grid grid-cols-[1fr_auto] md:grid-cols-[1fr_auto_1fr] items-center gap-2 sm:gap-5">
+  <div class="shell header-shell h-[80px] grid grid-cols-[1fr_auto] lg:grid-cols-[1fr_auto_1fr] items-center gap-2 sm:gap-5">
     <a href={localizedPath('/',locale)} class="flex items-center gap-3.5 no-underline w-max" aria-label="TokenCalculator.dev home">
       <BrandMark size={36}/>
       <span class="font-semibold tracking-[-.04em] text-[17px] sm:text-[18px]">TokenCalculator<span class="text-[var(--accent)]">.dev</span></span>
     </a>
-    <nav class="hidden md:flex items-center justify-center gap-1" aria-label="Provider tools">
-      <a class="nav-provider" href="/openai-token-counter/"><ProviderIcon provider="openai"/>OpenAI</a>
-      <a class="nav-provider" href="/claude-token-counter/"><ProviderIcon provider="anthropic"/>Claude</a>
-      <a class="nav-provider" href="/gemini-token-counter/"><ProviderIcon provider="google"/>Gemini</a>
-      <a class="nav-provider" href="/deepseek-token-counter/"><ProviderIcon provider="deepseek"/>DeepSeek</a>
-      <a class="nav-provider" href="/tokens-to-words-converter/" aria-current={currentPath==='/tokens-to-words-converter/'?'page':undefined}><span class="mono text-[12px] text-[var(--accent)]" aria-hidden="true">T↔W</span>Converter</a>
+    <nav class="hidden lg:flex items-center justify-center gap-1" aria-label="Primary navigation">
+      <details class="mega-menu relative" data-header-menu>
+        <summary class="nav-provider cursor-pointer list-none">
+          Calculators
+          <svg class="mega-chevron" width="13" height="13" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 4.5 3 3 3-3"/></svg>
+        </summary>
+        <div class="mega-popover fixed left-1/2 top-[80px] z-50 w-[min(680px,calc(100vw-32px))] -translate-x-1/2 overflow-hidden rounded-2xl border hairline bg-[var(--panel-raised)] shadow-[var(--shadow)]">
+          <div class="mega-grid">
+            <section aria-labelledby="mega-input-title">
+              <p class="mega-label" id="mega-input-title">Input and planning</p>
+              <a class="mega-link" href={localizedPath('/',locale)}>
+                <span class="mega-icon"><UiIcon name="calculator"/></span>
+                <span><strong>Token calculator</strong><small>Count text, PDF, DOCX, source code, data files, and image tokens locally.</small></span>
+              </a>
+              <a class="mega-link" href="/tokens-to-words-converter/">
+                <span class="mega-icon"><UiIcon name="convert"/></span>
+                <span><strong>Tokens ↔ words</strong><small>Translate context-window sizes into content-aware planning ranges.</small></span>
+              </a>
+              <a class="mega-link" href="/estimators/">
+                <span class="mega-icon"><UiIcon name="cost"/></span>
+                <span><strong>Cost Lab</strong><small>Model pricing, batch projections, cache effects, and request economics.</small></span>
+              </a>
+            </section>
+            <section aria-labelledby="mega-provider-title">
+              <p class="mega-label" id="mega-provider-title">Provider calculators</p>
+              <a class="mega-link mega-link-compact" href="/openai-token-counter/"><span class="mega-icon"><ProviderIcon provider="openai"/></span><span><strong>OpenAI</strong></span></a>
+              <a class="mega-link mega-link-compact" href="/claude-token-counter/"><span class="mega-icon"><ProviderIcon provider="anthropic"/></span><span><strong>Claude</strong></span></a>
+              <a class="mega-link mega-link-compact" href="/gemini-token-counter/"><span class="mega-icon"><ProviderIcon provider="google"/></span><span><strong>Gemini</strong></span></a>
+              <a class="mega-link mega-link-compact" href="/deepseek-token-counter/"><span class="mega-icon"><ProviderIcon provider="deepseek"/></span><span><strong>DeepSeek</strong></span></a>
+            </section>
+          </div>
+          <a class="mega-footer-link" href="/estimators/">Open all model and workload cost calculators <span aria-hidden="true">→</span></a>
+        </div>
+      </details>
+      <details class="mega-menu relative" data-header-menu>
+        <summary class="nav-provider cursor-pointer list-none">
+          Explore
+          <svg class="mega-chevron" width="13" height="13" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 4.5 3 3 3-3"/></svg>
+        </summary>
+        <div class="mega-popover fixed left-1/2 top-[80px] z-50 w-[min(680px,calc(100vw-32px))] -translate-x-1/2 overflow-hidden rounded-2xl border hairline bg-[var(--panel-raised)] shadow-[var(--shadow)]">
+          <div class="mega-grid">
+            <section aria-labelledby="mega-learn-title">
+              <p class="mega-label" id="mega-learn-title">Learn and verify</p>
+              <a class="mega-link" href="/docs/">
+                <span class="mega-icon"><UiIcon name="book"/></span>
+                <span><strong>Documentation</strong><small>Technical guides for text, files, images, APIs, and workflow nodes.</small></span>
+              </a>
+              <a class="mega-link" href="/methodology/">
+                <span class="mega-icon"><UiIcon name="methodology"/></span>
+                <span><strong>Methodology</strong><small>Tokenizer provenance, provider formulas, accuracy levels, and limits.</small></span>
+              </a>
+              <a class="mega-link" href="/docs/privacy-architecture/"><span class="mega-icon"><UiIcon name="shield"/></span><span><strong>Privacy architecture</strong><small>Inspect the browser-local processing boundary and network behavior.</small></span></a>
+            </section>
+            <section aria-labelledby="mega-company-title">
+              <p class="mega-label" id="mega-company-title">Resources</p>
+              <a class="mega-link mega-link-compact" href="/blog/"><span class="mega-icon"><UiIcon name="blog"/></span><span><strong>Engineering blog</strong></span></a>
+              <a class="mega-link" href="/docs/api/"><span class="mega-icon"><UiIcon name="api" size={20}/></span><span><strong>API reference</strong><small>Request contracts, batch counting, response fields, errors, and SDK usage.</small></span></a>
+              <a class="mega-link mega-link-compact" href="/about/"><span class="mega-icon"><UiIcon name="info"/></span><span><strong>About</strong></span></a>
+              <a class="mega-link mega-link-compact" href="/contact/"><span class="mega-icon"><UiIcon name="mail"/></span><span><strong>Contact</strong></span></a>
+            </section>
+          </div>
+        </div>
+      </details>
+      <a class="nav-provider" href="/integrations/" aria-current={currentPath==='/integrations/'?'page':undefined}><UiIcon name="plug" size={17}/>Integrations</a>
+      <a class="nav-provider nav-api" href="/developers/api/" aria-current={currentPath==='/developers/api/'?'page':undefined}>
+        <UiIcon name="api" size={19}/>
+        Developers
+      </a>
     </nav>
     <div class="flex items-center justify-end gap-2">
-      <span class="hidden xl:inline-flex h-9 shrink-0 items-center gap-2 whitespace-nowrap rounded-full border hairline bg-[var(--panel)] px-3 text-xs font-medium text-[var(--muted)]" title={copy.privacyDetail}>
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 5 6v5c0 4.6 2.8 8 7 10 4.2-2 7-5.4 7-10V6l-7-3Z"/><path d="m9.5 12 1.7 1.7 3.5-3.7"/></svg>
+      <span class="privacy-pill hidden xl:inline-flex h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 text-sm font-semibold" title={copy.privacyDetail}>
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 5 6v5c0 4.6 2.8 8 7 10 4.2-2 7-5.4 7-10V6l-7-3Z"/><path d="m9.5 12 1.7 1.7 3.5-3.7"/></svg>
         <span>{copy.privacyFirst}</span>
       </span>
-      <details id="language-menu" class="language-menu relative w-[112px] sm:w-[132px]">
-        <summary class="flex h-9 cursor-pointer list-none items-center rounded-full border hairline bg-[var(--panel)] px-3 text-xs font-medium text-[var(--muted)] transition-colors hover:text-[var(--text)]" aria-label={copy.language}>
-          <svg class="shrink-0" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.2 2.5 3.3 5.5 3.3 9S14.2 18.5 12 21M12 3c-2.2 2.5-3.3 5.5-3.3 9S9.8 18.5 12 21"/></svg>
-          <span class="min-w-0 flex-1 truncate px-2">{localeNames[locale]}</span>
+      <details id="language-menu" class="language-menu relative w-[112px] sm:w-[128px]">
+        <summary class="flex h-9 cursor-pointer list-none items-center rounded-full border hairline bg-[var(--panel)] px-2.5 text-sm font-semibold text-[var(--muted)] transition-colors hover:text-[var(--text)]" aria-label={copy.language}>
+          <svg class="shrink-0" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.2 2.5 3.3 5.5 3.3 9S14.2 18.5 12 21M12 3c-2.2 2.5-3.3 5.5-3.3 9S9.8 18.5 12 21"/></svg>
+          <span class="min-w-0 flex-1 truncate px-1.5">{localeNames[locale]}</span>
           <svg class="language-chevron shrink-0 transition-transform duration-200" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 4.5 3 3 3-3"/></svg>
         </summary>
         <div class="language-popover absolute right-0 top-[calc(100%+.55rem)] z-50 w-[188px] overflow-hidden rounded-xl border hairline bg-[var(--panel-raised)] p-1.5 shadow-[var(--shadow)]" role="menu" aria-label={copy.language}>
           {locales.map((item)=><a class="language-option relative flex min-h-9 items-center rounded-lg px-3 text-sm no-underline" data-active={item===locale ? 'true' : 'false'} data-locale-name={localeNames[item]} href={localeDestination(item)} role="menuitem" aria-current={item===locale ? 'page' : undefined}><span>{localeNames[item]}</span>{item===locale && <svg class="ml-auto text-[var(--accent)]" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3.5 8.5 3 3 6-7"/></svg>}</a>)}
         </div>
       </details>
-      <button id="theme-toggle" class="size-9 grid place-items-center border hairline rounded-full bg-[var(--panel)] text-[var(--muted)] hover:text-[var(--text)]" type="button" aria-label={copy.theme}>
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9c-5 2-11-4-9-9Z"/></svg>
+      <button id="theme-transition-toggle" class="size-9 grid place-items-center border hairline rounded-full bg-[var(--panel)] text-[var(--muted)] hover:text-[var(--text)]" type="button" aria-label={copy.theme}>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9c-5 2-11-4-9-9Z"/></svg>
       </button>
     </div>
   </div>
@@ -62,16 +125,24 @@ const localeDestination=(item:Locale)=>localizedPath(hasLocalizedEquivalent?curr
     localStorage.setItem('theme', root.classList.contains('light') ? 'light' : 'dark');
   });
   const languageMenu = document.querySelector('#language-menu');
+  const headerMenus = document.querySelectorAll('[data-header-menu]');
   languageMenu?.querySelectorAll('[data-locale-name]').forEach((link) => {
     link.addEventListener('click', () => localStorage.setItem('preferred-locale', link.getAttribute('data-locale-name') ?? ''));
   });
   document.addEventListener('click', (event) => {
     if (languageMenu instanceof HTMLDetailsElement && !languageMenu.contains(event.target)) languageMenu.open = false;
+    headerMenus.forEach((menu) => {
+      if (menu instanceof HTMLDetailsElement && !menu.contains(event.target)) menu.open = false;
+    });
   });
   document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape' && languageMenu instanceof HTMLDetailsElement) {
-      languageMenu.open = false;
-      languageMenu.querySelector('summary')?.focus();
+    if (event.key === 'Escape') {
+      [languageMenu, ...headerMenus].forEach((menu) => {
+        if (menu instanceof HTMLDetailsElement && menu.open) {
+          menu.open = false;
+          menu.querySelector('summary')?.focus();
+        }
+      });
     }
   });
   const supported = { es: ['es'], ja: ['ja'], de: ['de'], 'pt-BR': ['pt-br', 'pt'] };
@@ -95,5 +166,52 @@ const localeDestination=(item:Locale)=>localizedPath(hasLocalizedEquivalent?curr
   document.querySelector('#locale-stay')?.addEventListener('click', () => {
     localStorage.setItem('locale-suggestion-dismissed', 'true');
     document.querySelector('#locale-suggestion')?.classList.add('hidden');
+  });
+</script>
+
+<script>
+  const themeTransitionToggle = document.querySelector('#theme-transition-toggle');
+
+  themeTransitionToggle?.addEventListener('click', async () => {
+    const root = document.documentElement;
+    const applyTheme = () => {
+      root.classList.toggle('light');
+      localStorage.setItem('theme', root.classList.contains('light') ? 'light' : 'dark');
+    };
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!document.startViewTransition || reduceMotion || !(themeTransitionToggle instanceof HTMLElement)) {
+      applyTheme();
+      return;
+    }
+
+    const bounds = themeTransitionToggle.getBoundingClientRect();
+    const originX = bounds.left + bounds.width / 2;
+    const originY = bounds.top + bounds.height / 2;
+    const radius = Math.hypot(
+      Math.max(originX, window.innerWidth - originX),
+      Math.max(originY, window.innerHeight - originY),
+    );
+
+    themeTransitionToggle.setAttribute('disabled', '');
+    const transition = document.startViewTransition(applyTheme);
+    try {
+      await transition.ready;
+      root.animate(
+        {
+          clipPath: [
+            `circle(0px at ${originX}px ${originY}px)`,
+            `circle(${radius}px at ${originX}px ${originY}px)`,
+          ],
+        },
+        {
+          duration: 680,
+          easing: 'cubic-bezier(.76, 0, .24, 1)',
+          pseudoElement: '::view-transition-new(root)',
+        },
+      );
+      await transition.finished;
+    } finally {
+      themeTransitionToggle.removeAttribute('disabled');
+    }
   });
 </script>
