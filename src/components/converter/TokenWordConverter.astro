@@ -1,0 +1,92 @@
+<section class="shell max-w-4xl relative z-10" aria-labelledby="converter-title">
+  <div class="conversion-instrument panel rounded-xl" data-token-word-converter>
+    <div class="conversion-controls">
+      <span class="eyebrow">Conversion input</span>
+      <div class="conversion-direction mt-5" role="group" aria-label="Conversion direction">
+        <button type="button" data-direction="tokens-to-words" aria-pressed="true">Tokens → words</button>
+        <button type="button" data-direction="words-to-tokens" aria-pressed="false">Words → tokens</button>
+      </div>
+      <label class="conversion-field">
+        <span id="conversion-quantity-label">Token quantity</span>
+        <input id="conversion-quantity" type="number" inputmode="numeric" min="0" step="1" value="1000000" aria-labelledby="conversion-quantity-label" />
+      </label>
+      <label class="conversion-field">
+        <span>Content profile</span>
+        <select id="conversion-profile">
+          <option value="prose">English prose</option>
+          <option value="technical">Technical writing</option>
+          <option value="code">Source code</option>
+          <option value="structured">JSON and structured data</option>
+          <option value="multilingual">Multilingual text</option>
+        </select>
+      </label>
+      <p id="conversion-profile-note" class="muted text-sm mt-4 mb-0">Natural-language paragraphs with ordinary punctuation and spacing.</p>
+    </div>
+
+    <div class="conversion-readout" aria-live="polite">
+      <div>
+        <span class="eyebrow">Planning estimate</span>
+        <p id="conversion-result" class="conversion-result">750,000</p>
+        <p id="conversion-unit" class="conversion-unit">estimated words</p>
+        <div class="conversion-range" aria-label="Planning interval">
+          <div><span>Lower bound</span><strong id="conversion-low">700,000</strong></div>
+          <div><span>Upper bound</span><strong id="conversion-high">800,000</strong></div>
+        </div>
+      </div>
+      <p id="conversion-formula" class="conversion-formula">1,000,000 tokens × 0.75 words/token</p>
+    </div>
+  </div>
+  <div class="mt-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-sm muted">
+    <p class="m-0">Have the actual content? Tokenize it instead of estimating.</p>
+    <a class="text-[var(--accent)] font-semibold" href="/">Open the exact content calculator →</a>
+  </div>
+</section>
+
+<script>
+  type Direction = 'tokens-to-words' | 'words-to-tokens';
+  type Profile = { center:number; low:number; high:number; note:string };
+  const profiles:Record<string,Profile>={
+    prose:{center:.75,low:.70,high:.80,note:'Natural-language paragraphs with ordinary punctuation and spacing.'},
+    technical:{center:.65,low:.55,high:.72,note:'Documentation with identifiers, numbers, commands, and domain terminology.'},
+    code:{center:.45,low:.32,high:.58,note:'Source code contains punctuation and identifiers that often consume more tokens per lexical word.'},
+    structured:{center:.38,low:.25,high:.52,note:'JSON keys, quoting, escaping, UUIDs, and compact values reduce the word-equivalent ratio.'},
+    multilingual:{center:.55,low:.35,high:.72,note:'Scripts and languages tokenize differently; use this wider interval for mixed-language planning.'},
+  };
+
+  function initializeConverter(){
+    const root=document.querySelector<HTMLElement>('[data-token-word-converter]');
+    if(!root||root.dataset.initialized==='true')return;
+    root.dataset.initialized='true';
+    let direction:Direction='tokens-to-words';
+    const quantity=root.querySelector<HTMLInputElement>('#conversion-quantity')!;
+    const profileSelect=root.querySelector<HTMLSelectElement>('#conversion-profile')!;
+    const format=(value:number)=>Math.max(0,Math.round(value)).toLocaleString('en-US');
+    const render=()=>{
+      const value=Math.max(0,Number(quantity.value)||0);
+      const profile=profiles[profileSelect.value]??profiles.prose;
+      const reverse=direction==='words-to-tokens';
+      const center=reverse?value/profile.center:value*profile.center;
+      const low=reverse?value/profile.high:value*profile.low;
+      const high=reverse?value/profile.low:value*profile.high;
+      root.querySelector('#conversion-result')!.textContent=format(center);
+      root.querySelector('#conversion-low')!.textContent=format(low);
+      root.querySelector('#conversion-high')!.textContent=format(high);
+      root.querySelector('#conversion-unit')!.textContent=reverse?'estimated tokens':'estimated words';
+      root.querySelector('#conversion-quantity-label')!.textContent=reverse?'Word quantity':'Token quantity';
+      root.querySelector('#conversion-profile-note')!.textContent=profile.note;
+      root.querySelector('#conversion-formula')!.textContent=reverse
+        ? `${format(value)} words ÷ ${profile.center.toFixed(2)} words/token`
+        : `${format(value)} tokens × ${profile.center.toFixed(2)} words/token`;
+    };
+    root.querySelectorAll<HTMLButtonElement>('[data-direction]').forEach((button)=>button.addEventListener('click',()=>{
+      direction=button.dataset.direction as Direction;
+      root.querySelectorAll<HTMLButtonElement>('[data-direction]').forEach((item)=>item.setAttribute('aria-pressed',String(item===button)));
+      render();
+    }));
+    quantity.addEventListener('input',render);
+    profileSelect.addEventListener('change',render);
+    render();
+  }
+  document.addEventListener('astro:page-load',initializeConverter);
+  initializeConverter();
+</script>

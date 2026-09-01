@@ -1,0 +1,40 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumbs from '../components/seo/Breadcrumbs.astro';
+import TokenWordConverter from '../components/converter/TokenWordConverter.astro';
+const breadcrumbs=[{label:'Home',href:'/'},{label:'Tokens to words converter'}];
+const faq=[
+  {question:'How many words are 1 million tokens?',answer:'For ordinary English prose, one million tokens is commonly about 750,000 words, with a planning interval of roughly 700,000 to 800,000 words. Code, structured data, technical notation, and multilingual text can differ substantially.'},
+  {question:'Is converting tokens to words exact?',answer:'No. A token count alone does not contain the original words, language, whitespace, or punctuation. Token-to-word conversion is a workload estimate; exact tokenization requires the actual content and a model tokenizer.'},
+  {question:'Why does source code produce fewer word-equivalents per token?',answer:'Identifiers, operators, punctuation, indentation, escaped strings, and compact syntax consume tokens without mapping cleanly to natural-language words.'},
+  {question:'Can I calculate exact tokens from my document?',answer:'Yes. Use the main TokenCalculator.dev calculator with the actual text, PDF, DOCX, code, data file, or supported image. Processing runs locally in the browser.'},
+];
+---
+<BaseLayout title="Tokens to Words Converter for LLM Context Windows" description="Convert LLM tokens to estimated words or words to tokens using planning profiles for English prose, technical writing, code, JSON, and multilingual text." canonical="/tokens-to-words-converter/" {breadcrumbs} {faq} application>
+  <Breadcrumbs items={breadcrumbs}/>
+  <section class="shell max-w-4xl pt-12 sm:pt-16 pb-7 relative z-10">
+    <span class="eyebrow">Context-window planning · reversible estimate</span>
+    <h1 id="converter-title" class="m-0 mt-4 text-[clamp(2.25rem,5vw,3.75rem)] leading-[1.02] tracking-[-.055em] max-w-3xl">Convert tokens to words—and words to tokens.</h1>
+    <p class="muted text-[16px] sm:text-[17px] mt-4 mb-0 max-w-2xl">Translate an abstract context-window number into a readable workload range. Choose a content profile because prose, code, JSON, and multilingual text do not share one universal conversion ratio.</p>
+  </section>
+
+  <TokenWordConverter/>
+
+  <section class="content-band shell relative z-10">
+    <div><span class="eyebrow">Conversion model</span><h2 class="section-title mt-3">A planning interval, not fabricated precision.</h2></div>
+    <div class="content-copy muted">
+      <p>The converter models words per token rather than claiming that every token equals a fixed fraction of a word. English prose starts from a 0.75 words-per-token center with a 0.70–0.80 interval. More syntactically dense profiles use lower centers and wider intervals.</p>
+      <p>In the reverse direction, the same profile is inverted: estimated tokens = words ÷ words per token. The calculation is deterministic, but its applicability depends on how closely the unknown content matches the chosen profile.</p>
+      <a href="/methodology/">Review the token measurement methodology →</a>
+    </div>
+  </section>
+
+  <section class="shell mt-20 relative z-10">
+    <span class="eyebrow">When accuracy matters</span><h2 class="section-title mt-3 mb-8">Use the content when you have the content.</h2>
+    <div class="definition-grid">
+      <div><dt>Tokens only</dt><dd>Use this converter to estimate how much prose or code may fit inside a context window.</dd></div>
+      <div><dt>Actual text</dt><dd>Use the main calculator to apply exact local OpenAI BPE or a disclosed provider-family projection.</dd></div>
+      <div><dt>Files and images</dt><dd>Attach PDF, DOCX, source, data, and supported images so the complete request is measured together.</dd></div>
+    </div>
+  </section>
+</BaseLayout>

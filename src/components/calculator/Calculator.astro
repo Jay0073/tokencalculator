@@ -23,7 +23,7 @@ const visibleProviders = [...new Set(visibleModels.map((model) => model.provider
     <div id="drop-overlay" class="hidden absolute inset-0 z-10 border-2 border-dashed border-[var(--accent)] bg-[color-mix(in_srgb,var(--accent)_7%,var(--panel))] place-items-center pointer-events-none"><span class="font-semibold text-[var(--accent)]">{t.drop}</span></div>
     <label for="prompt-input" class="sr-only">{t.text}</label>
     <textarea id="prompt-input" class="w-full min-h-52 sm:min-h-64 resize-y bg-transparent px-5 pt-5 sm:px-7 sm:pt-7 outline-none text-[16px] leading-7 placeholder:text-[var(--faint)]" placeholder={t.placeholder} spellcheck="false"></textarea>
-    <div id="token-inspector" class="hidden min-h-52 sm:min-h-64 px-5 py-5 sm:px-7 sm:py-7 mono text-sm leading-7 flex-wrap content-start gap-1 overflow-auto" aria-label="Exact o200k token boundaries"></div>
+    <div id="token-inspector" class="hidden h-52 sm:h-64 min-w-0 max-w-full px-5 py-5 sm:px-7 sm:py-7 mono text-sm leading-7 flex-wrap content-start gap-1 overflow-y-auto overflow-x-hidden" aria-label="Exact o200k token boundaries"></div>
 
     <div id="attachment-list" class="hidden px-5 sm:px-7 pb-3 flex flex-wrap gap-2" aria-live="polite"></div>
     <p id="input-error" class="hidden mx-5 sm:mx-7 mb-3 text-sm text-[var(--warn)]" role="alert"></p>
@@ -188,7 +188,7 @@ const visibleProviders = [...new Set(visibleModels.map((model) => model.provider
         const pieces=await requestInspection(text);
         inspector.innerHTML='';
         const note=document.createElement('p');note.className='basis-full muted text-xs mb-2';note.textContent=`${pieces.reduce((total,piece)=>total+piece.tokenIds.length,0).toLocaleString()} exact BPE tokens. Unicode characters can span multiple tokens, so those tokens stay in one readable chip.`;inspector.append(note);
-        pieces.forEach((piece)=>{const chip=document.createElement('span');chip.className='token-chip rounded px-1.5 py-0.5 whitespace-pre-wrap';chip.textContent=piece.text;chip.title=piece.tokenIds.length===1?`Token ${piece.tokenIds[0]}`:`${piece.tokenIds.length} tokens: ${piece.tokenIds.join(', ')}`;chip.setAttribute('aria-label',`${piece.tokenIds.length} token${piece.tokenIds.length===1?'':'s'}: ${piece.text}`);inspector.append(chip);});
+        pieces.forEach((piece)=>{const chip=document.createElement('span');chip.className='token-chip max-w-full rounded px-1.5 py-0.5 whitespace-pre-wrap';chip.textContent=piece.text;chip.title=piece.tokenIds.length===1?`Token ${piece.tokenIds[0]}`:`${piece.tokenIds.length} tokens: ${piece.tokenIds.join(', ')}`;chip.setAttribute('aria-label',`${piece.tokenIds.length} token${piece.tokenIds.length===1?'':'s'}: ${piece.text}`);inspector.append(chip);});
       } catch(error) { inspector.innerHTML=`<span class="muted">${error instanceof Error?error.message:'Token inspection failed.'}</span>`; }
     }
 

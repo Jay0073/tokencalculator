@@ -2,12 +2,12 @@
 import type { Locale } from '../../i18n/config';
 import { homeCopy } from '../../i18n/home';
 import DirectoryBadges from './DirectoryBadges.astro';
-interface Props { locale?:Locale }
-const { locale='en' }=Astro.props;
+interface Props { locale?:Locale; showDirectoryBadges?:boolean }
+const { locale='en', showDirectoryBadges=false }=Astro.props;
 const copy=homeCopy[locale];
 ---
 <footer class="border-t hairline mt-24 relative z-10">
-  <DirectoryBadges />
+  {showDirectoryBadges && <DirectoryBadges />}
   <div class="shell py-10 flex flex-col sm:flex-row gap-6 justify-between text-sm muted">
     <div class="max-w-md"><strong class="text-[var(--text)]">TokenCalculator.dev</strong><br/><span class="text-xs">© 2026 TokenCalculator.dev. All rights reserved.</span><br/><span class="text-xs">{copy.footerPrivacy}</span></div>
     <nav class="flex flex-wrap gap-x-5 gap-y-2" aria-label="Footer navigation">
