@@ -41,7 +41,7 @@ export const DIRECTORY_BADGES = [
   {
     name: 'Twelve Tools',
     href: 'https://twelve.tools',
-    src: 'https://twelve.tools/badge2-dark.svg',
+    src: 'https://twelve.tools/badge1-light.svg',
     alt: 'Featured on Twelve Tools',
     width: 148,
     height: 40,
