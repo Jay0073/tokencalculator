@@ -28,6 +28,33 @@ const renderedBadges = shouldAnimate ? [...badges, ...badges] : badges;
         <div class:list={["directory-badges-track", { "directory-badges-track-static": !shouldAnimate }]}>
           {renderedBadges.map((badge, index) => {
             const duplicate = shouldAnimate && index >= badges.length;
+            if (badge.href === 'https://twelve.tools') {
+              return (
+                <a
+                  class="directory-badge panel"
+                  href="https://twelve.tools"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-hidden={duplicate ? 'true' : undefined}
+                  tabindex={duplicate ? '-1' : undefined}
+                  title="View TokenCalculator on Twelve Tools"
+                >
+                  <span class="directory-badge-fallback" aria-hidden="true">
+                    <small>Listed on</small>
+                    <strong>Twelve Tools</strong>
+                  </span>
+                  <img
+                    data-directory-badge-image
+                    src="https://twelve.tools/badge2-dark.svg"
+                    alt={duplicate ? '' : 'Featured on Twelve Tools'}
+                    width="148"
+                    height="40"
+                    loading="eager"
+                    decoding="sync"
+                  />
+                </a>
+              );
+            }
             return (
               <a
                 class="directory-badge panel"
