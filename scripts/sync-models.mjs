@@ -206,6 +206,31 @@ function main(catalog) {
   if (!apPattern.test(apSource)) throw new Error('Could not locate the MODELS block in the Activepieces package.');
   writeFileSync(apPath, apSource.replace(apPattern, () => apBlock), 'utf8');
 
+
+  // llms.txt carries a pricing table that AI agents read directly. It was hand-written
+  // and had drifted to the same wrong rates as the rest of the catalogue, so generate it.
+  const llmsPath = path.join(root, 'public/llms.txt');
+  const llmsSource = readFileSync(llmsPath, 'utf8');
+  const verified = selected[0]?.verifiedAt ?? new Date().toISOString().slice(0, 10);
+  // Sub-cent rates need more precision than two decimals; anything larger reads as money.
+  const money = (value) => value === undefined ? '-' : `$${Number(value) < 0.01 ? Number(value).toFixed(6).replace(/0+$/, '') : Number(value).toFixed(2)}`;
+  const pricingTable = [
+    '<!-- generated-pricing:start -->',
+    '## Model pricing snapshot',
+    '',
+    `Rates below are USD per one million tokens, regenerated from ${policy.source} and verified ${verified}. The browser refreshes them from the same source at runtime. Long-context tiers and provider terms can still change a final bill.`,
+    '',
+    '| Model | Provider | Input | Cached input | Output | Context |',
+    '| --- | --- | ---: | ---: | ---: | ---: |',
+    ...selected.map((model) => `| ${model.name} | ${policy.providers[model.provider].label} | ${money(model.inputPerMillion)} | ${money(model.cachedInputPerMillion)} | ${money(model.outputPerMillion)} | ${model.contextWindow.toLocaleString('en-US')} |`),
+    '',
+    `Models with a long-context tier: ${selected.filter((m) => m.pricingTiers).map((m) => m.name).join(', ') || 'none'}. Above the tier threshold the higher rate applies to the whole request.`,
+    '<!-- generated-pricing:end -->',
+  ].join('\n');
+  const pricingPattern = /<!-- generated-pricing:start -->[\s\S]*?<!-- generated-pricing:end -->/;
+  if (!pricingPattern.test(llmsSource)) throw new Error('Could not locate the pricing markers in public/llms.txt.');
+  writeFileSync(llmsPath, llmsSource.replace(pricingPattern, () => pricingTable), 'utf8');
+
   // Keep a snapshot so builds are deterministic and work without the network.
   const trimmed = {};
   for (const providerId of Object.keys(policy.providers)) {

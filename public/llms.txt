@@ -1,6 +1,6 @@
 # TokenCalculator.dev
 
-TokenCalculator.dev is a free, privacy-first, browser-based LLM token calculator for OpenAI, Anthropic Claude, Google Gemini, and DeepSeek. Unlike text-only token counters, it accepts pasted prompts together with readable documents, source/data files, and supported images, then reports provider token counts, context-window fit, and API cost estimates. Zero prompt text, document contents, or uploaded images are sent to a calculation server.
+TokenCalculator.dev is a free, privacy-first, browser-based LLM token calculator covering OpenAI, Anthropic Claude, Google Gemini, DeepSeek, Qwen, Moonshot Kimi, xAI Grok, Z.ai GLM, and Meta. Unlike text-only token counters, it accepts pasted prompts together with readable documents, source/data files, and supported images, then reports provider token counts, context-window fit, and API cost estimates. Zero prompt text, document contents, or uploaded images are sent to a calculation server.
 
 - [Universal calculator](https://tokencalculator.dev/)
 - [LLM Cost Lab: repositories, workloads, RAG, caching, vision, agents, embeddings, self-hosting, and model comparison](https://tokencalculator.dev/estimators/)
@@ -16,14 +16,35 @@ TokenCalculator.dev is a free, privacy-first, browser-based LLM token calculator
 - [Claude token counter](https://tokencalculator.dev/claude-token-counter/)
 - [Gemini token counter](https://tokencalculator.dev/gemini-token-counter/)
 - [DeepSeek token counter](https://tokencalculator.dev/deepseek-token-counter/)
+- [About and editorial responsibility](https://tokencalculator.dev/about/)
+- [Privacy and local processing](https://tokencalculator.dev/privacy-policy/)
+- [Contact and corrections](https://tokencalculator.dev/contact/)
+
+- [Tokens to words converter](https://tokencalculator.dev/tokens-to-words-converter/)
+- [Workflow integrations: n8n and Activepieces](https://tokencalculator.dev/integrations/)
+
+## Model cost comparisons
+
+- [GPT-6 Astra vs Claude Fable 5.1 cost](https://tokencalculator.dev/gpt-6-astra-vs-claude-fable-5-1-cost/)
 - [GPT-5.6 Sol vs Claude Opus 4.8 cost](https://tokencalculator.dev/gpt-5-6-sol-vs-claude-opus-4-8-cost/)
 - [GPT-5.6 Terra vs Claude Sonnet 5 pricing](https://tokencalculator.dev/gpt-5-6-terra-vs-claude-sonnet-5-pricing/)
 - [DeepSeek V4 Pro vs GPT-5.6 Sol cost](https://tokencalculator.dev/deepseek-v4-pro-vs-gpt-5-6-sol-cost/)
 - [DeepSeek V4 Flash vs GPT-5.6 Luna pricing](https://tokencalculator.dev/deepseek-v4-flash-vs-gpt-5-6-luna-pricing/)
 - [Gemini 3.1 Flash-Lite vs GPT-5.6 Luna cost](https://tokencalculator.dev/gemini-3-1-flash-lite-vs-gpt-5-6-luna-cost/)
-- [About and editorial responsibility](https://tokencalculator.dev/about/)
-- [Privacy and local processing](https://tokencalculator.dev/privacy-policy/)
-- [Contact and corrections](https://tokencalculator.dev/contact/)
+- [Kimi K3 vs Claude Fable 5.1 cost](https://tokencalculator.dev/kimi-k3-vs-claude-fable-5-1-cost/)
+- [Qwen3.8 Max vs GPT-5.6 Sol cost](https://tokencalculator.dev/qwen3-8-max-vs-gpt-5-6-sol-cost/)
+- [GLM-5.3 vs DeepSeek V4 Pro pricing](https://tokencalculator.dev/glm-5-3-vs-deepseek-v4-pro-pricing/)
+- [Claude vs GPT token cost](https://tokencalculator.dev/claude-vs-gpt4o-token-cost/)
+- [DeepSeek vs OpenAI reasoning model cost](https://tokencalculator.dev/deepseek-r1-vs-openai-o1-cost-calculator/)
+- [Gemini Flash vs GPT mini pricing](https://tokencalculator.dev/gemini-flash-vs-gpt-4o-mini-pricing/)
+
+## Documentation
+
+- [Text and code tokenization](https://tokencalculator.dev/docs/text-and-code/)
+- [File and document tokens](https://tokencalculator.dev/docs/files/)
+- [Image tokens](https://tokencalculator.dev/docs/images/)
+- [n8n node](https://tokencalculator.dev/docs/n8n/)
+- [Activepieces piece](https://tokencalculator.dev/docs/activepieces/)
 
 ## Accuracy
 
@@ -84,23 +105,61 @@ OpenAI raw text uses exact local BPE tokenization. Claude, Gemini, and DeepSeek 
 
 The site does not claim access to proprietary Claude, Gemini, or DeepSeek production tokenizers. API wrappers, tools, system instructions, reasoning tokens, and provider-side processing can change billed usage.
 
-## Bundled pricing snapshot
+<!-- generated-pricing:start -->
+## Model pricing snapshot
 
-The browser refreshes pricing from Models.dev when available and falls back to a bundled registry. The bundled snapshot was verified on 2026-08-22. Prices below are USD per one million tokens; long-context tiers and provider terms may change the final bill.
+Rates below are USD per one million tokens, regenerated from https://models.dev/api.json and verified 2026-09-08. The browser refreshes them from the same source at runtime. Long-context tiers and provider terms can still change a final bill.
 
-| Model | Input | Cached input | Output | Context |
-| --- | ---: | ---: | ---: | ---: |
-| GPT-5.6 Sol | $5.00 | $0.50 | $30.00 | 1,050,000 |
-| GPT-5.6 Terra | $2.00 | $0.20 | $12.00 | 1,050,000 |
-| GPT-5.6 Luna | $0.20 | $0.02 | $1.20 | 1,050,000 |
-| Claude Opus 4.8 | $5.00 | $0.50 | $25.00 | 1,000,000 |
-| Claude Sonnet 5 | $2.00 | $0.20 | $10.00 | 1,000,000 |
-| Claude Haiku 4.5 | $1.00 | $0.10 | $5.00 | 200,000 |
-| Gemini 3.1 Flash-Lite | $0.25 | $0.025 | $1.50 | 1,048,576 |
-| Gemini 2.5 Pro | $1.25 | $0.125 | $10.00 | 1,048,576 |
-| DeepSeek V4 Flash (peak rate) | $0.44 | $0.014 | $1.32 | 1,000,000 |
-| DeepSeek V4 Pro (peak rate) | $1.32 | $0.044 | $3.96 | 1,000,000 |
+| Model | Provider | Input | Cached input | Output | Context |
+| --- | --- | ---: | ---: | ---: | ---: |
+| GPT-6 Astra | OpenAI | $10.00 | $1.00 | $50.00 | 1,050,000 |
+| GPT-5.6 Luna | OpenAI | $0.20 | $0.02 | $1.20 | 1,050,000 |
+| GPT-5.6 Sol | OpenAI | $4.00 | $0.40 | $20.00 | 1,050,000 |
+| GPT-5.6 Terra | OpenAI | $2.00 | $0.20 | $12.00 | 1,050,000 |
+| Claude Fable 5.1 | Anthropic | $10.00 | $0.25 | $50.00 | 1,000,000 |
+| Claude Opus 5 | Anthropic | $5.00 | $0.50 | $25.00 | 1,000,000 |
+| Claude Sonnet 5 | Anthropic | $2.00 | $0.20 | $10.00 | 1,000,000 |
+| Claude Opus 4.8 | Anthropic | $5.00 | $0.50 | $25.00 | 1,000,000 |
+| Claude Haiku 4.5 | Anthropic | $1.00 | $0.10 | $5.00 | 200,000 |
+| Gemini 3.8 Flash | Google | $0.75 | $0.07 | $3.75 | 1,048,576 |
+| Gemini 3.7 Flash | Google | $0.75 | $0.07 | $3.75 | 1,048,576 |
+| Gemini 3.5 Flash Lite | Google | $0.30 | $0.03 | $2.50 | 1,048,576 |
+| Gemini 3.1 Flash Lite | Google | $0.25 | $0.03 | $1.50 | 1,048,576 |
+| Gemini 2.5 Pro | Google | $1.25 | $0.13 | $10.00 | 1,048,576 |
+| DeepSeek V4 Pro | DeepSeek | $0.43 | $0.003625 | $0.87 | 1,000,000 |
+| DeepSeek V4 Flash | DeepSeek | $0.14 | $0.0028 | $0.28 | 1,000,000 |
+| Qwen3.8 Flash | Qwen | $0.15 | $0.02 | $0.47 | 1,000,000 |
+| Qwen3.8 Max | Qwen | $2.00 | $0.25 | $6.00 | 1,000,000 |
+| Qwen3.7 Plus | Qwen | $0.50 | $0.05 | $3.00 | 1,000,000 |
+| Qwen3.7 Max | Qwen | $2.50 | $0.50 | $7.50 | 1,000,000 |
+| Qwen3.6 Flash | Qwen | $0.19 | - | $1.13 | 1,000,000 |
+| Kimi K3 | Moonshot Kimi | $3.00 | $0.30 | $15.00 | 1,048,576 |
+| Kimi K2.7 Code | Moonshot Kimi | $0.95 | $0.19 | $4.00 | 262,144 |
+| Kimi K2.6 | Moonshot Kimi | $0.95 | $0.16 | $4.00 | 262,144 |
+| Grok 4.6 | xAI Grok | $2.00 | $0.50 | $6.00 | 500,000 |
+| Grok 4.5 | xAI Grok | $2.00 | $0.30 | $6.00 | 500,000 |
+| Grok 4.3 | xAI Grok | $1.25 | $0.20 | $2.50 | 1,000,000 |
+| GLM-5.3-Flash | Z.ai GLM | $0.07 | $0.01 | $0.25 | 1,000,000 |
+| GLM-5.3 | Z.ai GLM | $1.40 | $0.26 | $4.40 | 1,000,000 |
+| GLM-5.2 | Z.ai GLM | $1.40 | $0.26 | $4.40 | 1,000,000 |
+| GLM-5.1 | Z.ai GLM | $1.40 | $0.26 | $4.40 | 200,000 |
+| GLM-5-Turbo | Z.ai GLM | $1.20 | $0.24 | $4.00 | 200,000 |
+| Muse Spark 1.3 | Meta | $1.25 | $0.15 | $4.25 | 1,048,576 |
+| Muse Spark 1.2 | Meta | $1.25 | $0.15 | $4.25 | 1,048,576 |
+| Muse Spark 1.1 | Meta | $1.25 | $0.15 | $4.25 | 1,048,576 |
 
-DeepSeek publishes lower off-peak rates. The bundled fallback uses the conservative peak rate; the official pricing page defines the current time windows and discounts.
+Models with a long-context tier: GPT-5.6 Luna, GPT-5.6 Sol, GPT-5.6 Terra, Gemini 2.5 Pro. Above the tier threshold the higher rate applies to the whole request.
+<!-- generated-pricing:end -->
 
 Always confirm a production estimate against the model's official pricing link shown in the calculator.
+
+## Optional
+
+Skip these when context is limited. They are translations of the calculator page
+and legal documents, not additional technical content.
+
+- [Terms of service](https://tokencalculator.dev/terms-of-service/)
+- [Calculator in Spanish](https://tokencalculator.dev/es/)
+- [Calculator in German](https://tokencalculator.dev/de/)
+- [Calculator in Japanese](https://tokencalculator.dev/ja/)
+- [Calculator in Brazilian Portuguese](https://tokencalculator.dev/pt-BR/)
