@@ -1,3 +1,30 @@
+---
+interface Props {
+  /** Slug of the page being rendered, so it does not link to itself. */
+  current?: string;
+  /** How many comparison cards to show. Comparison pages show a related subset
+      rather than the full list, which keeps repeated boilerplate off every page. */
+  limit?: number;
+}
+const { current, limit } = Astro.props;
+
+const COMPARISONS = [
+  { href: '/gpt-6-astra-vs-claude-fable-5-1-cost/', title: 'GPT-6 Astra vs Claude Fable 5.1', detail: 'Same headline price, four-fold cached-input gap' },
+  { href: '/gpt-5-6-sol-vs-claude-opus-4-8-cost/', title: 'GPT-5.6 Sol vs Claude Opus 4.8', detail: 'Frontier text, document, image, and output cost' },
+  { href: '/gpt-5-6-terra-vs-claude-sonnet-5-pricing/', title: 'GPT-5.6 Terra vs Claude Sonnet 5', detail: 'Balanced production-model pricing' },
+  { href: '/deepseek-v4-pro-vs-gpt-5-6-sol-cost/', title: 'DeepSeek V4 Pro vs GPT-5.6 Sol', detail: 'Reasoning workload comparison' },
+  { href: '/deepseek-v4-flash-vs-gpt-5-6-luna-pricing/', title: 'DeepSeek V4 Flash vs GPT-5.6 Luna', detail: 'High-volume token pricing' },
+  { href: '/gemini-3-1-flash-lite-vs-gpt-5-6-luna-cost/', title: 'Gemini 3.1 Flash-Lite vs GPT-5.6 Luna', detail: 'Multimodal image and document cost' },
+  { href: '/kimi-k3-vs-claude-fable-5-1-cost/', title: 'Kimi K3 vs Claude Fable 5.1', detail: 'Open-weight challenger against the frontier' },
+  { href: '/qwen3-8-max-vs-gpt-5-6-sol-cost/', title: 'Qwen3.8 Max vs GPT-5.6 Sol', detail: 'Multilingual tokenizer and price gap' },
+  { href: '/glm-5-3-vs-deepseek-v4-pro-pricing/', title: 'GLM-5.3 vs DeepSeek V4 Pro', detail: 'Low-cost open-weight comparison' },
+  { href: '/claude-vs-gpt4o-token-cost/', title: 'Claude vs GPT token cost', detail: 'What replaced GPT-4o in the balanced tier' },
+  { href: '/deepseek-r1-vs-openai-o1-cost-calculator/', title: 'DeepSeek vs OpenAI reasoning cost', detail: 'Successors to R1 and o1, priced on output' },
+  { href: '/gemini-flash-vs-gpt-4o-mini-pricing/', title: 'Gemini Flash vs GPT mini', detail: 'The cheap tier after GPT-4o mini' },
+];
+
+const shown = COMPARISONS.filter((item) => item.href !== current).slice(0, limit ?? COMPARISONS.length);
+---
 <section class="shell mt-24 relative z-10">
   <span class="eyebrow">Focused counters</span><h2 class="section-title mt-3 mb-8">Measure against the model you use</h2>
   <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -8,12 +35,10 @@
   </div>
 </section>
 <section class="shell mt-16 relative z-10">
-  <span class="eyebrow">Current model comparisons</span><h2 class="section-title mt-3 mb-8">Compare cost with the same real workload</h2>
+  <span class="eyebrow">Current model comparisons</span><h2 class="section-title mt-3 mb-8">{current ? 'Other comparisons worth running' : 'Compare cost with the same real workload'}</h2>
   <div class="grid md:grid-cols-2 gap-3">
-    <a href="/gpt-5-6-sol-vs-claude-opus-4-8-cost/" class="panel rounded-xl p-5 no-underline hover:border-[var(--line-strong)]"><strong>GPT-5.6 Sol vs Claude Opus 4.8</strong><span class="block text-sm muted mt-1">Frontier text, document, image, and output cost</span></a>
-    <a href="/gpt-5-6-terra-vs-claude-sonnet-5-pricing/" class="panel rounded-xl p-5 no-underline hover:border-[var(--line-strong)]"><strong>GPT-5.6 Terra vs Claude Sonnet 5</strong><span class="block text-sm muted mt-1">Balanced production-model pricing</span></a>
-    <a href="/deepseek-v4-pro-vs-gpt-5-6-sol-cost/" class="panel rounded-xl p-5 no-underline hover:border-[var(--line-strong)]"><strong>DeepSeek V4 Pro vs GPT-5.6 Sol</strong><span class="block text-sm muted mt-1">Reasoning workload comparison</span></a>
-    <a href="/deepseek-v4-flash-vs-gpt-5-6-luna-pricing/" class="panel rounded-xl p-5 no-underline hover:border-[var(--line-strong)]"><strong>DeepSeek V4 Flash vs GPT-5.6 Luna</strong><span class="block text-sm muted mt-1">High-volume token pricing</span></a>
-    <a href="/gemini-3-1-flash-lite-vs-gpt-5-6-luna-cost/" class="panel rounded-xl p-5 no-underline hover:border-[var(--line-strong)] md:col-span-2"><strong>Gemini 3.1 Flash-Lite vs GPT-5.6 Luna</strong><span class="block text-sm muted mt-1">Multimodal image and document cost</span></a>
+    {shown.map((item) => (
+      <a href={item.href} class="panel rounded-xl p-5 no-underline hover:border-[var(--line-strong)]"><strong>{item.title}</strong><span class="block text-sm muted mt-1">{item.detail}</span></a>
+    ))}
   </div>
 </section>

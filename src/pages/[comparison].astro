@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Calculator from '../components/calculator/Calculator.astro';
+import CostScenarios from '../components/seo/CostScenarios.astro';
 import FAQ from '../components/seo/FAQ.astro';
 import Breadcrumbs from '../components/seo/Breadcrumbs.astro';
 import ProviderLinks from '../components/seo/ProviderLinks.astro';
@@ -11,144 +12,502 @@ interface ComparisonPage {
   title: string;
   description: string;
   eyebrow: string;
+  crumb: string;
   heading: string;
   intro: string;
   legacyTerms: string;
   leftId: string;
   rightId: string;
   decision: string;
+  /** Page-specific prose. This is what makes each page different from its siblings. */
+  analysis: { heading: string; body: string[] }[];
   faq: { question: string; answer: string }[];
 }
 
 export function getStaticPaths() {
   const pages: ComparisonPage[] = [
     {
-      slug: 'gpt-5-6-sol-vs-claude-opus-4-8-cost',
-      title: 'GPT-5.6 Sol vs Claude Opus 4.8 Cost Calculator | TokenCalculator.dev',
-      description: 'Compare GPT-5.6 Sol and Claude Opus 4.8 token cost for text, PDF, DOCX, code, and images with privacy-first browser-based processing.',
-      eyebrow: 'Frontier model comparison', heading: 'GPT-5.6 Sol vs Claude Opus 4.8 cost.',
-      intro: 'Measure a real text, document, code, or image workload against the current frontier OpenAI and Claude models.',
-      legacyTerms: 'This page uses GPT-5.6 Sol and Claude Opus 4.8 from the current maintained catalog. Rates, context limits, and verification dates are visible below.',
-      leftId: 'gpt-5.6-sol', rightId: 'claude-opus-4-8',
-      decision: 'Both are frontier models, so compare output cost, long-context behavior, token-count confidence, and vision support—not input price alone.',
+      slug: 'gpt-6-astra-vs-claude-fable-5-1-cost',
+      title: 'GPT-6 Astra vs Claude Fable 5.1 Cost Calculator',
+      description: 'GPT-6 Astra and Claude Fable 5.1 both list $10 per million input tokens and $50 output. Compare the cached-input gap, the long-context tier, and real workload cost.',
+      eyebrow: 'Frontier model comparison', crumb: 'GPT-6 Astra vs Claude Fable 5.1',
+      heading: 'GPT-6 Astra vs Claude Fable 5.1 cost.',
+      intro: 'Two frontier models shipped days apart in September 2026 with the same headline price. The bill they produce is not the same.',
+      legacyTerms: 'Both models are current. Rates below come from the maintained catalogue and carry the date they were verified.',
+      leftId: 'gpt-6-astra', rightId: 'claude-fable-5-1',
+      decision: 'The headline rates are identical, so the decision turns on cached input, long-context behaviour, and how many output tokens each model spends to finish the same task.',
+      analysis: [
+        {
+          heading: 'Identical sticker price, different cached rate',
+          body: [
+            'Both models list $10 per million input tokens and $50 per million output tokens. On a one-off call there is nothing to choose between them on price.',
+            'The difference is the cached-input rate. GPT-6 Astra reads cached tokens at $1 per million; Claude Fable 5.1 reads them at $0.25 per million. That is a four-fold gap on exactly the tokens that repeat most: the system prompt, the tool definitions, and the retrieved context an agent resends on every turn.',
+            'For a single question this is irrelevant. For a twenty-turn agent loop carrying a 100,000-token prefix, the cached portion dominates the bill and the four-fold gap becomes the whole decision.',
+          ],
+        },
+        {
+          heading: 'The 272,000-token cliff',
+          body: [
+            'GPT-6 Astra and the GPT-5.6 family apply a long-context tier once a request crosses 272,000 input tokens. Above that line OpenAI documents roughly double the input rate and 1.5 times the output rate, and it applies to the whole request, not just the tokens above the threshold.',
+            'Anthropic documents its one-million-token window at the standard per-token rate throughout. A 900,000-token request bills at the same rate per token as a 9,000-token one.',
+            'This is why the "Whole-document analysis" and "Full-context load" rows in the table below can reverse the ranking that the "Short chat turn" row suggests. If your workload regularly crosses 272,000 tokens, the tier is a larger effect than the headline price.',
+          ],
+        },
+        {
+          heading: 'Benchmarks disagree, and token spend is why',
+          body: [
+            'Published comparisons do not agree on which model is stronger. OpenAI\'s own table puts GPT-6 Astra ahead on nearly every row. The independent evaluator Artificial Analysis reverses it, scoring Claude Fable 5.1 at 66 on its Intelligence Index against 61 for GPT-6 Astra.',
+            'The more useful figure for a budget is cost per completed task, because a model that reasons in fewer tokens is cheaper even at the same rate. Artificial Analysis put Astra at roughly $1.67 per Intelligence Index task against $3.76 for Fable 5.1, on the grounds that Astra spends far fewer tokens reaching its answer.',
+            'Neither number tells you what your workload costs. Output length is the variable that decides it, and it is the one you can measure directly by pasting a real prompt into the calculator on this page.',
+          ],
+        },
+      ],
       faq: [
-        { question: 'Which costs less, GPT-5.6 Sol or Claude Opus 4.8?', answer: 'It depends on input size, output length, caching, and long-context tiers. Add the actual prompt, documents, and images, then use the workload planner for a comparable monthly estimate.' },
-        { question: 'Can this comparison count a PDF or DOCX?', answer: 'Yes. Text-based PDF and DOCX contents are extracted locally and included in both model totals. Scanned PDFs require OCR and are not supported.' },
-        { question: 'Are files uploaded to compare these models?', answer: 'No. Prompt text, document extraction, image dimensions, token counting, and cost calculations run in the browser.' },
+        { question: 'Are GPT-6 Astra and Claude Fable 5.1 the same price?', answer: 'The headline rates are identical at $10 per million input tokens and $50 per million output tokens. They differ on cached input, where GPT-6 Astra charges $1 per million and Claude Fable 5.1 charges $0.25 per million, and on long-context billing, where GPT-6 Astra applies a higher tier above 272,000 input tokens.' },
+        { question: 'Which is cheaper for an agent that reuses a long system prompt?', answer: 'Claude Fable 5.1, in most cases. Repeated prefix tokens bill at the cached rate, and its cached rate is four times lower. The advantage grows with the number of turns and the size of the reused prefix.' },
+        { question: 'What happens above 272,000 input tokens on GPT-6 Astra?', answer: 'OpenAI applies a long-context tier that raises the rate for the entire request, not only the tokens above the threshold. Anthropic bills its full one-million-token window at the standard rate, so the two diverge sharply on very large single calls.' },
+        { question: 'Does this calculator send my prompt to either provider?', answer: 'No. Text, document contents, and image pixels are processed in your browser. Only public model metadata may be refreshed from a pricing catalogue.' },
+      ],
+    },
+    {
+      slug: 'gpt-5-6-sol-vs-claude-opus-4-8-cost',
+      title: 'GPT-5.6 Sol vs Claude Opus 4.8 Cost Calculator',
+      description: 'Compare GPT-5.6 Sol and Claude Opus 4.8 token cost across chat, RAG, code review, and long-document workloads, with cached-input and long-context tiers included.',
+      eyebrow: 'Reasoning model comparison', crumb: 'GPT-5.6 Sol vs Claude Opus 4.8',
+      heading: 'GPT-5.6 Sol vs Claude Opus 4.8 cost.',
+      intro: 'Two reasoning models a tier below the current flagships, where output length usually decides the bill.',
+      legacyTerms: 'Both models remain in the maintained catalogue. Rates carry the date they were verified against the public pricing feed.',
+      leftId: 'gpt-5.6-sol', rightId: 'claude-opus-4-8',
+      decision: 'Input rates are close, so the decision rests on output volume. Reasoning models emit far more output tokens than chat models, and output is priced several times higher than input on both.',
+      analysis: [
+        {
+          heading: 'Output is where the money goes',
+          body: [
+            'GPT-5.6 Sol lists $4 per million input and $20 per million output. Claude Opus 4.8 lists $5 and $25. On input the gap is 25 percent; on output it is the same 25 percent, but output tokens cost five times what input tokens cost on both models.',
+            'That ratio is the point. A workload that reads 10,000 tokens and writes 200 is dominated by input. A reasoning workload that reads 2,000 and writes 8,000 is dominated by output, and the two models rank the same way but the absolute difference is far larger.',
+            'Set the output-token slider in the calculator to something you have actually measured. A guessed output length is the single largest source of error in an LLM budget.',
+          ],
+        },
+        {
+          heading: 'One counts exactly, one estimates',
+          body: [
+            'GPT-5.6 Sol is tokenized locally with its own byte-pair encoding, so the token count for raw text is exact. Claude Opus 4.8 is measured with a deterministic byte-length projection, because Anthropic does not publish an offline tokenizer that runs in a browser.',
+            'The practical effect: treat the OpenAI figure as a count and the Claude figure as a close estimate. For budgeting at scale the difference is small, but do not use a Claude projection to reconcile an invoice line by line.',
+          ],
+        },
+        {
+          heading: 'Long-context behaviour differs',
+          body: [
+            'GPT-5.6 Sol applies a long-context tier above 272,000 input tokens that raises the rate for the whole request. Claude Opus 4.8 bills its one-million-token window at a flat rate.',
+            'In the table below this shows up only in the last two rows. If your requests never approach 272,000 tokens, ignore it. If they routinely do, it can outweigh the headline difference entirely.',
+          ],
+        },
+      ],
+      faq: [
+        { question: 'Which is cheaper, GPT-5.6 Sol or Claude Opus 4.8?', answer: 'GPT-5.6 Sol is cheaper on both input and output at standard rates, by roughly 20 percent. The gap narrows or reverses on requests above 272,000 input tokens, where GPT-5.6 Sol applies a long-context tier and Claude Opus 4.8 does not.' },
+        { question: 'Why do reasoning models cost more than chat models?', answer: 'They emit far more output tokens, and output is priced several times higher than input. A reasoning model that thinks for 8,000 tokens before answering costs more than a chat model answering in 300, even at the same published rate.' },
+        { question: 'Are the Claude token counts exact?', answer: 'No. Claude counts on this site use a deterministic byte-length projection and are labelled as estimates. OpenAI counts for raw text are exact, because its tokenizer runs locally in your browser.' },
       ],
     },
     {
       slug: 'gpt-5-6-terra-vs-claude-sonnet-5-pricing',
-      title: 'GPT-5.6 Terra vs Claude Sonnet 5 Pricing | TokenCalculator.dev',
-      description: 'Compare GPT-5.6 Terra and Claude Sonnet 5 costs, context limits, document tokens, image tokens, and monthly workloads locally.',
-      eyebrow: 'Balanced model comparison', heading: 'GPT-5.6 Terra vs Claude Sonnet 5 pricing.',
-      intro: 'Compare two current balanced production models using the same prompt, uploaded documents, supported images, and output assumptions.',
-      legacyTerms: 'The active pair is GPT-5.6 Terra and Claude Sonnet 5. The calculator identifies exact local OpenAI BPE counts separately from calibrated Claude estimates.',
+      title: 'GPT-5.6 Terra vs Claude Sonnet 5 Pricing Calculator',
+      description: 'GPT-5.6 Terra and Claude Sonnet 5 both list $2 per million input tokens. Compare output rates, cached input, and real per-request cost for production workloads.',
+      eyebrow: 'Balanced model comparison', crumb: 'GPT-5.6 Terra vs Claude Sonnet 5',
+      heading: 'GPT-5.6 Terra vs Claude Sonnet 5 pricing.',
+      intro: 'The two default choices for production work. They match exactly on input price and diverge on everything else.',
+      legacyTerms: 'Both models are current. The calculator separates exact local OpenAI counts from calibrated Claude estimates.',
       leftId: 'gpt-5.6-terra', rightId: 'claude-sonnet-5',
-      decision: 'For production agents, test the full system prompt and representative files. Small per-call output differences compound at scale.',
+      decision: 'Input price is identical, so compare output rate, cached-input rate, and long-context behaviour. At production volume these compound into a much larger difference than the sticker price suggests.',
+      analysis: [
+        {
+          heading: 'Same input price, different output price',
+          body: [
+            'Both list $2 per million input tokens. Claude Sonnet 5 lists $10 per million output; GPT-5.6 Terra lists $12. On an output-heavy workload that 20 percent gap is the entire decision, and it is invisible if you compare input prices alone.',
+            'Reverse the shape and the answer reverses. A classification or extraction job that reads a lot and writes a little sees almost no difference between them.',
+          ],
+        },
+        {
+          heading: 'These are the models most workloads should start on',
+          body: [
+            'Both sit in the balanced tier: roughly a fifth of frontier price, with a one-million-token context window. For most production tasks that is the right starting point, and moving up to a frontier model should follow a measured quality failure rather than a hunch.',
+            'The cheaper high-volume tier is a further order of magnitude down. GPT-5.6 Luna lists $0.20 input and $1.20 output, which is a tenth of Terra on input. If your task is routing, tagging, or summarising short text, test the cheap tier before assuming you need this one.',
+          ],
+        },
+        {
+          heading: 'Long-context tier applies to one side only',
+          body: [
+            'GPT-5.6 Terra applies a long-context tier above 272,000 input tokens, doubling the input rate for the whole request. Claude Sonnet 5 bills its full window flat.',
+            'For a codebase-wide analysis or a long document, that single rule can matter more than the output-rate difference. The last two rows of the computed table show the effect directly.',
+          ],
+        },
+      ],
       faq: [
-        { question: 'Does identical text use the same tokens on Terra and Sonnet?', answer: 'Not necessarily. OpenAI raw text uses exact local o200k_base BPE tokenization; Claude uses the deterministic Provider-Calibrated UTF-8 Token Projection because its production tokenizer is not distributed for offline browser use.' },
-        { question: 'Can I include source code and JSON files?', answer: 'Yes. Add supported source, JSON, CSV, Markdown, PDF, or DOCX files and their locally extracted text is included in both results.' },
-        { question: 'Which model is better for a large document workflow?', answer: 'Cost is only one factor. Compare context fit, output budget, provider features, and quality on your workload, then confirm final usage with each provider API.' },
+        { question: 'Is GPT-5.6 Terra or Claude Sonnet 5 cheaper?', answer: 'They are identical on input at $2 per million. Claude Sonnet 5 is cheaper on output at $10 per million against $12. For requests above 272,000 input tokens GPT-5.6 Terra applies a long-context tier, which widens the gap further.' },
+        { question: 'Which should I use for a production agent?', answer: 'Test both on your real prompt. Claude Sonnet 5 has the lower output rate and the lower cached-input rate, which suits agent loops that resend a long prefix. GPT-5.6 Terra gives exact local token counts, which makes cost forecasting easier to verify.' },
+        { question: 'Do I need a frontier model instead?', answer: 'Usually not at first. The balanced tier costs about a fifth of frontier pricing. Move up only after a measured quality failure on your own task, and compare the cheap tier first if your task is short-form.' },
       ],
     },
     {
       slug: 'deepseek-v4-pro-vs-gpt-5-6-sol-cost',
-      title: 'DeepSeek V4 Pro vs GPT-5.6 Sol Cost Calculator | TokenCalculator.dev',
-      description: 'Compare DeepSeek V4 Pro and GPT-5.6 Sol cost for prompts, documents, code, and scaled reasoning workloads.',
-      eyebrow: 'Reasoning model comparison', heading: 'DeepSeek V4 Pro vs GPT-5.6 Sol cost.',
-      intro: 'Compare current high-capability reasoning models with realistic input files, output length, caching, and request volume.',
-      legacyTerms: 'DeepSeek has time-dependent pricing. The bundled DeepSeek fallback uses the conservative official peak rate; off-peak rates can be lower.',
+      title: 'DeepSeek V4 Pro vs GPT-5.6 Sol Cost Calculator',
+      description: 'DeepSeek V4 Pro undercuts GPT-5.6 Sol by roughly nine times on input and twenty times on output. Compare real workload cost, context limits, and tokenization accuracy.',
+      eyebrow: 'Open-weight vs proprietary', crumb: 'DeepSeek V4 Pro vs GPT-5.6 Sol',
+      heading: 'DeepSeek V4 Pro vs GPT-5.6 Sol cost.',
+      intro: 'One of the widest price gaps between two models that people genuinely evaluate against each other.',
+      legacyTerms: 'DeepSeek rates come from the public pricing catalogue and carry their verification date. DeepSeek has historically varied rates by time of day; confirm the current window before committing to a budget.',
       leftId: 'deepseek-v4-pro', rightId: 'gpt-5.6-sol',
-      decision: 'Reasoning workloads can be output-heavy. Model expected output and verify DeepSeek’s current time window before committing to a monthly budget.',
+      decision: 'The price gap is large enough that the question is not cost but whether quality holds on your task. Measure output quality first, then use the calculator to size the saving.',
+      analysis: [
+        {
+          heading: 'The gap is roughly nine times on input and twenty on output',
+          body: [
+            'DeepSeek V4 Pro lists $0.435 per million input tokens and $0.87 per million output. GPT-5.6 Sol lists $4 and $20. That is about nine times on input and twenty-three times on output.',
+            'A gap that size changes what is worth building. Workloads that are uneconomic at frontier prices, such as re-processing an entire archive or running an evaluation over thousands of documents, become routine.',
+            'It also changes the risk calculus in the other direction: a twenty-fold saving on a task the model gets wrong is not a saving.',
+          ],
+        },
+        {
+          heading: 'Open-weight models have closed much of the quality gap',
+          body: [
+            'The open-weight tier is no longer only a budget option. Published comparisons in 2026 put Kimi K3, Qwen3.8-Max and GLM-5.2 above 91 percent on GPQA Diamond, a graduate-level science reasoning benchmark that closed frontier models led not long ago.',
+            'Independent summaries put open models at 80 to 95 percent cheaper on output than frontier proprietary models. That combination, near-parity on some reasoning benchmarks with an order-of-magnitude price gap, is why the comparison is now worth running rather than assuming.',
+            'Benchmarks still do not settle your task. They narrow the shortlist; a held-out evaluation on your own data decides it.',
+          ],
+        },
+        {
+          heading: 'Counting confidence differs',
+          body: [
+            'GPT-5.6 Sol is tokenized exactly in your browser. DeepSeek V4 Pro is measured with a deterministic byte-length projection and labelled as an estimate.',
+            'When the price gap is twenty-fold, projection error is not what decides the comparison. But if you are reconciling an invoice rather than planning a budget, use the provider\'s own usage figures.',
+          ],
+        },
+      ],
       faq: [
-        { question: 'Does this page use DeepSeek V4 Pro peak or off-peak pricing?', answer: 'The bundled fallback uses the conservative peak rate. DeepSeek publishes lower off-peak rates and defines the active windows on its official pricing page.' },
-        { question: 'Are reasoning tokens included?', answer: 'The planner prices the output-token amount you enter. Hidden or provider-side reasoning usage can differ, so the API usage response remains authoritative.' },
-        { question: 'Can I compare a code file without uploading it?', answer: 'Yes. Supported source files are read and counted locally in the browser; their contents are not sent to TokenCalculator.dev.' },
+        { question: 'How much cheaper is DeepSeek V4 Pro than GPT-5.6 Sol?', answer: 'About nine times cheaper on input and roughly twenty-three times cheaper on output at current published rates. The computed table on this page converts that into cost for five concrete workload shapes.' },
+        { question: 'Is an open-weight model good enough to replace a frontier model?', answer: 'It depends entirely on the task. Published 2026 comparisons put several open-weight models above 91 percent on GPQA Diamond, close to frontier performance on reasoning benchmarks. Run a held-out evaluation on your own data before switching, because benchmark parity does not guarantee task parity.' },
+        { question: 'Does DeepSeek pricing change by time of day?', answer: 'DeepSeek has historically published different peak and off-peak rates. The rate shown here comes from the public catalogue with its verification date. Check the provider pricing page before committing to a monthly budget.' },
       ],
     },
     {
       slug: 'deepseek-v4-flash-vs-gpt-5-6-luna-pricing',
-      title: 'DeepSeek V4 Flash vs GPT-5.6 Luna Pricing | TokenCalculator.dev',
-      description: 'Compare DeepSeek V4 Flash and GPT-5.6 Luna token cost for high-volume prompts, documents, code, and monthly requests.',
-      eyebrow: 'High-volume model comparison', heading: 'DeepSeek V4 Flash vs GPT-5.6 Luna pricing.',
-      intro: 'Test current fast model classes against a representative prompt or file workload, then project daily and monthly spend.',
-      legacyTerms: 'The DeepSeek fallback below uses its official peak rate to avoid understating cost. Its published off-peak rate may be lower.',
+      title: 'DeepSeek V4 Flash vs GPT-5.6 Luna Pricing Calculator',
+      description: 'The two cheapest high-volume models compared. DeepSeek V4 Flash lists $0.14 per million input tokens against $0.20 for GPT-5.6 Luna, with a wider gap on output.',
+      eyebrow: 'High-volume model pricing', crumb: 'DeepSeek V4 Flash vs GPT-5.6 Luna',
+      heading: 'DeepSeek V4 Flash vs GPT-5.6 Luna pricing.',
+      intro: 'At the cheap end of the market, small rate differences decide budgets because the request count is enormous.',
+      legacyTerms: 'Both are current high-volume models. DeepSeek rates carry their verification date and may vary by time window.',
       leftId: 'deepseek-v4-flash', rightId: 'gpt-5.6-luna',
-      decision: 'At volume, cached input eligibility and output length can matter more than the headline input price. Test both conservative and expected traffic assumptions.',
+      decision: 'At this tier the per-request cost is trivial and the monthly total is not. Compare using your real requests-per-day figure, not per-call price.',
+      analysis: [
+        {
+          heading: 'Fractions of a cent, multiplied by millions',
+          body: [
+            'DeepSeek V4 Flash lists $0.14 per million input tokens and $0.28 output. GPT-5.6 Luna lists $0.20 and $1.20. Input is about 30 percent apart; output is more than four times apart.',
+            'One request costs a fraction of a cent on either. Ten million requests a month does not. This is the tier where the output-rate difference, which looks negligible per call, becomes the entire line item.',
+            'Published reporting describes DeepSeek V4 Flash as the cheapest broadly available API rate in 2026. That does not make it the right choice, but it sets the floor everything else is measured against.',
+          ],
+        },
+        {
+          heading: 'What this tier is actually for',
+          body: [
+            'High-volume models are not small frontier models. They suit classification, routing, tagging, extraction from known formats, short summaries, and the first pass of a two-stage pipeline where a stronger model handles only the hard cases.',
+            'A two-stage design is often cheaper than either model alone: run everything through the cheap tier, and escalate only what fails a confidence check. The calculator below prices each stage separately if you run it twice.',
+          ],
+        },
+        {
+          heading: 'Cached input matters less here, and context matters more',
+          body: [
+            'Both models discount cached input, but at these rates the absolute saving per call is small. What tends to bite instead is context: a high-volume pipeline that accidentally resends a large prefix on every call multiplies a small number by a very large one.',
+            'Both models carry a one-million-token window, so neither will refuse a large request. That makes it easy to overspend quietly. Measure the real prompt size rather than the intended one.',
+          ],
+        },
+      ],
       faq: [
-        { question: 'Which is cheaper at high volume?', answer: 'Use the planner with realistic output tokens, cache assumptions, and requests per day. DeepSeek’s rate also varies by its published peak and off-peak schedule.' },
-        { question: 'Can this calculate tokens in CSV or JSON?', answer: 'Yes. CSV, JSON, code, text, PDF, and DOCX contents are read locally and added to the selected workload.' },
-        { question: 'How is the DeepSeek count produced?', answer: 'The engine applies a deterministic Provider-Calibrated UTF-8 Token Projection using a DeepSeek-family bytes-per-token coefficient. Provider-reported API usage remains authoritative.' },
+        { question: 'Which is cheapest for high-volume work?', answer: 'DeepSeek V4 Flash is cheaper on both input and output at current published rates, with the larger gap on output at $0.28 per million against $1.20. Compare using your real monthly request volume rather than per-call price.' },
+        { question: 'When should I use a high-volume model instead of a balanced one?', answer: 'For classification, routing, tagging, extraction from known formats, and short summaries. A common pattern is a two-stage pipeline where the cheap model handles everything and only low-confidence cases escalate to a stronger model.' },
+        { question: 'Do cheap models still have large context windows?', answer: 'Yes. Both models here carry a one-million-token window. That makes it easy to overspend without noticing, because nothing rejects an oversized prompt. Measure the prompt you actually send.' },
       ],
     },
     {
       slug: 'gemini-3-1-flash-lite-vs-gpt-5-6-luna-cost',
-      title: 'Gemini 3.1 Flash-Lite vs GPT-5.6 Luna Cost | TokenCalculator.dev',
-      description: 'Compare Gemini 3.1 Flash-Lite and GPT-5.6 Luna pricing for text, PDF, DOCX, code, images, and high-volume API workloads.',
-      eyebrow: 'Multimodal value comparison', heading: 'Gemini 3.1 Flash-Lite vs GPT-5.6 Luna cost.',
-      intro: 'Compare current high-volume models with the same text, document, and supported image workload in one browser-only calculation.',
-      legacyTerms: 'The active pair is Gemini 3.1 Flash-Lite and GPT-5.6 Luna. Image dimensions and document text are processed locally.',
+      title: 'Gemini 3.1 Flash-Lite vs GPT-5.6 Luna Cost Calculator',
+      description: 'Compare Gemini 3.1 Flash-Lite and GPT-5.6 Luna for high-volume multimodal workloads, including image token rules that text-only price tables leave out.',
+      eyebrow: 'High-volume multimodal', crumb: 'Gemini 3.1 Flash-Lite vs GPT-5.6 Luna',
+      heading: 'Gemini 3.1 Flash-Lite vs GPT-5.6 Luna cost.',
+      intro: 'Two cheap models that both accept images, where a text-only price comparison will mislead you.',
+      legacyTerms: 'Both models are current. Image dimensions and document text are processed locally in your browser.',
       leftId: 'gemini-3.1-flash-lite', rightId: 'gpt-5.6-luna',
-      decision: 'For multimodal pipelines, include representative image sizes as well as text. Vision-token rules differ, so text-only price tables can hide the real request cost.',
+      decision: 'For multimodal pipelines, include representative image sizes as well as text. Vision-token rules differ enough between providers that text-only tables hide the real request cost.',
+      analysis: [
+        {
+          heading: 'Images are priced as tokens, and the formulas differ',
+          body: [
+            'Neither provider bills images by the file. Both convert dimensions into a token count and charge the normal input rate on it, but they use different rules to do so.',
+            'OpenAI splits a resized image into tiles and charges a base allowance plus a per-tile cost, with a fixed low-detail option that ignores size entirely. Google allocates tokens by media size against its own published guidance. The same photograph therefore produces different token counts on the two models.',
+            'This is why a text-only price comparison is unreliable for a vision pipeline. Upload a representative image in the calculator below and compare the totals rather than the rates.',
+          ],
+        },
+        {
+          heading: 'The low-detail option is the biggest lever on OpenAI',
+          body: [
+            'OpenAI\'s low-detail mode charges a flat allowance regardless of image dimensions. For thumbnails, screenshots where only layout matters, or a first-pass filter, it can cut image cost dramatically.',
+            'It is a quality trade, not a free saving: fine text and small features stop being legible to the model. Test it on your actual images before adopting it across a pipeline.',
+          ],
+        },
+        {
+          heading: 'Text rates are close; image volume decides',
+          body: [
+            'On text the two are close enough that the choice rarely turns on rate alone. Gemini 3.1 Flash-Lite lists $0.25 per million input and $1.50 output; GPT-5.6 Luna lists $0.20 and $1.20.',
+            'Once images enter the mix, the token counts diverge much more than the rates do. For an image-heavy workload, measure token counts on real files first and treat the published rates as a secondary factor.',
+          ],
+        },
+      ],
       faq: [
-        { question: 'Can I compare image token cost on both models?', answer: 'Yes. Add PNG, JPEG, WebP, or GIF images. The browser reads dimensions and applies each provider’s documented visual-token method.' },
-        { question: 'How are Gemini token counts produced?', answer: 'Gemini results use the deterministic Provider-Calibrated UTF-8 Token Projection. Google’s countTokens API is authoritative for a fully assembled production request.' },
-        { question: 'Do uploaded images leave the browser?', answer: 'No. Image dimensions are read locally and pixel data is not sent to TokenCalculator.dev for calculation.' },
+        { question: 'How are image tokens calculated?', answer: 'Both providers convert image dimensions into a token count and bill it at the normal input rate, using different published formulas. OpenAI uses a tile-based method with a fixed low-detail option; Google allocates tokens by media size. The same image produces different counts on each.' },
+        { question: 'Which is cheaper for a vision pipeline?', answer: 'It depends on image sizes, not on the published rates. The text rates are close, but the token counts a given image produces can differ substantially. Upload a representative image to the calculator to compare real totals.' },
+        { question: 'Does the calculator upload my images?', answer: 'No. Only the width and height are read locally in your browser and passed through each provider\'s published formula. The pixels never leave your device.' },
+      ],
+    },
+    {
+      slug: 'kimi-k3-vs-claude-fable-5-1-cost',
+      title: 'Kimi K3 vs Claude Fable 5.1 Cost Calculator',
+      description: 'Kimi K3 undercuts Claude Fable 5.1 by more than three times on both input and output. Compare real workload cost, context windows, and where the saving holds.',
+      eyebrow: 'Open-weight challenger', crumb: 'Kimi K3 vs Claude Fable 5.1',
+      heading: 'Kimi K3 vs Claude Fable 5.1 cost.',
+      intro: 'An open-weight model priced against a frontier proprietary one, on a task class where both are credible.',
+      legacyTerms: 'Both models are current. Kimi K3 is served under the Kimi K3 licence; rates carry their verification date.',
+      leftId: 'kimi-k3', rightId: 'claude-fable-5-1',
+      decision: 'The saving is large and consistent. The question is whether Kimi K3 holds quality on your task, and whether serving and support terms suit you.',
+      analysis: [
+        {
+          heading: 'A frontier-class comparison at a third of the price',
+          body: [
+            'Kimi K3 launched at $3 per million input tokens and $15 per million output, against $10 and $50 for Claude Fable 5.1. That is a consistent three-fold-plus gap on both sides of the bill, which is unusual: most cheaper models save on input and give some of it back on output.',
+            'Both carry very large context windows, so neither forces you into retrieval for a long document. The computed table below shows what that costs in practice at each request size.',
+          ],
+        },
+        {
+          heading: 'Where an open-weight model changes the architecture',
+          body: [
+            'A three-fold price gap does not usually change how a system is built. What changes it is the option to self-host. An open-weight licence means you can run the model on your own hardware, which moves cost from per-token to per-hour and removes the per-request network boundary entirely.',
+            'That trade only pays above a utilisation threshold. Below it, a hosted API is cheaper and far less work. The cost lab on this site models the self-hosting crossover if you want to size it.',
+            'For confidential prompts the calculation is different again: self-hosting removes the question of what leaves your network, which for some workloads outweighs the token price entirely.',
+          ],
+        },
+        {
+          heading: 'Counting is estimated on both sides here',
+          body: [
+            'Neither model ships a browser-runnable tokenizer, so both counts on this page are deterministic byte-length projections rather than exact counts. The comparison between them remains fair, because the same method is applied to both.',
+            'Use the provider\'s reported usage to reconcile an invoice. Use this page to choose between them.',
+          ],
+        },
+      ],
+      faq: [
+        { question: 'How much cheaper is Kimi K3 than Claude Fable 5.1?', answer: 'Kimi K3 launched at $3 per million input and $15 per million output, against $10 and $50 for Claude Fable 5.1. That is more than three times cheaper on both input and output, which is unusual for a cheaper model.' },
+        { question: 'Is Kimi K3 open source?', answer: 'It is open-weight, served under the Kimi K3 licence rather than a standard open-source licence. The practical benefit is that self-hosting is possible, which changes cost from per-token to per-hour and removes the network boundary for confidential inputs.' },
+        { question: 'Are the token counts on this page exact?', answer: 'No. Neither model publishes a tokenizer that runs in a browser, so both are measured with the same deterministic byte-length projection and labelled as estimates. The comparison between them is fair because the method is identical on both sides.' },
+      ],
+    },
+    {
+      slug: 'qwen3-8-max-vs-gpt-5-6-sol-cost',
+      title: 'Qwen3.8 Max vs GPT-5.6 Sol Cost Calculator',
+      description: 'Qwen3.8 Max lists $2 per million input tokens against $4 for GPT-5.6 Sol, with a larger gap on output. Compare real workload cost and multilingual token behaviour.',
+      eyebrow: 'Open-weight vs proprietary', crumb: 'Qwen3.8 Max vs GPT-5.6 Sol',
+      heading: 'Qwen3.8 Max vs GPT-5.6 Sol cost.',
+      intro: 'Alibaba\'s flagship against OpenAI\'s reasoning tier, with a tokenizer difference that matters if your text is not English.',
+      legacyTerms: 'Both models are current. Qwen counts use a deterministic byte-length projection; OpenAI counts for raw text are exact.',
+      leftId: 'qwen3.8-max', rightId: 'gpt-5.6-sol',
+      decision: 'Qwen3.8 Max is cheaper on both sides. If your content is substantially non-English, compare token counts on real text rather than trusting a ratio measured on English.',
+      analysis: [
+        {
+          heading: 'Half the input price, a third of the output price',
+          body: [
+            'Qwen3.8 Max lists $2 per million input tokens and $6 per million output. GPT-5.6 Sol lists $4 and $20. The gap is two-fold on input and more than three-fold on output.',
+            'Qwen3.8 Max also carries a one-million-token context window billed at a flat rate, while GPT-5.6 Sol applies a long-context tier above 272,000 input tokens. On large single requests the effective gap is wider than the headline rates suggest.',
+          ],
+        },
+        {
+          heading: 'Tokenizer vocabulary changes the count, not just the rate',
+          body: [
+            'Qwen\'s vocabulary is trained for Chinese and English together. English prose therefore packs a slightly different number of UTF-8 bytes per token than it does on an OpenAI encoding, and Chinese text differs much more.',
+            'The consequence is practical: a cost ratio you measured on English documents will not transfer to a Chinese corpus. If your workload is multilingual, run representative text through the calculator for each language rather than applying one multiplier.',
+            'This site measures Qwen with a deterministic byte-length projection calibrated for its family. It is labelled as an estimate for exactly this reason.',
+          ],
+        },
+        {
+          heading: 'Benchmarks have narrowed; task evaluation has not',
+          body: [
+            'Published 2026 comparisons place Qwen3.8-Max among the open-weight models scoring above 91 percent on GPQA Diamond, alongside Kimi K3 and GLM-5.2. On several reasoning benchmarks the gap to frontier proprietary models is now small.',
+            'That is a reason to run the comparison, not a reason to skip it. Benchmark parity and task parity are different things, and the only evidence that settles your case is a held-out evaluation on your own data.',
+          ],
+        },
+      ],
+      faq: [
+        { question: 'Is Qwen3.8 Max cheaper than GPT-5.6 Sol?', answer: 'Yes, at current published rates. Qwen3.8 Max lists $2 per million input and $6 output, against $4 and $20 for GPT-5.6 Sol. The effective gap widens on requests above 272,000 tokens, where GPT-5.6 Sol applies a long-context tier and Qwen3.8 Max does not.' },
+        { question: 'Do Qwen token counts differ from OpenAI counts for the same text?', answer: 'Yes. Qwen\'s vocabulary is trained for Chinese and English together, so the bytes-per-token ratio differs from an OpenAI encoding, and the difference is much larger on Chinese text than on English. Measure each language separately.' },
+        { question: 'How accurate are the Qwen counts here?', answer: 'They are deterministic byte-length projections, labelled as estimates. OpenAI counts for raw text are exact because its tokenizer runs locally in the browser. Use provider-reported usage to reconcile an invoice.' },
+      ],
+    },
+    {
+      slug: 'glm-5-3-vs-deepseek-v4-pro-pricing',
+      title: 'GLM-5.3 vs DeepSeek V4 Pro Pricing Calculator',
+      description: 'Two low-cost open-weight models compared on real workload cost, context window, and where each one is the cheaper choice.',
+      eyebrow: 'Open-weight comparison', crumb: 'GLM-5.3 vs DeepSeek V4 Pro',
+      heading: 'GLM-5.3 vs DeepSeek V4 Pro pricing.',
+      intro: 'Both sit far below frontier pricing. The gap between them is still large enough to matter at volume.',
+      legacyTerms: 'Both models are current open-weight releases. Rates carry the date they were verified against the public catalogue.',
+      leftId: 'glm-5.3', rightId: 'deepseek-v4-pro',
+      decision: 'Both are cheap enough that quality on your task decides. Use the computed table to size the difference, then evaluate both on held-out data.',
+      analysis: [
+        {
+          heading: 'Cheap, but not equally cheap',
+          body: [
+            'It is easy to treat every open-weight model as interchangeable on price. They are not. Published 2026 comparisons put the spread between the cheapest and most expensive of Kimi K3, Qwen3.8-Max and GLM-5.2 at over $10 per million output tokens, which is more than the entire output price of several models in this class.',
+            'DeepSeek V4 Pro lists $0.435 per million input and $0.87 output. GLM-5.3 lists higher on both. At a few thousand requests a month that is noise; at a few million it is a budget line.',
+          ],
+        },
+        {
+          heading: 'Both are strong on code, which is where they are usually deployed',
+          body: [
+            'This class of model is most often adopted for code assistance, where output volume is high and the task is well specified. Several 2026 comparisons rank GLM, DeepSeek V4 and Qwen closely on coding evaluations.',
+            'Code workloads are unusually sensitive to output rate, because a model that writes a whole file emits far more tokens than one answering a question. Set the output slider to a realistic file length rather than a chat-sized answer.',
+          ],
+        },
+        {
+          heading: 'Both are measured by projection here',
+          body: [
+            'Neither publishes a browser-runnable tokenizer, so both counts on this page use the same deterministic byte-length method and are labelled as estimates.',
+            'Because the same method applies to both, the ratio between them is more reliable than either absolute number. Use it to choose; use provider usage reports to reconcile.',
+          ],
+        },
+      ],
+      faq: [
+        { question: 'Which is cheaper, GLM-5.3 or DeepSeek V4 Pro?', answer: 'DeepSeek V4 Pro is cheaper at current published rates, at $0.435 per million input and $0.87 output. The computed table on this page converts the difference into cost for five concrete workload shapes.' },
+        { question: 'Are open-weight models all similarly priced?', answer: 'No. Published 2026 comparisons put the spread between the cheapest and most expensive well-known open-weight models at over $10 per million output tokens. Treating the category as uniformly cheap is a common budgeting mistake.' },
+        { question: 'Are these models good for coding?', answer: 'This class is most commonly deployed for code assistance and several 2026 comparisons rank them closely on coding evaluations. Code workloads are output-heavy, so set a realistic output length before comparing monthly cost.' },
       ],
     },
     {
       slug: 'claude-vs-gpt4o-token-cost',
-      title: 'Claude vs GPT-4o Token Cost Calculator | TokenCalculator.dev',
-      description: 'Compare Claude and GPT token costs with current model rates, local token measurement, context limits, and transparent accuracy labels.',
-      eyebrow: 'Claude vs OpenAI cost',
-      heading: 'Claude vs GPT-4o token cost.',
-      intro: 'Answer the legacy GPT-4o comparison query, then measure the same workload against the current balanced Claude and OpenAI models.',
-      legacyTerms: 'GPT-4o is a legacy comparison term. The live calculator below uses Claude Sonnet 5 and GPT-5.6 Terra as the current balanced model classes in this catalog.',
-      leftId: 'claude-sonnet-5',
-      rightId: 'gpt-5.6-terra',
-      decision: 'Compare both input and output rates. Output-heavy agents can reverse a decision that looks inexpensive when judged only on prompt cost.',
+      title: 'Claude vs GPT Token Cost Calculator',
+      description: 'GPT-4o has been superseded. Compare the models that replaced it, Claude Sonnet 5 and GPT-5.6 Terra, on real token cost for chat, RAG, and long-document workloads.',
+      eyebrow: 'Balanced model comparison', crumb: 'Claude vs GPT token cost',
+      heading: 'Claude vs GPT token cost.',
+      intro: 'GPT-4o is retired from current pricing. This page compares the models that took its place in the balanced tier.',
+      legacyTerms: 'GPT-4o is a legacy search term and no longer appears in current pricing. The live pair below is Claude Sonnet 5 and GPT-5.6 Terra, the current balanced-tier models.',
+      leftId: 'claude-sonnet-5', rightId: 'gpt-5.6-terra',
+      decision: 'Compare input and output rates together. An output-heavy agent can reverse a decision that looks obvious when judged on prompt cost alone.',
+      analysis: [
+        {
+          heading: 'What replaced GPT-4o',
+          body: [
+            'GPT-4o occupied the balanced tier: capable enough for most production work, priced well below the frontier. That slot is now held by GPT-5.6 Terra on the OpenAI side and Claude Sonnet 5 on the Anthropic side.',
+            'If you are costing a migration from GPT-4o, compare against these rather than against a frontier model. Moving straight to the frontier tier is the most common way a migration budget is overestimated.',
+          ],
+        },
+        {
+          heading: 'The rates that decide it',
+          body: [
+            'Both list $2 per million input tokens. Claude Sonnet 5 lists $10 per million output against $12 for GPT-5.6 Terra.',
+            'Because input price is identical, the entire comparison rests on output volume and on cached input. A workload that writes little will see almost no difference; an agent that writes long answers on every turn will.',
+          ],
+        },
+        {
+          heading: 'Why old cost ratios do not transfer',
+          body: [
+            'Token counts are tokenizer-specific. A cost ratio you measured between GPT-4o and a Claude model in an earlier generation does not carry forward, because both the rates and the tokenizers changed.',
+            'Re-measure with your current prompt. The calculator below counts OpenAI text exactly in your browser and projects Claude counts deterministically, and labels which is which.',
+          ],
+        },
+      ],
       faq: [
-        { question: 'Is GPT-4o pricing still used on this page?', answer: 'No. GPT-4o appears in the URL and heading because it is the legacy comparison query. Calculations use the current catalog and identify the actual selected model and verification date.' },
-        { question: 'Does Claude count the same text like OpenAI?', answer: 'No. OpenAI raw text uses exact local o200k_base BPE tokenization, while Claude uses the deterministic Provider-Calibrated UTF-8 Token Projection. The provider API usage record remains authoritative.' },
-        { question: 'Which is cheaper for large prompts?', answer: 'It depends on the selected models, cache eligibility, output length, and long-context tiers. Paste the real workload and compare the per-call and monthly totals.' },
+        { question: 'Is GPT-4o still available?', answer: 'GPT-4o no longer appears in current published pricing. Its role in the balanced tier is now filled by GPT-5.6 Terra. If you are costing a migration, compare against the balanced tier rather than a frontier model.' },
+        { question: 'Which is cheaper, Claude or GPT, in the balanced tier?', answer: 'Input price is identical at $2 per million. Claude Sonnet 5 is cheaper on output at $10 per million against $12 for GPT-5.6 Terra, so output-heavy workloads favour Claude.' },
+        { question: 'Can I reuse a cost ratio I measured last year?', answer: 'No. Both the published rates and the tokenizers have changed, so an old ratio will mislead you. Re-measure with your current prompt.' },
       ],
     },
     {
       slug: 'deepseek-r1-vs-openai-o1-cost-calculator',
-      title: 'DeepSeek R1 vs OpenAI o1 Cost Calculator | TokenCalculator.dev',
-      description: 'Compare DeepSeek and OpenAI reasoning-model costs using current rates, output assumptions, and workload projections.',
-      eyebrow: 'Reasoning model cost',
-      heading: 'DeepSeek R1 vs OpenAI o1 cost calculator.',
-      intro: 'Use the familiar R1-versus-o1 query to compare today’s higher-capability DeepSeek and OpenAI model classes.',
-      legacyTerms: 'R1 and o1 are legacy comparison terms. The current calculation pair is DeepSeek V4 Pro and GPT-5.6 Sol; each result shows its live model name and rate source.',
-      leftId: 'deepseek-v4-pro',
-      rightId: 'gpt-5.6-sol',
-      decision: 'Reasoning workloads are often output-heavy. Set a realistic output-token budget in the workload planner before comparing daily or monthly spend.',
+      title: 'DeepSeek vs OpenAI Reasoning Model Cost Calculator',
+      description: 'DeepSeek R1 and OpenAI o1 have been superseded. Compare their current replacements, DeepSeek V4 Pro and GPT-5.6 Sol, on real reasoning workload cost.',
+      eyebrow: 'Reasoning model comparison', crumb: 'DeepSeek vs OpenAI reasoning cost',
+      heading: 'DeepSeek vs OpenAI reasoning model cost.',
+      intro: 'R1 and o1 are retired names. This page compares the reasoning models that replaced them, where output volume dominates the bill.',
+      legacyTerms: 'DeepSeek R1 and OpenAI o1 are legacy search terms. The current calculation pair is DeepSeek V4 Pro and GPT-5.6 Sol; each result shows its live model name and rate source.',
+      leftId: 'deepseek-v4-pro', rightId: 'gpt-5.6-sol',
+      decision: 'Reasoning workloads are output-heavy by construction. Set a realistic output-token budget before comparing daily or monthly spend, because output is where the difference lands.',
+      analysis: [
+        {
+          heading: 'Reasoning models bill differently from chat models',
+          body: [
+            'A reasoning model spends tokens thinking before it answers. Those tokens are billed as output, and output costs several times what input costs on every model in this comparison.',
+            'This inverts the usual budgeting instinct. For a chat assistant, prompt size drives the bill. For a reasoning model, the length of the reasoning does, and it varies with problem difficulty in a way that a fixed estimate will not capture.',
+            'Budget with a distribution, not an average. A task whose hard cases reason ten times longer than its easy ones will overrun a budget built on the mean.',
+          ],
+        },
+        {
+          heading: 'The price gap at this tier is unusually wide',
+          body: [
+            'DeepSeek V4 Pro lists $0.435 per million input and $0.87 output. GPT-5.6 Sol lists $4 and $20. On output, the axis that matters most for reasoning, that is more than a twenty-fold difference.',
+            'Few comparisons in this market are that wide. It is large enough that a serious evaluation is worth the effort even if you expect to stay on the more expensive model.',
+          ],
+        },
+        {
+          heading: 'What the old names meant',
+          body: [
+            'DeepSeek R1 and OpenAI o1 were the first widely used reasoning models, and they established the pattern of billing visible thinking as output tokens. Both have been superseded, and neither appears in current published pricing.',
+            'Cost ratios from that generation do not transfer. Rates fell substantially and the models reason differently, so the token counts changed as well as the prices.',
+          ],
+        },
+      ],
       faq: [
-        { question: 'Why does this page not quote old R1 and o1 prices?', answer: 'Historical prices can mislead architecture decisions. The page preserves the search intent but calculates with the current comparable model classes in the maintained catalog.' },
-        { question: 'Are reasoning tokens included?', answer: 'Only the output-token amount entered in the planner is priced. Hidden or provider-side reasoning usage can differ and should be checked against the API usage response.' },
-        { question: 'How is the DeepSeek token count calculated?', answer: 'DeepSeek uses the deterministic Provider-Calibrated UTF-8 Token Projection, while OpenAI raw text uses exact local BPE tokenization. Both providers can add request framing or server-side usage.' },
+        { question: 'Are DeepSeek R1 and OpenAI o1 still available?', answer: 'Neither appears in current published pricing. Their roles are filled by DeepSeek V4 Pro and GPT-5.6 Sol respectively, which is the pair priced on this page.' },
+        { question: 'Why do reasoning models cost more than expected?', answer: 'They emit reasoning tokens before answering, and those bill as output, which costs several times more than input. Reasoning length also varies with problem difficulty, so a budget built on an average output length will overrun on hard cases.' },
+        { question: 'How wide is the price gap?', answer: 'On output, which dominates reasoning workloads, DeepSeek V4 Pro is more than twenty times cheaper than GPT-5.6 Sol at current published rates. The computed table converts that into cost for five workload shapes.' },
       ],
     },
     {
       slug: 'gemini-flash-vs-gpt-4o-mini-pricing',
-      title: 'Gemini Flash vs GPT-4o Mini Pricing | TokenCalculator.dev',
-      description: 'Compare high-volume Gemini and OpenAI model pricing for prompts, outputs, cached input, and monthly request workloads.',
-      eyebrow: 'High-volume model pricing',
-      heading: 'Gemini Flash vs GPT-4o mini pricing.',
-      intro: 'Compare the current low-cost Gemini and OpenAI model classes for high-volume production workloads.',
-      legacyTerms: 'GPT-4o mini is a legacy comparison term. The live pair is Gemini 3.1 Flash-Lite and GPT-5.6 Luna, the current high-volume options in this catalog.',
-      leftId: 'gemini-3.1-flash-lite',
-      rightId: 'gpt-5.6-luna',
-      decision: 'At high request volumes, small output-rate and cache-rate differences compound quickly. Use the requests-per-day slider rather than comparing headline input prices alone.',
+      title: 'Gemini Flash vs GPT Mini Pricing Calculator',
+      description: 'GPT-4o mini has been superseded. Compare the current high-volume models that replaced it, Gemini 3.1 Flash-Lite and GPT-5.6 Luna, on real monthly cost.',
+      eyebrow: 'High-volume model pricing', crumb: 'Gemini Flash vs GPT Mini',
+      heading: 'Gemini Flash vs GPT mini pricing.',
+      intro: 'GPT-4o mini is retired. This page compares the cheap-tier models that replaced it, where request volume decides the bill.',
+      legacyTerms: 'GPT-4o mini is a legacy search term and no longer appears in current pricing. The live pair is Gemini 3.1 Flash-Lite and GPT-5.6 Luna, the current high-volume options.',
+      leftId: 'gemini-3.1-flash-lite', rightId: 'gpt-5.6-luna',
+      decision: 'At high request volumes small output-rate and cache-rate differences compound quickly. Use your real requests-per-day figure rather than comparing headline input prices.',
+      analysis: [
+        {
+          heading: 'The cheap tier got much cheaper',
+          body: [
+            'GPT-4o mini set the expectation for what a cheap model costs. The current tier is well below it: GPT-5.6 Luna lists $0.20 per million input and $1.20 output, following an OpenAI price reduction in mid-2026.',
+            'If your cost model still assumes GPT-4o mini rates, it is overstating the bill. Re-run it before deciding you cannot afford a workload.',
+          ],
+        },
+        {
+          heading: 'Per-call price is the wrong unit here',
+          body: [
+            'At these rates a single request costs a fraction of a cent, which makes per-call comparison useless. The meaningful figure is monthly total at your real request volume.',
+            'The two variables that actually move it are output length and any prefix you resend on every call. A pipeline that quietly attaches a large system prompt to millions of requests will spend more on the prefix than on the work.',
+          ],
+        },
+        {
+          heading: 'Both handle images, and that changes the comparison',
+          body: [
+            'Gemini 3.1 Flash-Lite and GPT-5.6 Luna both accept images, and both convert dimensions to tokens using different published formulas. A text-only rate comparison will not predict the cost of a vision pipeline.',
+            'If images are part of the workload, upload a representative file in the calculator below and compare token totals rather than published rates.',
+          ],
+        },
+      ],
       faq: [
-        { question: 'Is Gemini Flash always cheaper than GPT-4o mini?', answer: 'No universal answer applies. Model generation, output length, cache usage, and provider tiers matter. This page uses current successors instead of treating old rates as current.' },
-        { question: 'How are Gemini tokens counted?', answer: 'The browser uses a deterministic provider-family estimate. Google’s countTokens API is authoritative for a fully assembled Gemini request.' },
-        { question: 'Can I compare monthly cost?', answer: 'Yes. Paste the workload, open Workload and Scaling Planner, then set expected output tokens and requests per day to see per-call, daily, and monthly projections.' },
+        { question: 'Is GPT-4o mini still available?', answer: 'It no longer appears in current published pricing. The high-volume slot is now held by GPT-5.6 Luna at $0.20 per million input and $1.20 output, which is below the rate GPT-4o mini set.' },
+        { question: 'Which is cheaper for high-volume work?', answer: 'GPT-5.6 Luna lists lower rates than Gemini 3.1 Flash-Lite on both input and output. For image-heavy pipelines the answer can change, because the two providers convert images into tokens using different formulas.' },
+        { question: 'How should I compare cheap models?', answer: 'By monthly total at your real request volume, not per-call price. Output length and any prefix resent on every call are the two variables that move the number most.' },
       ],
     },
   ];
+
   return pages.map((page) => ({ params: { comparison: page.slug }, props: page }));
 }
 
@@ -156,10 +515,10 @@ const page = Astro.props as ComparisonPage;
 const left = getModel(page.leftId);
 const right = getModel(page.rightId);
 const canonical = `/${page.slug}/`;
-const breadcrumbs = [{ label: 'Token calculator', href: '/' }, { label: page.eyebrow }];
+const breadcrumbs = [{ label: 'Token calculator', href: '/' }, { label: page.crumb }];
 const money = (value: number | undefined) => value === undefined ? '—' : `$${value.toLocaleString('en-US', { maximumFractionDigits: 6 })}`;
 ---
-<BaseLayout title={page.title} description={page.description} {canonical} faq={page.faq} {breadcrumbs} application>
+<BaseLayout title={`${page.title} | TokenCalculator.dev`} description={page.description} {canonical} faq={page.faq} {breadcrumbs} application>
   <Breadcrumbs items={breadcrumbs} />
   <section class="shell max-w-4xl pt-12 sm:pt-16 pb-8 relative z-10">
     <span class="eyebrow">{page.eyebrow}</span>
@@ -174,11 +533,11 @@ const money = (value: number | undefined) => value === undefined ? '—' : `$${v
         <table class="w-full min-w-[620px] text-left text-sm">
           <thead><tr class="muted"><th class="pb-3">Current model</th><th class="pb-3">Input / 1M</th><th class="pb-3">Cached / 1M</th><th class="pb-3">Output / 1M</th><th class="pb-3">Context</th></tr></thead>
           <tbody>
-            {[left, right].map((model) => <tr class="border-t hairline"><th class="py-4 pr-5"><span class="block">{model.name}</span><a class="text-xs text-[var(--accent)] font-normal" href={model.pricingUrl} target="_blank" rel="noreferrer">Official pricing ↗</a></th><td>{money(model.inputPerMillion)}</td><td>{money(model.cachedInputPerMillion)}</td><td>{money(model.outputPerMillion)}</td><td>{model.contextWindow.toLocaleString()}</td></tr>)}
+            {[left, right].map((model) => <tr class="border-t hairline"><th class="py-4 pr-5"><span class="block">{model.name}</span><a class="text-xs text-[var(--accent)] font-normal" href={model.pricingUrl} target="_blank" rel="noreferrer">Official pricing ↗</a></th><td data-live-input={model.id}>{money(model.inputPerMillion)}</td><td>{money(model.cachedInputPerMillion)}</td><td data-live-output={model.id}>{money(model.outputPerMillion)}</td><td data-live-context={model.id}>{model.contextWindow.toLocaleString()}</td></tr>)}
           </tbody>
         </table>
       </div>
-      <p class="muted text-xs mb-0 mt-4">Bundled rates verified {left.verifiedAt === right.verifiedAt ? left.verifiedAt : `${left.verifiedAt} / ${right.verifiedAt}`}. The browser may refresh them from Models.dev. Provider pricing and tiers remain authoritative.</p>
+      <p class="muted text-xs mb-0 mt-4">Rates verified {left.verifiedAt === right.verifiedAt ? left.verifiedAt : `${left.verifiedAt} / ${right.verifiedAt}`}. The browser may refresh them from the live catalogue. Provider pricing and tiers remain authoritative.</p>
     </div>
   </section>
 
@@ -193,10 +552,19 @@ const money = (value: number | undefined) => value === undefined ? '—' : `$${v
 
   <Calculator />
 
-  <section class="shell mt-20 grid md:grid-cols-2 gap-8 md:gap-16 relative z-10">
+  <CostScenarios {left} {right} />
+
+  {page.analysis.map((block) => (
+    <section class="shell mt-16 grid md:grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)] gap-8 md:gap-16 relative z-10">
+      <div><h2 class="section-title m-0">{block.heading}</h2></div>
+      <div class="muted">{block.body.map((paragraph) => <p>{paragraph}</p>)}</div>
+    </section>
+  ))}
+
+  <section class="shell mt-16 grid md:grid-cols-2 gap-8 md:gap-16 relative z-10">
     <div><span class="eyebrow">Decision rule</span><h2 class="section-title mt-3">Model the workload, not the marketing price.</h2></div>
-    <div class="muted"><p>{page.decision}</p><p>Tokenizer vocabulary, segmentation, Unicode handling, and request framing differ by provider, so identical payloads can produce different totals. Computation labels distinguish exact local BPE tokenization from deterministic Provider-Calibrated UTF-8 Token Projections.</p><a href="/methodology/" class="text-[var(--accent)]">Review calculation methodology →</a></div>
+    <div class="muted"><p>{page.decision}</p><a href="/methodology/" class="text-[var(--accent)]">Review calculation methodology →</a></div>
   </section>
-  <ProviderLinks />
+  <ProviderLinks current={canonical} limit={4} />
   <FAQ items={page.faq} />
 </BaseLayout>

@@ -1,0 +1,146 @@
+---
+import type { ModelConfig } from '../../domain/models';
+import { calculateWorkloadCost, resolveRates } from '../../engines/pricing/calculate';
+
+interface Props { left: ModelConfig; right: ModelConfig }
+const { left, right } = Astro.props;
+
+/**
+ * Every figure on this page is computed at build time from the same verified
+ * catalogue the calculator uses. Nothing here is transcribed from a blog post, so
+ * the numbers move when the rates move rather than going quietly stale.
+ */
+const SCENARIOS = [
+  { name: 'Short chat turn', detail: 'A typical assistant exchange.', input: 1_000, output: 500 },
+  { name: 'RAG answer', detail: 'Five retrieved chunks plus a question.', input: 12_000, output: 800 },
+  { name: 'Code review', detail: 'A medium pull request with surrounding files.', input: 60_000, output: 2_000 },
+  { name: 'Whole-document analysis', detail: 'A long report or contract read in one call.', input: 300_000, output: 4_000 },
+  { name: 'Full-context load', detail: 'Filling most of a one-million-token window.', input: 900_000, output: 4_000 },
+];
+
+const usd = (value: number) => {
+  if (value === 0) return '$0';
+  if (value < 0.01) return `$${value.toFixed(4)}`;
+  if (value < 1) return `$${value.toFixed(3)}`;
+  return `$${value.toFixed(2)}`;
+};
+
+const rows = SCENARIOS.map((scenario) => {
+  const fits = (model: ModelConfig) => scenario.input <= model.contextWindow;
+  const leftCost = fits(left) ? calculateWorkloadCost(scenario.input, scenario.output, left) : null;
+  const rightCost = fits(right) ? calculateWorkloadCost(scenario.input, scenario.output, right) : null;
+  const ratio = leftCost && rightCost ? (leftCost > rightCost ? leftCost / rightCost : rightCost / leftCost) : null;
+  const cheaper = leftCost === null || rightCost === null ? null : leftCost < rightCost ? left : right;
+  // A tier change means the per-token rate for this request is not the headline rate.
+  const leftTier = resolveRates(left, scenario.input).label !== 'Standard rate';
+  const rightTier = resolveRates(right, scenario.input).label !== 'Standard rate';
+  return { ...scenario, leftCost, rightCost, ratio, cheaper, leftTier, rightTier };
+});
+
+/**
+ * Cache break-even: a cache write costs a premium, a cache read is heavily
+ * discounted. This solves for the number of reads after which caching is cheaper
+ * than paying full input price every time.
+ */
+const cacheBreakEven = (model: ModelConfig) => {
+  const read = model.cachedInputPerMillion;
+  if (read === undefined || read >= model.inputPerMillion) return null;
+  // Anthropic and OpenAI both document a write premium around 1.25x base input.
+  const writeMultiplier = 1.25;
+  const saving = model.inputPerMillion - read;
+  const premium = model.inputPerMillion * (writeMultiplier - 1);
+  return Math.max(1, Math.ceil(premium / saving));
+};
+
+const cacheRows = [left, right].map((model) => ({
+  model,
+  read: model.cachedInputPerMillion,
+  discount: model.cachedInputPerMillion === undefined ? null : 1 - model.cachedInputPerMillion / model.inputPerMillion,
+  breakEven: cacheBreakEven(model),
+}));
+
+const bothCached = cacheRows.every((row) => row.read !== undefined);
+const cacheGap = bothCached && cacheRows[0].read && cacheRows[1].read
+  ? Math.max(cacheRows[0].read, cacheRows[1].read) / Math.min(cacheRows[0].read, cacheRows[1].read)
+  : null;
+const cheaperCache = bothCached ? (cacheRows[0].read! < cacheRows[1].read! ? cacheRows[0] : cacheRows[1]) : null;
+---
+
+<section class="shell mt-16 relative z-10" aria-labelledby="scenarios-title">
+  <div class="content-heading">
+    <span class="eyebrow">Computed from current rates</span>
+    <h2 id="scenarios-title" class="section-title mt-3">What five real workloads actually cost</h2>
+  </div>
+  <p class="muted max-w-3xl mt-4 mb-6">
+    Headline per-token prices rarely decide a bill. Request shape does. These figures are calculated
+    from the verified rates for {left.name} and {right.name}, including any long-context tier that
+    applies once a request crosses its threshold.
+  </p>
+
+  <div class="table-shell overflow-x-auto">
+    <table class="seo-table">
+      <thead>
+        <tr>
+          <th>Workload</th><th>Input</th><th>Output</th>
+          <th>{left.name}</th><th>{right.name}</th><th>Difference</th>
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map((row) => (
+          <tr>
+            <td><strong>{row.name}</strong><br /><span class="text-xs muted">{row.detail}</span></td>
+            <td>{row.input.toLocaleString()}</td>
+            <td>{row.output.toLocaleString()}</td>
+            <td>{row.leftCost === null ? <span class="muted">over context</span> : <>{usd(row.leftCost)}{row.leftTier && <span class="text-xs muted"> (tier)</span>}</>}</td>
+            <td>{row.rightCost === null ? <span class="muted">over context</span> : <>{usd(row.rightCost)}{row.rightTier && <span class="text-xs muted"> (tier)</span>}</>}</td>
+            <td>{row.ratio === null ? '—' : row.ratio < 1.01 ? 'about equal' : `${row.ratio.toFixed(2)}x cheaper on ${row.cheaper?.name}`}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+  <p class="text-xs muted mt-4">
+    "(tier)" marks a request that crossed a long-context threshold, so it is billed above the headline
+    rate. Output length is the assumption most worth changing for your own case: paste a real prompt
+    into the calculator above to replace these with your numbers.
+  </p>
+</section>
+
+{bothCached && (
+  <section class="shell mt-16 relative z-10" aria-labelledby="cache-title">
+    <div class="content-heading">
+      <span class="eyebrow">Prompt caching</span>
+      <h2 id="cache-title" class="section-title mt-3">The cached-input rate is the number most comparisons miss</h2>
+    </div>
+    <p class="muted max-w-3xl mt-4 mb-6">
+      Agents, chat threads and RAG pipelines resend the same system prompt and context on every call.
+      Those repeated tokens bill at the cached rate, not the headline rate, so a model can be cheaper
+      on paper and more expensive in production.
+      {cacheGap && cacheGap >= 1.5 && cheaperCache && (
+        <> Here the gap is {cacheGap.toFixed(1)}x: {cheaperCache.model.name} reads cached tokens at {usd(cheaperCache.read!)} per million.</>
+      )}
+    </p>
+    <div class="table-shell overflow-x-auto">
+      <table class="seo-table">
+        <thead><tr><th>Model</th><th>Fresh input / 1M</th><th>Cached input / 1M</th><th>Discount</th><th>Break-even</th></tr></thead>
+        <tbody>
+          {cacheRows.map((row) => (
+            <tr>
+              <td><strong>{row.model.name}</strong></td>
+              <td>{usd(row.model.inputPerMillion)}</td>
+              <td>{row.read === undefined ? '—' : usd(row.read)}</td>
+              <td>{row.discount === null ? '—' : `${Math.round(row.discount * 100)}%`}</td>
+              <td>{row.breakEven === null ? '—' : `${row.breakEven} read${row.breakEven === 1 ? '' : 's'}`}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <p class="text-xs muted mt-4">
+      Break-even assumes a cache write costs about 1.25x the base input rate, which is what OpenAI and
+      Anthropic currently document for a short time-to-live. It answers one question: how many times a
+      cached prefix must be re-read before caching is cheaper than paying full price each call. Above
+      that count, every further read saves the discount shown.
+    </p>
+  </section>
+)}
