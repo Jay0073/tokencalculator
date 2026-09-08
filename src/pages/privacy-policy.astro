@@ -1,7 +1,7 @@
 ---
 import ContentLayout from '../layouts/ContentLayout.astro';
 ---
-<ContentLayout title="Privacy Policy | TokenCalculator.dev" description="TokenCalculator.dev privacy policy for browser-local calculations and the optional developer API." heading="Privacy policy">
+<ContentLayout title="Privacy Policy | TokenCalculator.dev" description="How TokenCalculator.dev handles data: prompts, files and images are processed in your browser and never uploaded. What the optional developer API does and does not receive." heading="Privacy policy">
   <p>TokenCalculator offers two intentionally different processing modes. The website calculator and <code>@jay0073/tokencalculator-core</code> process text, extracted document content, source code, and image dimensions locally on your device. The optional public HTTP API processes the payload you explicitly send to its endpoint.</p>
   <h2>Privacy-first browser calculator</h2><p>Prompts, files, images, tokenization, and document extraction used in the website calculator remain in your browser and are not uploaded to TokenCalculator.dev. This is the recommended mode for confidential company prompts, private documents, proprietary source code, and other sensitive material.</p>
   <h2>Public developer API</h2><p>Requests made to <code>/api/v1/*</code> are transmitted over HTTPS to the API infrastructure so a response can be computed. The application does not intentionally persist request bodies or calculated results, but the hosting and security infrastructure may process standard request metadata such as IP address, user agent, route, timestamp, and request identifiers. Do not send secrets or regulated data to the public API; use the local npm package or browser calculator instead.</p>

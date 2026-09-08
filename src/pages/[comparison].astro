@@ -518,7 +518,7 @@ const canonical = `/${page.slug}/`;
 const breadcrumbs = [{ label: 'Token calculator', href: '/' }, { label: page.crumb }];
 const money = (value: number | undefined) => value === undefined ? '—' : `$${value.toLocaleString('en-US', { maximumFractionDigits: 6 })}`;
 ---
-<BaseLayout title={`${page.title} | TokenCalculator.dev`} description={page.description} {canonical} faq={page.faq} {breadcrumbs} application>
+<BaseLayout title={page.title} description={page.description} {canonical} faq={page.faq} {breadcrumbs} application>
   <Breadcrumbs items={breadcrumbs} />
   <section class="shell max-w-4xl pt-12 sm:pt-16 pb-8 relative z-10">
     <span class="eyebrow">{page.eyebrow}</span>
