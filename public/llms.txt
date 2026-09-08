@@ -27,7 +27,31 @@ TokenCalculator.dev is a free, privacy-first, browser-based LLM token calculator
 
 ## Accuracy
 
+OpenAI text is tokenized exactly, in the browser, with the model's own BPE encoding. Every other provider family uses a deterministic UTF-8 byte-length projection and is labelled "estimated" rather than "exact". Image tokens use each provider's published tile or patch formula, and report as unsupported when a provider does not publish one. Rates are regenerated from a public model catalogue and carry the date they were verified.
+
 ## Developer API and local SDK
+
+**Base URL: `https://tokencalculator.dev/api/v1` - no API key, no registration, no signup.**
+
+Rate limit: 60 requests per minute, per IP, per route. A 429 response carries `Retry-After` and `RateLimit-*` headers. CORS is open (`Access-Control-Allow-Origin: *`), so browser-based agents can call it directly.
+
+Endpoints:
+
+- `GET /api/v1/models` - every supported model id with context window and verified per-million-token rates. Cacheable, returns an `ETag`.
+- `GET /api/v1/health` - liveness check.
+- `POST /api/v1/count` - measure one request.
+- `POST /api/v1/batch` - measure up to 25 requests in one call.
+- `POST /api/v1/compare` - run one input across up to 10 models.
+
+Copy-paste example:
+
+```bash
+curl -X POST https://tokencalculator.dev/api/v1/count \
+  -H 'Content-Type: application/json' \
+  -d '{"model":"gpt-5.6-terra","input":{"text":"Hello world"},"output_tokens":100}'
+```
+
+Common vendor names such as `gpt-4o`, `claude-3-5-sonnet`, `gemini-1.5-pro` and `deepseek-chat` are resolved to the nearest supported model, so a first guess at a model id usually works. Errors are RFC 9457 problem documents; branch on the `type` URI, which is distinct per error class.
 
 - [Free developer API and playground](https://tokencalculator.dev/developers/api/)
 - [Developer API reference](https://tokencalculator.dev/docs/api/)

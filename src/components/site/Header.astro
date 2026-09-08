@@ -120,10 +120,8 @@ const localeDestination=(item:Locale)=>localizedPath(hasLocalizedEquivalent?curr
   const root = document.documentElement;
   const saved = localStorage.getItem('theme');
   if (saved !== 'dark') root.classList.add('light');
-  document.querySelector('#theme-toggle')?.addEventListener('click', () => {
-    root.classList.toggle('light');
-    localStorage.setItem('theme', root.classList.contains('light') ? 'light' : 'dark');
-  });
+  // The theme button is #theme-transition-toggle and is wired up further down. An
+  // earlier listener here bound to a #theme-toggle element that does not exist.
   const languageMenu = document.querySelector('#language-menu');
   const headerMenus = document.querySelectorAll('[data-header-menu]');
   languageMenu?.querySelectorAll('[data-locale-name]').forEach((link) => {

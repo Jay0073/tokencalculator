@@ -2,32 +2,109 @@
   "openapi": "3.1.2",
   "info": {
     "title": "TokenCalculator Developer API",
-    "version": "2026-08-28",
-    "description": "Measure LLM tokens, cost, context usage, and model-specific methodology for text, chat content, extracted file content, source code, and image geometry. Public HTTP requests are processed at the TokenCalculator.dev edge; use the npm package or browser app when content must remain on-device.",
-    "license": { "name": "API Terms", "identifier": "LicenseRef-TokenCalculator-API-Terms", "url": "https://tokencalculator.dev/terms-of-service/" }
+    "version": "2026-09-09",
+    "summary": "Free, key-less LLM token counting and cost estimation.",
+    "description": "Measure LLM tokens, cost, context usage, and model-specific methodology for text, chat content, extracted file content, source code, and image geometry. No API key or registration is required. Public HTTP requests are processed at the TokenCalculator.dev edge; use the npm package or browser app when content must remain on-device.\n\nRate limit: 60 requests per minute, per client IP, per route. Rate-limited responses carry `Retry-After` and `RateLimit-*` headers.",
+    "license": { "name": "TokenCalculator API Terms", "url": "https://tokencalculator.dev/terms-of-service/" },
+    "contact": { "name": "TokenCalculator.dev", "url": "https://tokencalculator.dev/contact/", "email": "hello@tokencalculator.dev" }
   },
-  "servers": [{ "url": "https://tokencalculator.dev/api/v1" }],
+  "servers": [{ "url": "https://tokencalculator.dev/api/v1", "description": "Production" }],
+  "security": [],
   "tags": [
     { "name": "Measurement", "description": "Single, batch, and multi-model token measurements" },
     { "name": "Catalog", "description": "Machine-readable model capabilities and verified pricing" }
   ],
   "paths": {
     "/models": {
-      "get": { "operationId": "listModels", "tags": ["Catalog"], "summary": "List supported models", "responses": { "200": { "description": "Model catalog", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ListResponse" } } } } } }
+      "get": {
+        "operationId": "listModels", "tags": ["Catalog"], "summary": "List supported models",
+        "description": "Returns every model id the API accepts, with context window, tokenizer strategy, and verified per-million-token rates. Cacheable for 5 minutes.",
+        "responses": {
+          "200": { "description": "Model catalog", "headers": { "Cache-Control": { "$ref": "#/components/headers/CacheControl" }, "ETag": { "$ref": "#/components/headers/ETag" } }, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ListResponse" } } } },
+          "405": { "$ref": "#/components/responses/Problem" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      }
     },
     "/count": {
-      "post": { "operationId": "countTokens", "tags": ["Measurement"], "summary": "Measure one model request", "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MeasurementRequest" } } } }, "responses": { "200": { "description": "Token measurement", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Measurement" } } } }, "400": { "$ref": "#/components/responses/Problem" }, "422": { "$ref": "#/components/responses/Problem" }, "429": { "$ref": "#/components/responses/Problem" } } }
+      "post": {
+        "operationId": "countTokens", "tags": ["Measurement"], "summary": "Measure one model request",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MeasurementRequest" } } } },
+        "responses": {
+          "200": { "description": "Token measurement", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Measurement" } } } },
+          "400": { "$ref": "#/components/responses/Problem" },
+          "404": { "$ref": "#/components/responses/Problem" },
+          "405": { "$ref": "#/components/responses/Problem" },
+          "413": { "$ref": "#/components/responses/Problem" },
+          "415": { "$ref": "#/components/responses/Problem" },
+          "422": { "$ref": "#/components/responses/Problem" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      }
     },
     "/batch": {
-      "post": { "operationId": "batchCountTokens", "tags": ["Measurement"], "summary": "Measure up to 25 requests", "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["requests"], "properties": { "requests": { "type": "array", "minItems": 1, "maxItems": 25, "items": { "$ref": "#/components/schemas/MeasurementRequest" } } } } } } }, "responses": { "200": { "description": "Ordered measurement list" }, "400": { "$ref": "#/components/responses/Problem" }, "429": { "$ref": "#/components/responses/Problem" } } }
+      "post": {
+        "operationId": "batchCountTokens", "tags": ["Measurement"], "summary": "Measure up to 25 requests",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["requests"], "properties": { "requests": { "type": "array", "minItems": 1, "maxItems": 25, "items": { "$ref": "#/components/schemas/MeasurementRequest" } } } } } } },
+        "responses": {
+          "200": { "description": "Ordered measurement list, one entry per input request", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/BatchResponse" } } } },
+          "400": { "$ref": "#/components/responses/Problem" },
+          "405": { "$ref": "#/components/responses/Problem" },
+          "413": { "$ref": "#/components/responses/Problem" },
+          "415": { "$ref": "#/components/responses/Problem" },
+          "422": { "$ref": "#/components/responses/Problem" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      }
     },
     "/compare": {
-      "post": { "operationId": "compareModels", "tags": ["Measurement"], "summary": "Run one input across up to 10 models", "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["models", "request"], "properties": { "models": { "type": "array", "minItems": 1, "maxItems": 10, "items": { "type": "string" } }, "request": { "$ref": "#/components/schemas/MeasurementRequestWithoutModel" } } } } } }, "responses": { "200": { "description": "Model comparison" }, "400": { "$ref": "#/components/responses/Problem" }, "429": { "$ref": "#/components/responses/Problem" } } }
+      "post": {
+        "operationId": "compareModels", "tags": ["Measurement"], "summary": "Run one input across up to 10 models",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["models", "request"], "properties": { "models": { "type": "array", "minItems": 1, "maxItems": 10, "items": { "type": "string" } }, "request": { "$ref": "#/components/schemas/MeasurementRequestWithoutModel" } } } } } },
+        "responses": {
+          "200": { "description": "One measurement per requested model, in request order", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ComparisonResponse" } } } },
+          "400": { "$ref": "#/components/responses/Problem" },
+          "405": { "$ref": "#/components/responses/Problem" },
+          "413": { "$ref": "#/components/responses/Problem" },
+          "415": { "$ref": "#/components/responses/Problem" },
+          "422": { "$ref": "#/components/responses/Problem" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      }
     },
-    "/health": { "get": { "operationId": "getHealth", "tags": ["Catalog"], "summary": "Check API availability", "responses": { "200": { "description": "Healthy" } } } }
+    "/health": {
+      "get": {
+        "operationId": "getHealth", "tags": ["Catalog"], "summary": "Check API availability",
+        "responses": {
+          "200": { "description": "Service is healthy", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Health" } } } },
+          "405": { "$ref": "#/components/responses/Problem" },
+          "429": { "$ref": "#/components/responses/RateLimited" }
+        }
+      }
+    }
   },
   "components": {
-    "responses": { "Problem": { "description": "RFC 9457 problem detail", "content": { "application/problem+json": { "schema": { "$ref": "#/components/schemas/Problem" } } } } },
+    "headers": {
+      "CacheControl": { "description": "Caching policy for this response", "schema": { "type": "string" } },
+      "ETag": { "description": "Entity tag for conditional requests", "schema": { "type": "string" } },
+      "RetryAfter": { "description": "Seconds to wait before retrying", "schema": { "type": "integer" } },
+      "RateLimitLimit": { "description": "Requests permitted in the current window", "schema": { "type": "integer" } },
+      "RateLimitRemaining": { "description": "Requests left in the current window", "schema": { "type": "integer" } },
+      "RateLimitReset": { "description": "Seconds until the window resets", "schema": { "type": "integer" } }
+    },
+    "responses": {
+      "Problem": { "description": "RFC 9457 problem detail. Branch on the `type` URI, which is distinct per error class.", "content": { "application/problem+json": { "schema": { "$ref": "#/components/schemas/Problem" } } } },
+      "RateLimited": {
+        "description": "Rate limit exceeded. Wait for `Retry-After` seconds before retrying.",
+        "headers": {
+          "Retry-After": { "$ref": "#/components/headers/RetryAfter" },
+          "RateLimit-Limit": { "$ref": "#/components/headers/RateLimitLimit" },
+          "RateLimit-Remaining": { "$ref": "#/components/headers/RateLimitRemaining" },
+          "RateLimit-Reset": { "$ref": "#/components/headers/RateLimitReset" }
+        },
+        "content": { "application/problem+json": { "schema": { "$ref": "#/components/schemas/Problem" } } }
+      }
+    },
     "schemas": {
       "Input": {
         "type": "object",
@@ -41,7 +118,7 @@
       "MeasurementRequest": {
         "type": "object", "required": ["model", "input"],
         "properties": {
-          "model": { "type": "string", "example": "gpt-5.6-terra" },
+          "model": { "type": "string", "examples": ["gpt-5.6-terra", "claude-fable-5.1", "gemini-3.8-flash"], "description": "Model id from GET /models. Common vendor aliases such as `gpt-4o` or `claude-3-5-sonnet` resolve to the nearest supported model." },
           "input": { "$ref": "#/components/schemas/Input" },
           "output_tokens": { "type": "integer", "minimum": 0, "default": 0 },
           "cached_input_tokens": { "type": "integer", "minimum": 0, "default": 0 },
@@ -66,18 +143,56 @@
         "properties": {
           "object": { "const": "token_measurement" },
           "request_id": { "type": "string" },
-          "model": { "type": "object" },
+          "model": { "$ref": "#/components/schemas/Model" },
           "usage": { "type": "object", "properties": { "input_tokens": { "type": "integer" }, "text_tokens": { "type": "integer" }, "image_tokens": { "type": "integer" }, "cached_input_tokens": { "type": "integer" }, "output_tokens": { "type": "integer" }, "total_tokens": { "type": "integer" } } },
-          "breakdown": { "type": "array", "items": { "type": "object" } },
-          "cost": { "type": "object" },
-          "context": { "type": "object" },
-          "method": { "type": "object" },
-          "pricing": { "type": "object" },
-          "metadata": { "type": "object" }
+          "breakdown": { "type": "array", "items": { "type": "object", "properties": { "type": { "type": "string" }, "name": { "type": "string" }, "role": { "type": "string" }, "tokens": { "type": "integer" }, "accuracy": { "type": "string" }, "method": { "type": "string" } } } },
+          "cost": { "type": "object", "properties": { "currency": { "type": "string" }, "input": { "type": "number" }, "cached_input": { "type": "number" }, "output": { "type": "number" }, "total": { "type": "number" } } },
+          "context": { "type": "object", "properties": { "window": { "type": "integer" }, "used": { "type": "integer" }, "utilization": { "type": "number" }, "over_limit": { "type": "boolean" } } },
+          "method": { "type": "object", "properties": { "accuracy": { "type": "string" }, "algorithms": { "type": "array", "items": { "type": "string" } }, "limitations": { "type": "array", "items": { "type": "string" } } } },
+          "pricing": { "type": "object", "properties": { "input_per_million": { "type": "number" }, "cached_input_per_million": { "type": "number" }, "output_per_million": { "type": "number" }, "verified_at": { "type": "string" }, "source": { "type": "string" } } },
+          "metadata": { "type": "object", "additionalProperties": true }
         }
       },
-      "ListResponse": { "type": "object", "properties": { "object": { "const": "list" }, "data": { "type": "array", "items": { "type": "object" } } } },
-      "Problem": { "type": "object", "required": ["type", "title", "status", "detail", "instance"], "properties": { "type": { "type": "string", "format": "uri" }, "title": { "type": "string" }, "status": { "type": "integer" }, "detail": { "type": "string" }, "instance": { "type": "string" } } }
+      "Model": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" }, "name": { "type": "string" }, "provider": { "type": "string" },
+          "tokenizer": { "type": "string" }, "context_window": { "type": "integer" }, "max_output": { "type": "integer" }
+        }
+      },
+      "BatchResponse": {
+        "type": "object",
+        "properties": {
+          "object": { "const": "list" },
+          "request_id": { "type": "string" },
+          "data": { "type": "array", "items": { "allOf": [{ "$ref": "#/components/schemas/Measurement" }, { "type": "object", "properties": { "index": { "type": "integer", "description": "Zero-based position in the submitted requests array" } } }] } }
+        }
+      },
+      "ComparisonResponse": {
+        "type": "object",
+        "properties": {
+          "object": { "const": "comparison" },
+          "request_id": { "type": "string" },
+          "data": { "type": "array", "items": { "$ref": "#/components/schemas/Measurement" } }
+        }
+      },
+      "Health": {
+        "type": "object",
+        "properties": { "object": { "const": "health" }, "status": { "type": "string", "const": "ok" }, "version": { "type": "string" } }
+      },
+      "ListResponse": { "type": "object", "properties": { "object": { "const": "list" }, "data": { "type": "array", "items": { "$ref": "#/components/schemas/Model" } } } },
+      "Problem": {
+        "type": "object",
+        "required": ["type", "title", "status", "detail", "instance"],
+        "properties": {
+          "type": { "type": "string", "format": "uri", "description": "Stable identifier for the error class. Branch on this.", "examples": ["https://tokencalculator.dev/docs/api/#error-unknown-model", "https://tokencalculator.dev/docs/api/#error-rate-limited"] },
+          "title": { "type": "string" },
+          "status": { "type": "integer" },
+          "detail": { "type": "string" },
+          "instance": { "type": "string", "description": "urn:tokencalculator:request:<request id>" },
+          "errors": { "type": "array", "description": "Per-field detail, when the failure can be attributed to specific inputs", "items": { "type": "object", "properties": { "index": { "type": "integer" }, "field": { "type": "string" }, "detail": { "type": "string" } } } }
+        }
+      }
     }
   }
 }

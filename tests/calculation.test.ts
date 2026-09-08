@@ -10,7 +10,30 @@ afterEach(() => vi.unstubAllGlobals());
 describe('pricing and context', () => {
   it('calculates per-million input pricing', () => {
     const model = getModel('gpt-5.6-sol');
-    expect(calculateResult(100_000, model, 'exact', 'test').cost).toBe(0.5);
+    // Derive the expectation from the catalogue rather than pinning a literal, so a
+    // legitimate price update does not fail the test and a stale rate is not baked in.
+    const expected = (100_000 / 1_000_000) * model.inputPerMillion;
+    expect(calculateResult(100_000, model, 'exact', 'test').cost).toBeCloseTo(expected, 10);
+  });
+
+  it('scales input cost linearly inside the base pricing tier', () => {
+    const model = getModel('gpt-5.6-sol');
+    const tierStart = model.pricingTiers?.[0]?.aboveInputTokens ?? Infinity;
+    const base = Math.floor(Math.min(tierStart, 1_000_000) / 4);
+    const single = calculateResult(base, model, 'exact', 'test').cost;
+    expect(single).toBeCloseTo((base / 1_000_000) * model.inputPerMillion, 10);
+    expect(calculateResult(base * 2, model, 'exact', 'test').cost).toBeCloseTo(single * 2, 10);
+  });
+
+  it('applies the long-context tier above its threshold', () => {
+    const model = getModel('gpt-5.6-sol');
+    const tier = model.pricingTiers?.[0];
+    expect(tier, 'gpt-5.6-sol should declare a long-context tier').toBeDefined();
+    const above = tier!.aboveInputTokens + 1_000;
+    const charged = calculateResult(above, model, 'exact', 'test').cost;
+    // Above the threshold the tier rate applies, so cost must exceed the base rate.
+    expect(charged).toBeGreaterThan((above / 1_000_000) * model.inputPerMillion);
+    expect(charged).toBeCloseTo((above / 1_000_000) * tier!.inputPerMillion, 10);
   });
 
   it('marks context overflow', () => {
@@ -72,10 +95,10 @@ describe('published image formulas', () => {
   });
 
   it('fits Claude visual patches within the standard tier', () => {
-    expect(countImage({ width: 8000, height: 8000 }, getModel('claude-haiku-4.5')).tokens).toBe(1521);
+    expect(countImage({ width: 8000, height: 8000 }, getModel('claude-haiku-4-5')).tokens).toBe(1521);
   });
 
   it('resizes Claude images while preserving their aspect ratio', () => {
-    expect(countImage({ width: 1920, height: 1080 }, getModel('claude-haiku-4.5')).tokens).toBe(1560);
+    expect(countImage({ width: 1920, height: 1080 }, getModel('claude-haiku-4-5')).tokens).toBe(1560);
   });
 });

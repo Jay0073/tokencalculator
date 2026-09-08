@@ -1,0 +1,311 @@
+{
+  "$comment": "Selection policy for scripts/sync-models.mjs. Facts come from models.dev; this file only decides WHICH models to publish and how to label them. Never hand-edit prices here.",
+  "source": "https://models.dev/api.json",
+  "maxModelsPerProvider": 5,
+  "defaultModel": "gpt-5.6-terra",
+  "$pinnedComment": "Always publish these if upstream still lists them, regardless of release date. They carry real search demand or are the cheap tier people compare against, so newest-first alone would wrongly drop them.",
+  "pinned": [
+    "gpt-5.6-terra",
+    "gpt-5.6-luna",
+    "claude-sonnet-5",
+    "claude-haiku-4-5",
+    "gemini-2.5-pro",
+    "gemini-3.1-flash-lite",
+    "deepseek-v4-flash",
+    "qwen3.8-max",
+    "kimi-k3",
+    "grok-4.6",
+    "glm-5.3",
+    "muse-spark-1.3",
+    "claude-opus-4-8"
+  ],
+  "$overridesComment": "Facts upstream does not model. Long-context tiers are published by the provider but absent from models.dev, so they are kept by hand and merged onto the generated entry. Descriptions are editorial. Nothing here may restate a base rate.",
+  "overrides": {
+    "gpt-6-astra": {
+      "description": "Latest frontier reasoning"
+    },
+    "gpt-5.6-sol": {
+      "description": "Frontier reasoning",
+      "pricingTiers": [
+        {
+          "aboveInputTokens": 272000,
+          "inputPerMillion": 8,
+          "cachedInputPerMillion": 0.8,
+          "outputPerMillion": 30,
+          "label": "Long-context rate above 272K input tokens"
+        }
+      ]
+    },
+    "gpt-5.6-terra": {
+      "description": "Balanced production model",
+      "pricingTiers": [
+        {
+          "aboveInputTokens": 272000,
+          "inputPerMillion": 4,
+          "cachedInputPerMillion": 0.4,
+          "outputPerMillion": 18,
+          "label": "Long-context rate above 272K input tokens"
+        }
+      ]
+    },
+    "gpt-5.6-luna": {
+      "description": "High-volume workloads",
+      "pricingTiers": [
+        {
+          "aboveInputTokens": 272000,
+          "inputPerMillion": 0.4,
+          "cachedInputPerMillion": 0.04,
+          "outputPerMillion": 1.8,
+          "label": "Long-context rate above 272K input tokens"
+        }
+      ]
+    },
+    "claude-fable-5-1": {
+      "description": "Latest frontier Claude"
+    },
+    "claude-opus-5": {
+      "description": "Complex professional work"
+    },
+    "claude-sonnet-5": {
+      "description": "Balanced intelligence"
+    },
+    "claude-fable-5": {
+      "description": "Previous frontier Claude"
+    },
+    "gemini-3.8-flash": {
+      "description": "Latest multimodal Flash"
+    },
+    "gemini-3.7-flash": {
+      "description": "Multimodal Flash"
+    },
+    "gemini-3.6-flash": {
+      "description": "Multimodal Flash"
+    },
+    "gemini-3.5-flash-lite": {
+      "description": "Low-cost multimodal"
+    },
+    "deepseek-v4-pro": {
+      "description": "Higher capability"
+    },
+    "deepseek-v4-flash": {
+      "description": "Fast, low-cost model"
+    },
+    "qwen3.8-max": {
+      "description": "Alibaba flagship"
+    },
+    "qwen3.8-flash": {
+      "description": "High-volume Qwen"
+    },
+    "qwen3.7-max": {
+      "description": "Previous Qwen flagship"
+    },
+    "qwen3.7-plus": {
+      "description": "Balanced Qwen"
+    },
+    "kimi-k3": {
+      "description": "Moonshot flagship"
+    },
+    "kimi-k2.7-code": {
+      "description": "Code-focused Kimi"
+    },
+    "kimi-k2.6": {
+      "description": "Previous Kimi generation"
+    },
+    "grok-4.6": {
+      "description": "xAI flagship"
+    },
+    "grok-4.5": {
+      "description": "Previous Grok generation"
+    },
+    "glm-5.3": {
+      "description": "Z.ai flagship"
+    },
+    "glm-5.3-flash": {
+      "description": "Low-cost GLM"
+    },
+    "muse-spark-1.3": {
+      "description": "Meta flagship"
+    },
+    "muse-spark-1.2": {
+      "description": "Previous Muse Spark"
+    },
+    "claude-haiku-4-5": {
+      "name": "Claude Haiku 4.5",
+      "description": "Fast, efficient Claude"
+    },
+    "gemini-2.5-pro": {
+      "description": "Long-context reasoning",
+      "pricingTiers": [
+        {
+          "aboveInputTokens": 200000,
+          "inputPerMillion": 2.5,
+          "cachedInputPerMillion": 0.25,
+          "outputPerMillion": 15,
+          "label": "Long-context rate above 200K input tokens"
+        }
+      ]
+    },
+    "gemini-3.1-flash-lite": {
+      "description": "High-volume multimodal"
+    },
+    "claude-opus-4-8": {
+      "description": "Previous Opus generation"
+    }
+  },
+  "providers": {
+    "openai": {
+      "label": "OpenAI",
+      "short": "OAI",
+      "tokenizer": "o200k_base",
+      "accuracy": "exact",
+      "vision": "openai-tiles",
+      "pricingUrl": "https://developers.openai.com/api/docs/models/compare",
+      "include": [
+        "^gpt-6-",
+        "^gpt-5\\.6-"
+      ],
+      "exclude": [
+        "-pro$",
+        "realtime",
+        "image",
+        "audio",
+        "embedding",
+        "-chat-latest$",
+        "codex"
+      ]
+    },
+    "anthropic": {
+      "label": "Anthropic",
+      "short": "ANT",
+      "tokenizer": "claude-estimate",
+      "accuracy": "estimated",
+      "vision": "claude-patches",
+      "pricingUrl": "https://platform.claude.com/docs/en/about-claude/pricing",
+      "include": [
+        "^claude-"
+      ],
+      "exclude": [
+        "-\\d{8}$",
+        "-latest$"
+      ]
+    },
+    "google": {
+      "label": "Google",
+      "short": "GOO",
+      "tokenizer": "gemini-estimate",
+      "accuracy": "estimated",
+      "vision": "gemini-tiles",
+      "pricingUrl": "https://ai.google.dev/gemini-api/docs/pricing",
+      "include": [
+        "^gemini-"
+      ],
+      "exclude": [
+        "-latest$",
+        "preview",
+        "image",
+        "embedding",
+        "live",
+        "translate",
+        "omni",
+        "tts",
+        "native-audio"
+      ]
+    },
+    "deepseek": {
+      "label": "DeepSeek",
+      "short": "DSK",
+      "tokenizer": "deepseek-estimate",
+      "accuracy": "estimated",
+      "pricingUrl": "https://api-docs.deepseek.com/quick_start/pricing/",
+      "include": [
+        "^deepseek-"
+      ],
+      "exclude": [
+        "exp$",
+        "vision"
+      ]
+    },
+    "alibaba": {
+      "label": "Qwen",
+      "short": "QWN",
+      "tokenizer": "qwen-estimate",
+      "accuracy": "estimated",
+      "pricingUrl": "https://www.alibabacloud.com/help/en/model-studio/models",
+      "include": [
+        "^qwen3\\.\\d+-(max|flash|plus)"
+      ],
+      "exclude": [
+        "-\\d{4}$",
+        "-\\d{8}$",
+        "thinking",
+        "vl",
+        "coder",
+        "next$"
+      ]
+    },
+    "moonshotai": {
+      "label": "Moonshot Kimi",
+      "short": "KMI",
+      "tokenizer": "kimi-estimate",
+      "accuracy": "estimated",
+      "pricingUrl": "https://platform.moonshot.ai/docs/pricing",
+      "include": [
+        "^kimi-"
+      ],
+      "exclude": [
+        "highspeed",
+        "-\\d{8}$"
+      ]
+    },
+    "xai": {
+      "label": "xAI Grok",
+      "short": "XAI",
+      "tokenizer": "grok-estimate",
+      "accuracy": "estimated",
+      "pricingUrl": "https://docs.x.ai/docs/models",
+      "include": [
+        "^grok-\\d"
+      ],
+      "exclude": [
+        "imagine",
+        "image",
+        "vision",
+        "fast",
+        "mini",
+        "-0\\d{3}-",
+        "multi-agent"
+      ]
+    },
+    "zai": {
+      "label": "Z.ai GLM",
+      "short": "GLM",
+      "tokenizer": "glm-estimate",
+      "accuracy": "estimated",
+      "pricingUrl": "https://docs.z.ai/guides/overview/pricing",
+      "include": [
+        "^glm-\\d"
+      ],
+      "exclude": [
+        "-air$",
+        "-x$",
+        "v$",
+        "vision",
+        "^glm-\\dv"
+      ]
+    },
+    "meta": {
+      "label": "Meta",
+      "short": "MET",
+      "tokenizer": "llama-estimate",
+      "accuracy": "estimated",
+      "pricingUrl": "https://llama.developer.meta.com/docs/models",
+      "include": [
+        "^muse-spark-",
+        "^llama-"
+      ],
+      "exclude": [
+        "contributor$"
+      ]
+    }
+  }
+}
