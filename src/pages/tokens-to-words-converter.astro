@@ -1,8 +1,9 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Breadcrumbs from '../components/seo/Breadcrumbs.astro';
+import FAQ from '../components/seo/FAQ.astro';
 import TokenWordConverter from '../components/converter/TokenWordConverter.astro';
-const breadcrumbs=[{label:'Home',href:'/'},{label:'Tokens to words converter'}];
+const breadcrumbs=[{label:'Token calculator',href:'/'},{label:'Tokens to words converter'}];
 const faq=[
   {question:'How many words are 1 million tokens?',answer:'For ordinary English prose, one million tokens is commonly about 750,000 words, with a planning interval of roughly 700,000 to 800,000 words. Code, structured data, technical notation, and multilingual text can differ substantially.'},
   {question:'Is converting tokens to words exact?',answer:'No. A token count alone does not contain the original words, language, whitespace, or punctuation. Token-to-word conversion is a workload estimate; exact tokenization requires the actual content and a model tokenizer.'},
@@ -37,4 +38,5 @@ const faq=[
       <div><dt>Files and images</dt><dd>Attach PDF, DOCX, source, data, and supported images so the complete request is measured together.</dd></div>
     </div>
   </section>
+  <FAQ items={faq} />
 </BaseLayout>

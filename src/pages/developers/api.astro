@@ -1,8 +1,9 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Breadcrumbs from '../../components/seo/Breadcrumbs.astro';
+import FAQ from '../../components/seo/FAQ.astro';
 import ApiPlayground from '../../components/api/ApiPlayground.astro';
-const breadcrumbs=[{label:'Home',href:'/'},{label:'Developer API'}];
+const breadcrumbs=[{label:'Token calculator',href:'/'},{label:'Developer API'}];
 const faq=[
   {question:'Is the TokenCalculator developer API free?',answer:'Yes. The public v1 API requires no key and currently permits 60 requests per minute per route and Cloudflare edge location. Limits may evolve to protect the shared service.'},
   {question:'Does the public API keep my prompt private in my browser?',answer:'No. An HTTP API must receive the submitted payload to process it. TokenCalculator.dev does not intentionally persist request bodies, but confidential content should use the browser calculator or local npm package so it remains on-device.'},
@@ -29,4 +30,5 @@ const faq=[
     <article><span>04</span><h2>Operational contracts</h2><p>Version headers, request IDs, RFC 9457 error objects, CORS, explicit size limits, and OpenAPI 3.1 make integration behavior inspectable.</p></article>
   </section>
   <section class="shell api-trust-boundary panel"><div><span class="eyebrow">Choose the right trust boundary</span><h2>“Free API” and “browser-local” are not the same promise.</h2></div><div><p>The HTTP service processes request content at the Cloudflare edge and does not intentionally store request bodies in application storage. Infrastructure-level security and abuse metadata may still exist. Do not send secrets, regulated records, proprietary repositories, or private prompts to a public endpoint.</p><p>For sensitive inputs, use the browser calculator or <code>@jay0073/tokencalculator-core</code>. Those paths execute the tokenizer and pricing engine locally; supported files can be extracted in the browser without an upload.</p><a href="/docs/api/">Read the API reference →</a> <a href="/openapi.json">Download OpenAPI →</a></div></section>
+  <FAQ items={faq} />
 </BaseLayout>

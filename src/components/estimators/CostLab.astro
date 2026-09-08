@@ -72,8 +72,13 @@ const publicModels=MODELS.map(({id,name,provider,description,contextWindow,maxOu
 <script>
   import { MODELS, getModel } from '../../data/models';
   import { extractDocument } from '../../engines/documents/extract';
-  import { countText } from '../../engines/tokenizers/count';
   import { countImage } from '../../engines/vision/count';
+
+  // The tokenizer pulls in a full BPE vocabulary, which is most of this page's
+  // JavaScript. It is only needed once someone analyses a local file, so load it
+  // on demand instead of on every page view.
+  let countTextPromise: Promise<typeof import('../../engines/tokenizers/count')['countText']> | undefined;
+  const loadCountText = () => (countTextPromise ??= import('../../engines/tokenizers/count').then((m) => m.countText));
 
   const q=<T extends HTMLElement>(selector:string)=>document.querySelector<T>(selector)!;
   const number=(id:string)=>Math.max(0,Number(q<HTMLInputElement>(`#${id}`).value)||0);
@@ -98,7 +103,7 @@ const publicModels=MODELS.map(({id,name,provider,description,contextWindow,maxOu
     if(!files.length){status.textContent='Select a directory or one or more supported files first.';return;}
     status.textContent=`Reading ${files.length} file(s) locally…`; target.innerHTML='';
     let tokens=0,characters=0,read=0; const skipped:string[]=[];
-    for(const file of files){try{const text=await extractDocument(file);characters+=text.length;tokens+=countText(text,m).tokens;read++;status.textContent=`Processed ${read+skipped.length} of ${files.length} locally…`;}catch{skipped.push(file.name);}}
+    const countText=await loadCountText();for(const file of files){try{const text=await extractDocument(file);characters+=text.length;tokens+=countText(text,m).tokens;read++;status.textContent=`Processed ${read+skipped.length} of ${files.length} locally…`;}catch{skipped.push(file.name);}}
     const output=number('repo-output'),runs=number('repo-runs'),monthly=cost(m,tokens,output)*runs;
     target.innerHTML=cards([{label:'Readable files',value:`${read} / ${files.length}`,note:skipped.length?`${skipped.length} unsupported or unreadable`:undefined},{label:'Extracted characters',value:integer(characters)},{label:'Input tokens',value:integer(tokens),note:m.textAccuracy==='exact'?'Local BPE':'Provider-calibrated projection'},{label:'Context occupancy',value:`${Math.min(999,(tokens/m.contextWindow)*100).toFixed(1)}%`},{label:'Monthly projected cost',value:usd(monthly),note:`${integer(runs)} run(s)`}]);
     status.textContent='Complete. Content remained in browser memory and was not uploaded.';
