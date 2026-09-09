@@ -359,19 +359,64 @@ button,select { cursor:pointer; }
 ::view-transition-old(root) { z-index: 1; }
 ::view-transition-new(root) { z-index: 9999; }
 
-/* Mobile navigation. The primary nav is lg-and-up only; this is its replacement
-   below that breakpoint, built on <details> so it works without JavaScript. */
-.mobile-menu > summary::-webkit-details-marker { display: none; }
-.mobile-menu[open] > summary { color: var(--text); border-color: var(--line-strong); }
-.mobile-menu-link {
-  display: flex;
-  align-items: center;
-  min-height: 2.25rem;
-  padding: 0 .75rem;
-  border-radius: .5rem;
-  font-size: .875rem;
-  color: var(--text);
-  text-decoration: none;
+/* Mobile navigation. The primary nav is lg-and-up only; this panel replaces it below
+   that breakpoint. Built on <details> so it works without JavaScript, and grouped the
+   same way as the desktop mega-menu so both teach the same structure. */
+.mobile-menu { position:static; }
+.mobile-menu > summary::-webkit-details-marker { display:none; }
+.mobile-menu > summary { position:relative; }
+.mobile-menu .mobile-menu-close { display:none; }
+.mobile-menu[open] > summary { color:var(--text); border-color:var(--line-strong); background:var(--panel-2); }
+.mobile-menu[open] .mobile-menu-open { display:none; }
+.mobile-menu[open] .mobile-menu-close { display:block; }
+
+/* Anchored to the header, not to the button, so it can span the viewport width
+   instead of hanging off one edge. */
+.mobile-menu-panel {
+  position:absolute; z-index:50; top:calc(100% + .5rem); right:.75rem; left:.75rem;
+  max-height:min(72vh, 34rem); overflow-y:auto; overscroll-behavior:contain;
+  padding:.5rem; border:1px solid var(--line); border-radius:1rem;
+  background:var(--panel-raised); box-shadow:var(--shadow);
 }
-.mobile-menu-link:hover,
-.mobile-menu-link:focus-visible { background: var(--panel); color: var(--accent); }
+@media (min-width:640px){ .mobile-menu-panel { left:auto; width:22rem; right:1.25rem; } }
+
+.mobile-menu-label {
+  margin:.75rem .75rem .3rem; color:var(--faint);
+  font:600 .62rem var(--font-mono); letter-spacing:.12em; text-transform:uppercase;
+}
+.mobile-menu-label:first-child { margin-top:.35rem; }
+
+.mobile-menu-item {
+  display:grid; grid-template-columns:auto 1fr; align-items:start; gap:.7rem;
+  padding:.6rem .7rem; border-radius:.7rem; color:var(--text); text-decoration:none;
+}
+.mobile-menu-item.compact { align-items:center; padding:.5rem .7rem; }
+.mobile-menu-item strong { display:block; font-size:.875rem; font-weight:600; letter-spacing:-.01em; }
+.mobile-menu-item small { display:block; margin-top:.15rem; color:var(--muted); font-size:.72rem; line-height:1.45; }
+.mobile-menu-item:hover, .mobile-menu-item:focus-visible { background:var(--panel-2); }
+.mobile-menu-item[aria-current="page"] { background:var(--accent-soft); }
+.mobile-menu-item[aria-current="page"] strong { color:var(--accent); }
+.mobile-menu-icon {
+  display:grid; place-items:center; width:1.9rem; height:1.9rem; flex:none;
+  border:1px solid var(--line); border-radius:.55rem; background:var(--panel);
+  color:var(--accent);
+}
+
+/* Four provider shortcuts in a grid: compact, and the icons make them scannable. */
+.mobile-menu-providers { display:grid; grid-template-columns:1fr 1fr; gap:.35rem; padding:0 .35rem; }
+.mobile-menu-providers a {
+  display:flex; align-items:center; gap:.5rem; min-height:2.4rem; padding:0 .6rem;
+  border:1px solid var(--line); border-radius:.6rem; background:var(--panel);
+  color:var(--text); font-size:.8rem; font-weight:500; text-decoration:none;
+}
+.mobile-menu-providers a:hover, .mobile-menu-providers a:focus-visible { border-color:var(--line-strong); background:var(--panel-2); }
+.mobile-menu-providers a[aria-current="page"] { border-color:var(--accent-soft-strong); background:var(--accent-soft); color:var(--accent); }
+
+.mobile-menu-cta {
+  display:flex; align-items:center; gap:.55rem; margin:.5rem .35rem .35rem;
+  min-height:2.6rem; padding:0 .85rem; border-radius:.7rem;
+  background:var(--accent-soft); color:var(--accent); border:1px solid var(--accent-soft-strong);
+  font-size:.85rem; font-weight:650; text-decoration:none;
+}
+.mobile-menu-cta span { margin-left:auto; }
+

@@ -97,5 +97,16 @@ export default defineConfig({
     }),
     trailingSlashRedirects(),
   ],
-  vite: { plugins: [tailwindcss()] },
+  vite: {
+    plugins: [tailwindcss()],
+    build: {
+      // Ship modern syntax. The default target transpiles down far enough to add
+      // helper code no current browser needs, which Lighthouse reports as legacy
+      // JavaScript. These four cover every browser the analytics actually sees.
+      // Browser targets only; naming an ES version alongside them is rejected.
+      target: ['chrome111', 'edge111', 'safari16.4', 'firefox121'],
+      cssTarget: ['chrome111', 'edge111', 'safari16.4', 'firefox121'],
+    },
+    esbuild: { legalComments: 'none' },
+  },
 });

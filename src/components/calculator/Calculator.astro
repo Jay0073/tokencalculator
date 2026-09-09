@@ -103,7 +103,11 @@ const visibleProviders = [...new Set(visibleModels.map((model) => model.provider
 </template>
 
 <script>
-  import { extractDocument } from '../../engines/documents/extract';
+  // The document extractor pulls in the PDF and DOCX readers, which are only needed
+  // once a file is attached. Importing it at the top put it on the critical path for
+  // every visitor, including those who only paste text.
+  let extractPromise: Promise<typeof import('../../engines/documents/extract')['extractDocument']> | undefined;
+  const loadExtractor = () => (extractPromise ??= import('../../engines/documents/extract').then((m) => m.extractDocument));
   import { loadLivePricing } from '../../data/live-pricing';
   import { PROVIDERS } from '../../data/providers';
   import { calculateInputCost, calculateWorkloadCost, resolveRates } from '../../engines/pricing/calculate';
@@ -233,7 +237,7 @@ const visibleProviders = [...new Set(visibleModels.map((model) => model.provider
             const bitmap=await createImageBitmap(file);
             assets.push({id,name:file.name,kind:'image',width:bitmap.width,height:bitmap.height,size:file.size}); bitmap.close();
           } else {
-            const extracted=await extractDocument(file);
+            const extractDocument=await loadExtractor();const extracted=await extractDocument(file);
             assets.push({id,name:file.name,kind:'document',text:extracted});
           }
         } catch(error) { setError(error instanceof Error?error.message:`Could not read ${file.name}.`); }

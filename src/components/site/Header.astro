@@ -2,7 +2,7 @@
 import BrandMark from './BrandMark.astro';
 import ProviderIcon from './ProviderIcon.astro';
 import UiIcon from './UiIcon.astro';
-import { localeNames, locales, localizedPath, type Locale } from '../../i18n/config';
+import { localeNames, localeShort, locales, localizedPath, type Locale } from '../../i18n/config';
 import { homeCopy } from '../../i18n/home';
 import { navCopy } from '../../i18n/nav';
 interface Props { locale?: Locale }
@@ -88,42 +88,18 @@ const localeDestination=(item:Locale)=>localizedPath(hasLocalizedEquivalent?curr
         {nav.developers}
       </a>
     </nav>
-    <div class="flex items-center justify-end gap-2">
-      {/* Below the lg breakpoint the primary nav is display:none and there was no
-          replacement, so on a phone the calculators, converter and integrations were
-          unreachable from any menu. Plain <details> keeps it crawlable and needs no JS. */}
-      <details class="mobile-menu relative lg:hidden" data-header-menu>
-        <summary class="size-9 grid place-items-center border hairline rounded-full bg-[var(--panel)] text-[var(--muted)] hover:text-[var(--text)] cursor-pointer list-none" aria-label={nav.openMenu}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
-        </summary>
-        <nav class="mobile-menu-panel absolute right-0 top-[calc(100%+.55rem)] z-50 w-[268px] max-h-[70vh] overflow-y-auto rounded-xl border hairline bg-[var(--panel-raised)] p-2 shadow-[var(--shadow)]" aria-label={nav.calculators}>
-          <p class="eyebrow px-3 pt-2 pb-1 m-0">{nav.calculators}</p>
-          <a class="mobile-menu-link" href={localizedPath('/',locale)}>{nav.tokenCalculator}</a>
-          <a class="mobile-menu-link" href="/openai-token-counter/">{`OpenAI ${nav.tokenCounterSuffix}`}</a>
-          <a class="mobile-menu-link" href="/claude-token-counter/">{`Claude ${nav.tokenCounterSuffix}`}</a>
-          <a class="mobile-menu-link" href="/gemini-token-counter/">{`Gemini ${nav.tokenCounterSuffix}`}</a>
-          <a class="mobile-menu-link" href="/deepseek-token-counter/">{`DeepSeek ${nav.tokenCounterSuffix}`}</a>
-          <a class="mobile-menu-link" href="/tokens-to-words-converter/">{nav.tokensToWords}</a>
-          <a class="mobile-menu-link" href="/estimators/">{nav.costLab}</a>
-          <p class="eyebrow px-3 pt-3 pb-1 m-0">{nav.learnAndVerify}</p>
-          <a class="mobile-menu-link" href="/docs/">{nav.documentation}</a>
-          <a class="mobile-menu-link" href="/methodology/">{nav.methodology}</a>
-          <a class="mobile-menu-link" href="/docs/privacy-architecture/">{nav.privacyArchitecture}</a>
-          <a class="mobile-menu-link" href="/blog/">{nav.engineeringBlog}</a>
-          <p class="eyebrow px-3 pt-3 pb-1 m-0">{nav.developers}</p>
-          <a class="mobile-menu-link" href="/developers/api/">{nav.freeApi}</a>
-          <a class="mobile-menu-link" href="/docs/api/">{nav.apiReference}</a>
-          <a class="mobile-menu-link" href="/integrations/">{nav.integrations}</a>
-        </nav>
-      </details>
+    <div class="flex items-center justify-end gap-1.5 sm:gap-2">
       <span class="privacy-pill hidden xl:inline-flex h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 text-sm font-semibold" title={copy.privacyDetail}>
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 5 6v5c0 4.6 2.8 8 7 10 4.2-2 7-5.4 7-10V6l-7-3Z"/><path d="m9.5 12 1.7 1.7 3.5-3.7"/></svg>
         <span>{copy.privacyFirst}</span>
       </span>
-      <details id="language-menu" class="language-menu relative w-[112px] sm:w-[128px]">
-        <summary class="flex h-9 cursor-pointer list-none items-center rounded-full border hairline bg-[var(--panel)] px-2.5 text-sm font-semibold text-[var(--muted)] transition-colors hover:text-[var(--text)]" aria-label={copy.language}>
+      {/* Narrow on phones: the full name runs to "Português (Brasil)", which forced the
+          control wide enough to unbalance the row. The code carries the same meaning. */}
+      <details id="language-menu" class="language-menu relative w-auto sm:w-[128px]">
+        <summary class="flex h-9 cursor-pointer list-none items-center rounded-full border hairline bg-[var(--panel)] px-2 sm:px-2.5 text-sm font-semibold text-[var(--muted)] transition-colors hover:text-[var(--text)]" aria-label={copy.language}>
           <svg class="shrink-0" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.2 2.5 3.3 5.5 3.3 9S14.2 18.5 12 21M12 3c-2.2 2.5-3.3 5.5-3.3 9S9.8 18.5 12 21"/></svg>
-          <span class="min-w-0 flex-1 truncate px-1.5">{localeNames[locale]}</span>
+          <span class="px-1 font-mono text-xs sm:hidden">{localeShort[locale]}</span>
+          <span class="hidden min-w-0 flex-1 truncate px-1.5 sm:inline">{localeNames[locale]}</span>
           <svg class="language-chevron shrink-0 transition-transform duration-200" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 4.5 3 3 3-3"/></svg>
         </summary>
         <div class="language-popover absolute right-0 top-[calc(100%+.55rem)] z-50 w-[188px] overflow-hidden rounded-xl border hairline bg-[var(--panel-raised)] p-1.5 shadow-[var(--shadow)]" role="menu" aria-label={copy.language}>
@@ -133,6 +109,51 @@ const localeDestination=(item:Locale)=>localizedPath(hasLocalizedEquivalent?curr
       <button id="theme-transition-toggle" class="size-9 grid place-items-center border hairline rounded-full bg-[var(--panel)] text-[var(--muted)] hover:text-[var(--text)]" type="button" aria-label={copy.theme}>
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9c-5 2-11-4-9-9Z"/></svg>
       </button>
+
+      {/* The menu trigger sits last so it is the rightmost control, under the thumb.
+          The panel mirrors the desktop mega-menu: same grouping, same icons, same
+          descriptions, so the two navigations teach the same structure. Plain
+          <details> keeps every link in the markup and needs no JavaScript. */}
+      <details class="mobile-menu lg:hidden" data-header-menu>
+        <summary class="size-9 grid place-items-center border hairline rounded-full bg-[var(--panel)] text-[var(--muted)] hover:text-[var(--text)] cursor-pointer list-none" aria-label={nav.openMenu}>
+          <svg class="mobile-menu-open" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+          <svg class="mobile-menu-close" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M5 5l14 14M19 5 5 19"/></svg>
+        </summary>
+        <nav class="mobile-menu-panel" aria-label={nav.calculators}>
+          <p class="mobile-menu-label">{nav.inputAndPlanning}</p>
+          <a class="mobile-menu-item" href={localizedPath('/',locale)} aria-current={currentPath===localizedPath('/',locale)?'page':undefined}>
+            <span class="mobile-menu-icon"><UiIcon name="calculator"/></span>
+            <span><strong>{nav.tokenCalculator}</strong><small>{nav.tokenCalculatorDetail}</small></span>
+          </a>
+          <a class="mobile-menu-item" href="/tokens-to-words-converter/" aria-current={currentPath==='/tokens-to-words-converter/'?'page':undefined}>
+            <span class="mobile-menu-icon"><UiIcon name="convert"/></span>
+            <span><strong>{nav.tokensToWords}</strong><small>{nav.tokensToWordsDetail}</small></span>
+          </a>
+          <a class="mobile-menu-item" href="/estimators/" aria-current={currentPath==='/estimators/'?'page':undefined}>
+            <span class="mobile-menu-icon"><UiIcon name="cost"/></span>
+            <span><strong>{nav.costLab}</strong><small>{nav.costLabDetail}</small></span>
+          </a>
+
+          <p class="mobile-menu-label">{nav.providerCalculators}</p>
+          <div class="mobile-menu-providers">
+            <a href="/openai-token-counter/" aria-current={currentPath==='/openai-token-counter/'?'page':undefined}><ProviderIcon provider="openai" size={17}/>OpenAI</a>
+            <a href="/claude-token-counter/" aria-current={currentPath==='/claude-token-counter/'?'page':undefined}><ProviderIcon provider="anthropic" size={17}/>Claude</a>
+            <a href="/gemini-token-counter/" aria-current={currentPath==='/gemini-token-counter/'?'page':undefined}><ProviderIcon provider="google" size={17}/>Gemini</a>
+            <a href="/deepseek-token-counter/" aria-current={currentPath==='/deepseek-token-counter/'?'page':undefined}><ProviderIcon provider="deepseek" size={17}/>DeepSeek</a>
+          </div>
+
+          <p class="mobile-menu-label">{nav.learnAndVerify}</p>
+          <a class="mobile-menu-item compact" href="/docs/"><span class="mobile-menu-icon"><UiIcon name="book"/></span><span><strong>{nav.documentation}</strong></span></a>
+          <a class="mobile-menu-item compact" href="/methodology/"><span class="mobile-menu-icon"><UiIcon name="methodology"/></span><span><strong>{nav.methodology}</strong></span></a>
+          <a class="mobile-menu-item compact" href="/docs/privacy-architecture/"><span class="mobile-menu-icon"><UiIcon name="shield"/></span><span><strong>{nav.privacyArchitecture}</strong></span></a>
+          <a class="mobile-menu-item compact" href="/blog/"><span class="mobile-menu-icon"><UiIcon name="blog"/></span><span><strong>{nav.engineeringBlog}</strong></span></a>
+
+          <p class="mobile-menu-label">{nav.developers}</p>
+          <a class="mobile-menu-item compact" href="/docs/api/"><span class="mobile-menu-icon"><UiIcon name="api" size={19}/></span><span><strong>{nav.apiReference}</strong></span></a>
+          <a class="mobile-menu-item compact" href="/integrations/"><span class="mobile-menu-icon"><UiIcon name="plug" size={18}/></span><span><strong>{nav.integrations}</strong></span></a>
+          <a class="mobile-menu-cta" href="/developers/api/"><UiIcon name="api" size={18}/>{nav.freeApi}<span aria-hidden="true">→</span></a>
+        </nav>
+      </details>
     </div>
   </div>
 </header>
