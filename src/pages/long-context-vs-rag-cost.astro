@@ -1,0 +1,134 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumbs from '../components/seo/Breadcrumbs.astro';
+import FAQ from '../components/seo/FAQ.astro';
+import ProviderLinks from '../components/seo/ProviderLinks.astro';
+import { MODELS } from '../data/models';
+import { PROVIDERS } from '../data/providers';
+import { calculateWorkloadCost } from '../engines/pricing/calculate';
+
+const breadcrumbs = [{ label: 'Token calculator', href: '/' }, { label: 'Long context vs RAG cost' }];
+
+/**
+ * Both strategies answer the same question. They differ only in how many input
+ * tokens reach the model, so the cost gap is computed rather than asserted.
+ */
+const STUFFED_TOKENS = 200_000; // A medium document set pasted into the prompt.
+const RETRIEVED_TOKENS = 4_000; // Five retrieved chunks plus the question.
+const OUTPUT_TOKENS = 800;
+
+const compared = ['gpt-6-astra', 'claude-fable-5-1', 'gpt-5.6-terra', 'claude-sonnet-5', 'gemini-3.8-flash', 'deepseek-v4-flash']
+  .map((id) => MODELS.find((model) => model.id === id))
+  .filter((model): model is NonNullable<typeof model> => Boolean(model))
+  .map((model) => {
+    const stuffed = calculateWorkloadCost(STUFFED_TOKENS, OUTPUT_TOKENS, model);
+    const retrieved = calculateWorkloadCost(RETRIEVED_TOKENS, OUTPUT_TOKENS, model);
+    return { model, stuffed, retrieved, ratio: stuffed / retrieved, saved: stuffed - retrieved };
+  });
+
+const usd = (value: number) => value < 0.01 ? `$${value.toFixed(4)}` : value < 1 ? `$${value.toFixed(3)}` : `$${value.toFixed(2)}`;
+const cheapest = compared.reduce((a, b) => (a.stuffed < b.stuffed ? a : b));
+const dearest = compared.reduce((a, b) => (a.stuffed > b.stuffed ? a : b));
+
+// At what daily query volume does the long-context approach cost more than a
+// developer-day of building retrieval? A crude but honest framing of the trade.
+const DEV_DAY_USD = 600;
+const breakEvenQueries = Math.ceil(DEV_DAY_USD / Math.max(1e-9, dearest.saved));
+
+const faq = [
+  { question: 'Is a one-million-token context window cheaper than RAG?', answer: 'Almost never on a per-query basis. Retrieval typically sends 25 to 100 times fewer input tokens for the same answer, and input tokens are what you pay for. Long context wins on build cost and simplicity, not on unit cost.' },
+  { question: 'When should I stuff the context window instead of building retrieval?', answer: 'When the corpus fits the window, query volume is low, and latency is not critical. For internal tools and document question-answering over a modest corpus, the engineering saving usually outweighs the token cost.' },
+  { question: 'When does RAG become necessary?', answer: 'Three triggers: the corpus no longer fits the context window, per-request latency breaks your service level, or query volume pushes long-context spend past the cost of building and running retrieval.' },
+  { question: 'Does long context give better answers than retrieval?', answer: 'Not reliably. Published needle-in-a-haystack scores are near perfect, but on realistic multi-fact retrieval across a long document, measured recall is far lower, around 60 percent in one widely cited evaluation. Test on your own questions.' },
+  { question: 'Does prompt caching change the comparison?', answer: 'Substantially. If the same large context is reused across many queries, cached input bills at roughly a tenth of the fresh rate on several providers, which narrows the gap. It only helps when the context is genuinely repeated.' },
+];
+---
+<BaseLayout
+  title="Long Context vs RAG: Token Cost Compared"
+  description="Stuffing a one-million-token window costs 25 to 100 times more input tokens than retrieval for the same answer. Compare real per-query cost across current models."
+  canonical="/long-context-vs-rag-cost/"
+  {breadcrumbs} {faq} application
+>
+  <Breadcrumbs items={breadcrumbs} />
+  <section class="shell max-w-4xl pt-12 sm:pt-16 pb-8 relative z-10">
+    <span class="eyebrow">Architecture cost comparison</span>
+    <h1 class="m-0 mt-4 text-[clamp(2.25rem,5vw,3.75rem)] leading-[1.02] tracking-[-.055em] max-w-4xl">Long context vs RAG cost.</h1>
+    <p class="muted text-[16px] sm:text-[17px] mt-4 mb-0 max-w-3xl">
+      Million-token windows made it possible to skip retrieval entirely. This page prices what that
+      convenience costs per query, using current published rates.
+    </p>
+  </section>
+
+  <section class="shell mt-8 relative z-10" aria-labelledby="compare-title">
+    <div class="content-heading">
+      <span class="eyebrow">Computed from current rates</span>
+      <h2 id="compare-title" class="section-title mt-3">The same answer, two input sizes</h2>
+    </div>
+    <p class="muted max-w-3xl mt-4 mb-6">
+      One question answered two ways. The long-context call pastes {STUFFED_TOKENS.toLocaleString()} tokens
+      of source material into the prompt. The retrieval call sends {RETRIEVED_TOKENS.toLocaleString()} tokens,
+      five retrieved passages plus the question. Both produce {OUTPUT_TOKENS} output tokens.
+    </p>
+    <div class="table-shell overflow-x-auto">
+      <table class="seo-table">
+        <thead><tr><th>Model</th><th>Provider</th><th>Long context</th><th>Retrieval</th><th>Multiple</th><th>Saved per query</th></tr></thead>
+        <tbody>
+          {compared.map((row) => (
+            <tr>
+              <td><strong>{row.model.name}</strong></td>
+              <td>{PROVIDERS[row.model.provider].name}</td>
+              <td>{usd(row.stuffed)}</td>
+              <td>{usd(row.retrieved)}</td>
+              <td>{row.ratio.toFixed(1)}x</td>
+              <td>{usd(row.saved)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <p class="text-xs muted mt-4">
+      Rates are USD per 1,000,000 tokens from the maintained catalogue. Long-context tiers are applied
+      where a provider charges one. Paste your own material into the calculator to replace these
+      assumptions with measured token counts.
+    </p>
+  </section>
+
+  <section class="shell mt-16 grid md:grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)] gap-8 md:gap-16 relative z-10">
+    <div><h2 class="section-title m-0">Retrieval sends 25 to 100 times fewer tokens</h2></div>
+    <div class="muted">
+      <p>The mechanism is simple. Retrieval selects two to five relevant passages, roughly two thousand tokens. Stuffing sends the whole document set, commonly fifty thousand to two hundred thousand tokens. You pay for input tokens, so the bill follows that ratio almost exactly.</p>
+      <p>In the table above the multiple lands between {Math.min(...compared.map((r) => r.ratio)).toFixed(0)}x and {Math.max(...compared.map((r) => r.ratio)).toFixed(0)}x. It is not identical across models because output cost is a fixed part of each call, and output weighs more heavily where the model charges more for it.</p>
+      <p>Cheapest per long-context query here is {cheapest.model.name} at {usd(cheapest.stuffed)}; the most expensive is {dearest.model.name} at {usd(dearest.stuffed)}. The gap between models is smaller than the gap between the two architectures.</p>
+    </div>
+  </section>
+
+  <section class="shell mt-16 grid md:grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)] gap-8 md:gap-16 relative z-10">
+    <div><h2 class="section-title m-0">Why long context still wins for most teams</h2></div>
+    <div class="muted">
+      <p>Per-query cost is not the only cost. Retrieval means chunking, an embedding model, a vector store, a retrieval step to tune, and an evaluation harness to know whether it is picking the right passages. That is real engineering time and ongoing maintenance.</p>
+      <p>A rough framing: at the most expensive model in the table you save {usd(dearest.saved)} per query. Against a nominal {`$${DEV_DAY_USD}`} developer-day, retrieval pays for that day after about {breakEvenQueries.toLocaleString()} queries. If you serve a few hundred queries a week, stuffing the window is the cheaper decision once your own time is counted.</p>
+      <p>That crossover moves fast. Ten thousand queries a day changes the answer completely, which is why this is a volume question rather than a taste question.</p>
+    </div>
+  </section>
+
+  <section class="shell mt-16 grid md:grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)] gap-8 md:gap-16 relative z-10">
+    <div><h2 class="section-title m-0">Latency and recall, not just price</h2></div>
+    <div class="muted">
+      <p>Published comparisons put a retrieval pipeline at roughly one second end to end, against thirty to sixty seconds for the equivalent long-context call. For an interactive product that difference decides the design before cost does.</p>
+      <p>Answer quality is the part most often assumed rather than measured. Needle-in-a-haystack scores are near perfect and widely quoted, but on realistic multi-fact questions spread across a long document, measured recall has been reported around sixty percent. A model that reads everything does not necessarily use everything.</p>
+      <p>The honest test is your own question set, scored by hand, on both architectures. Neither the token count nor the benchmark answers it for you.</p>
+    </div>
+  </section>
+
+  <section class="shell mt-16 grid md:grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)] gap-8 md:gap-16 relative z-10">
+    <div><h2 class="section-title m-0">Caching narrows the gap, when the context repeats</h2></div>
+    <div class="muted">
+      <p>If many queries hit the same large context, the repeated portion can bill at the cached rate rather than the fresh one. On several providers that is roughly a tenth of the input price, which pulls long context much closer to retrieval on cost.</p>
+      <p>The condition matters. Caching helps when the prefix is genuinely identical and reused inside the cache lifetime. A corpus that differs per user, or a query pattern spread thinly across many documents, will not hit the cache and will pay full price every time.</p>
+      <p><a href="/prompt-caching-cost/" class="text-[var(--accent)]">See the cached versus uncached numbers →</a></p>
+    </div>
+  </section>
+
+  <ProviderLinks current="/long-context-vs-rag-cost/" limit={4} />
+  <FAQ items={faq} />
+</BaseLayout>

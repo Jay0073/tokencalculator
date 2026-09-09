@@ -1,17 +1,19 @@
 ---
 import type { Locale } from '../../i18n/config';
 import { homeCopy } from '../../i18n/home';
+import { navCopy } from '../../i18n/nav';
 import DirectoryBadges from './DirectoryBadges.astro';
 interface Props { locale?:Locale; showDirectoryBadges?:boolean }
 const { locale='en', showDirectoryBadges=false }=Astro.props;
 const copy=homeCopy[locale];
+const nav=navCopy[locale];
 ---
 <footer class="border-t hairline mt-24 relative z-10">
   {showDirectoryBadges && <DirectoryBadges />}
   <div class="shell py-10 flex flex-col sm:flex-row gap-6 justify-between text-sm muted">
     <div class="max-w-md"><strong class="text-[var(--text)]">TokenCalculator.dev</strong><br/><span class="text-xs">© 2026 TokenCalculator.dev. All rights reserved.</span><br/><span class="text-xs">{copy.footerPrivacy}</span></div>
-    <nav class="flex flex-wrap gap-x-5 gap-y-2" aria-label="Footer navigation">
-      <a href="/developers/api/">API</a><a href="/estimators/">Cost Lab</a><a href="/docs/">Docs</a><a href="/blog/">Blog</a><a href="/methodology/">{copy.methodologyNav}</a><a href="/about/">{copy.about}</a><a href="/privacy-policy/">{copy.privacy}</a><a href="/terms-of-service/">{copy.terms}</a><a href="/contact/">{copy.contact}</a>
+    <nav class="flex flex-wrap gap-x-5 gap-y-2" aria-label={nav.explore}>
+      <a href="/developers/api/">{nav.footerApi}</a><a href="/estimators/">{nav.costLab}</a><a href="/docs/">{nav.footerDocs}</a><a href="/blog/">{nav.footerBlog}</a><a href="/methodology/">{copy.methodologyNav}</a><a href="/about/">{copy.about}</a><a href="/privacy-policy/">{copy.privacy}</a><a href="/terms-of-service/">{copy.terms}</a><a href="/contact/">{copy.contact}</a>
     </nav>
   </div>
 </footer>

@@ -23,6 +23,12 @@ const COMPARISONS = [
   { href: '/gemini-flash-vs-gpt-4o-mini-pricing/', title: 'Gemini Flash vs GPT mini', detail: 'The cheap tier after GPT-4o mini' },
 ];
 
+const GUIDES = [
+  { href: '/prompt-caching-cost/', title: 'Prompt caching cost', detail: 'What a cached prefix saves on a 20-turn agent loop' },
+  { href: '/long-context-vs-rag-cost/', title: 'Long context vs RAG cost', detail: 'Stuffing a 1M window against retrieval, priced per query' },
+];
+
+const guides = GUIDES.filter((item) => item.href !== current);
 const shown = COMPARISONS.filter((item) => item.href !== current).slice(0, limit ?? COMPARISONS.length);
 ---
 <section class="shell mt-24 relative z-10">
@@ -38,6 +44,14 @@ const shown = COMPARISONS.filter((item) => item.href !== current).slice(0, limit
   <span class="eyebrow">Current model comparisons</span><h2 class="section-title mt-3 mb-8">{current ? 'Other comparisons worth running' : 'Compare cost with the same real workload'}</h2>
   <div class="grid md:grid-cols-2 gap-3">
     {shown.map((item) => (
+      <a href={item.href} class="panel rounded-xl p-5 no-underline hover:border-[var(--line-strong)]"><strong>{item.title}</strong><span class="block text-sm muted mt-1">{item.detail}</span></a>
+    ))}
+  </div>
+</section>
+<section class="shell mt-16 relative z-10">
+  <span class="eyebrow">Cost guides</span><h2 class="section-title mt-3 mb-8">Compare approaches, not just models</h2>
+  <div class="grid md:grid-cols-2 gap-3">
+    {guides.map((item) => (
       <a href={item.href} class="panel rounded-xl p-5 no-underline hover:border-[var(--line-strong)]"><strong>{item.title}</strong><span class="block text-sm muted mt-1">{item.detail}</span></a>
     ))}
   </div>

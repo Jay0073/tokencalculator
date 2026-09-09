@@ -155,6 +155,34 @@ function main(catalog) {
     throw new Error(`Default model '${policy.defaultModel}' was not selected. Fix scripts/model-policy.json.`);
   }
 
+  // `verifiedAt` is stamped with today's date on every run, which is the honest claim
+  // to publish but means a no-op sync still rewrites every line. Compare the material
+  // fields against what is already generated so CI only opens a pull request when a
+  // rate, a context window or the model list actually moved.
+  const materialFields = ['id', 'name', 'provider', 'contextWindow', 'maxOutput', 'inputPerMillion', 'cachedInputPerMillion', 'outputPerMillion', 'vision', 'tokenizer'];
+  // The generated file writes large integers with underscore separators, so both sides
+  // are normalised before comparing.
+  const norm = (value) => String(value ?? '').replace(/_/g, '');
+  const fingerprint = (entry) => materialFields.map((field) => `${field}=${norm(entry[field])}`).join('|');
+  const sitePath = path.join(root, 'src/data/models.ts');
+  let previous = '';
+  if (existsSync(sitePath)) {
+    // One model per line in the generated file. A regex over the whole text would stop
+    // at the first closing brace, which for a model with pricingTiers sits inside the
+    // tier object and truncates the entry before its later fields.
+    previous = readFileSync(sitePath, 'utf8')
+      .split('\n')
+      .filter((line) => line.trimStart().startsWith("{ id:'"))
+      .map((line) => {
+        const read = (field) => (line.match(new RegExp(`(?<![a-zA-Z])${field}:'?([^,'}\\]]*)'?`)) ?? [, ''])[1].trim();
+        return materialFields.map((field) => `${field}=${norm(read(field))}`).join('|');
+      })
+      .join('\n');
+  }
+  const current = selected.map(fingerprint).join('\n');
+  const materialChange = previous !== current;
+  console.log(`\nMATERIAL_CHANGE=${materialChange ? 'yes' : 'no'}`);
+
   // Site catalogue: this file is generated end to end.
   const siteBody = selected.map((model) => serialize(model, { defaultId: policy.defaultModel })).join('\n');
   writeFileSync(

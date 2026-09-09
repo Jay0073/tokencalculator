@@ -52,17 +52,20 @@ jobs:
             cat sync-report.txt
             echo 'REPORT_EOF'
           } >> "$GITHUB_OUTPUT"
-          rm -f sync-report.txt
 
+      # The script stamps verifiedAt with today's date on every run, so a plain git diff
+      # is always dirty. MATERIAL_CHANGE reports whether a rate, context window or the
+      # model list actually moved, which is the only thing worth a pull request.
       - name: Detect changes
         id: diff
         run: |
-          if git diff --quiet -- src/data/models.ts packages scripts/models.snapshot.json; then
-            echo "changed=false" >> "$GITHUB_OUTPUT"
-            echo "No catalogue change."
-          else
+          if grep -q '^MATERIAL_CHANGE=yes$' sync-report.txt; then
             echo "changed=true" >> "$GITHUB_OUTPUT"
-            git --no-pager diff --stat -- src/data/models.ts packages scripts/models.snapshot.json
+            git --no-pager diff --stat -- src/data/models.ts packages public/llms.txt scripts/models.snapshot.json
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "No material catalogue change; only the verification date moved."
+            git checkout -- . || true
           fi
 
       # Verify before proposing. A generated catalogue that fails typecheck or the
@@ -78,6 +81,11 @@ jobs:
         if: steps.diff.outputs.changed == 'true' && inputs.autoMerge != true
         uses: peter-evans/create-pull-request@v6
         with:
+          add-paths: |
+            src/data/models.ts
+            packages
+            public/llms.txt
+            scripts/models.snapshot.json
           branch: automation/model-catalogue
           delete-branch: true
           commit-message: 'chore: sync model catalogue from models.dev'
@@ -103,6 +111,7 @@ jobs:
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
-          git add src/data/models.ts packages scripts/models.snapshot.json
+          rm -f sync-report.txt
+          git add src/data/models.ts packages public/llms.txt scripts/models.snapshot.json
           git commit -m 'chore: sync model catalogue from models.dev'
           git push
