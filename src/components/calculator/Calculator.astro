@@ -7,18 +7,18 @@ import type { Locale } from '../../i18n/config';
 interface Props { provider?: ProviderId; locale?:Locale }
 const { provider, locale='en' } = Astro.props;
 const translations={
-  en:{drop:'Drop files to add them',text:'Text to count',placeholder:'Paste text, a prompt, or the contents you want to count…',add:'Add files or images',show:'Show tokens',stays:'Everything stays in this browser',below:'Results appear below',live:'Live',types:'Text, code, PDF, DOCX, PNG, JPEG, WebP, or GIF · 12 MB per file',results:'Live token results',measured:'Your input, measured across providers.',choose:'Choose a provider card to inspect every available model.',words:'words',characters:'characters',attachments:'attachments',calculating:'Calculating…',details:'model details',pricing:'Bundled pricing · refreshes on use',planner:'Workload & Scaling Planner',model:'Pricing model',output:'Expected output tokens',requests:'Requests per day',call:'per call',daily:'daily',monthly:'monthly',copy:'Copy Markdown breakdown',share:'Share calculation',remove:'Remove attachment'},
-  es:{drop:'Suelta archivos para añadirlos',text:'Texto que quieres contar',placeholder:'Pega texto, un prompt o el contenido que quieres contar…',add:'Añadir archivos o imágenes',show:'Mostrar tokens',stays:'Todo permanece en este navegador',below:'Los resultados aparecen abajo',live:'En vivo',types:'Texto, código, PDF, DOCX, PNG, JPEG, WebP o GIF · 12 MB por archivo',results:'Resultados de tokens en vivo',measured:'Tu entrada, medida entre proveedores.',choose:'Elige un proveedor para ver todos sus modelos.',words:'palabras',characters:'caracteres',attachments:'archivos',calculating:'Calculando…',details:'detalles del modelo',pricing:'Precios integrados · se actualizan al usar',planner:'Planificador de carga y escala',model:'Modelo de precios',output:'Tokens de salida esperados',requests:'Solicitudes por día',call:'por llamada',daily:'diario',monthly:'mensual',copy:'Copiar desglose Markdown',share:'Compartir cálculo',remove:'Eliminar archivo'},
-  ja:{drop:'ファイルをドロップして追加',text:'計算するテキスト',placeholder:'計算するテキストやプロンプトを貼り付け…',add:'ファイルまたは画像を追加',show:'トークンを表示',stays:'すべてブラウザ内で処理されます',below:'結果は下に表示されます',live:'ライブ',types:'テキスト、コード、PDF、DOCX、PNG、JPEG、WebP、GIF · 1ファイル12 MB',results:'リアルタイムのトークン結果',measured:'入力を各プロバイダーで測定。',choose:'プロバイダーカードを選び、利用可能なモデルを確認します。',words:'単語',characters:'文字',attachments:'添付',calculating:'計算中…',details:'モデル詳細',pricing:'内蔵料金 · 使用時に更新',planner:'ワークロードとスケーリング',model:'料金モデル',output:'予想出力トークン',requests:'1日あたりのリクエスト',call:'1回あたり',daily:'1日',monthly:'1か月',copy:'Markdown内訳をコピー',share:'計算を共有',remove:'添付を削除'},
-  de:{drop:'Dateien hier ablegen',text:'Zu zählender Text',placeholder:'Text, Prompt oder zu zählenden Inhalt einfügen…',add:'Dateien oder Bilder hinzufügen',show:'Tokens anzeigen',stays:'Alles bleibt in diesem Browser',below:'Ergebnisse erscheinen unten',live:'Live',types:'Text, Code, PDF, DOCX, PNG, JPEG, WebP oder GIF · 12 MB pro Datei',results:'Live-Token-Ergebnisse',measured:'Deine Eingabe, über Anbieter hinweg gemessen.',choose:'Wähle einen Anbieter, um alle Modelle zu prüfen.',words:'Wörter',characters:'Zeichen',attachments:'Anhänge',calculating:'Berechnung…',details:'Modelldetails',pricing:'Integrierte Preise · Aktualisierung bei Nutzung',planner:'Arbeitslast- und Skalierungsplaner',model:'Preismodell',output:'Erwartete Ausgabe-Tokens',requests:'Anfragen pro Tag',call:'pro Aufruf',daily:'täglich',monthly:'monatlich',copy:'Markdown-Aufschlüsselung kopieren',share:'Berechnung teilen',remove:'Anhang entfernen'},
-  'pt-BR':{drop:'Solte arquivos para adicionar',text:'Texto para contar',placeholder:'Cole um texto, prompt ou conteúdo que deseja contar…',add:'Adicionar arquivos ou imagens',show:'Mostrar tokens',stays:'Tudo permanece neste navegador',below:'Os resultados aparecem abaixo',live:'Ao vivo',types:'Texto, código, PDF, DOCX, PNG, JPEG, WebP ou GIF · 12 MB por arquivo',results:'Resultados de tokens ao vivo',measured:'Sua entrada, medida entre provedores.',choose:'Escolha um provedor para conferir todos os modelos.',words:'palavras',characters:'caracteres',attachments:'anexos',calculating:'Calculando…',details:'detalhes do modelo',pricing:'Preços integrados · atualizados durante o uso',planner:'Planejador de carga e escala',model:'Modelo de preços',output:'Tokens de saída esperados',requests:'Solicitações por dia',call:'por chamada',daily:'diário',monthly:'mensal',copy:'Copiar detalhamento Markdown',share:'Compartilhar cálculo',remove:'Remover anexo'}
+  en:{drop:'Drop files to add them',text:'Text to count',placeholder:'Paste text, a prompt, or the contents you want to count…',add:'Add files or images',show:'Show tokens',stays:'Everything stays in this browser',below:'Results appear below',live:'Live',types:'Text, code, PDF, DOCX, PNG, JPEG, WebP, or GIF · 12 MB per file',results:'Live token results',measured:'Your input, measured across providers.',choose:'Choose a provider card to inspect every available model.',words:'words',characters:'characters',attachments:'attachments',calculating:'Calculating…',details:'model details',pricing:'Bundled pricing · refreshes on use',planner:'Workload & Scaling Planner',model:'Pricing model',output:'Expected output tokens',requests:'Requests per day',call:'per call',daily:'daily',monthly:'monthly',copy:'Copy Markdown breakdown',share:'Share calculation',remove:'Remove attachment',providerLabel:'Provider',exactBpe:'Exact BPE Tokenization',projection:'Provider-Calibrated Projection',officialPricing:'Official pricing',verified:'verified',imageUnavailable:'Image input unavailable',tokensLabel:'tokens',inputLabel:'input',cacheLabel:'cache',overflow:'Context overflow: exceeds the {limit} token limit',viewResults:'View results',copied:'Copied',linkCopied:'Link copied',checkingPricing:'Checking live pricing…',livePricing:'Live pricing · Models.dev',bundledOffline:'Bundled pricing · offline fallback',inspectHint:'Add text to inspect exact token boundaries.',hide:'Hide tokens',readingFiles:'Reading files…',unavailable:'Unavailable',calcFailed:'Calculation failed.',sharedResult:'Shared result',tokenizerFailed:'The local tokenizer could not start. Reload the page and try again.',shareRestoreFailed:'This shared calculation could not be restored.',clipboardBlocked:'Your browser blocked clipboard access. Allow clipboard permission and try again.',shareClipboardBlocked:'The share link was created, but your browser blocked clipboard access. Copy it from the address bar.',exactHelp:'Deterministic local count using the model family’s BPE encoding and vocabulary.',projectionHelp:'Deterministic UTF-8 byte-ratio projection calibrated per provider tokenizer family; provider API usage remains authoritative for billing.',sharedRestored:'Shared calculation restored. For privacy, the original content is not included.',methodExact:'Exact local {tokenizer} BPE tokenization',methodProjection:'Provider-calibrated UTF-8 projection'},
+  es:{drop:'Suelta archivos para añadirlos',text:'Texto que quieres contar',placeholder:'Pega texto, un prompt o el contenido que quieres contar…',add:'Añadir archivos o imágenes',show:'Mostrar tokens',stays:'Todo permanece en este navegador',below:'Los resultados aparecen abajo',live:'En vivo',types:'Texto, código, PDF, DOCX, PNG, JPEG, WebP o GIF · 12 MB por archivo',results:'Resultados de tokens en vivo',measured:'Tu entrada, medida entre proveedores.',choose:'Elige un proveedor para ver todos sus modelos.',words:'palabras',characters:'caracteres',attachments:'archivos',calculating:'Calculando…',details:'detalles del modelo',pricing:'Precios integrados · se actualizan al usar',planner:'Planificador de carga y escala',model:'Modelo de precios',output:'Tokens de salida esperados',requests:'Solicitudes por día',call:'por llamada',daily:'diario',monthly:'mensual',copy:'Copiar desglose Markdown',share:'Compartir cálculo',remove:'Eliminar archivo',providerLabel:'Proveedor',exactBpe:'Tokenización BPE exacta',projection:'Proyección calibrada por proveedor',officialPricing:'Precios oficiales',verified:'verificado',imageUnavailable:'Entrada de imagen no disponible',tokensLabel:'tokens',inputLabel:'entrada',cacheLabel:'caché',overflow:'Contexto excedido: supera el límite de {limit} tokens',viewResults:'Ver resultados',copied:'Copiado',linkCopied:'Enlace copiado',checkingPricing:'Comprobando precios en vivo…',livePricing:'Precios en vivo · Models.dev',bundledOffline:'Precios integrados · sin conexión',inspectHint:'Añade texto para inspeccionar los límites exactos de los tokens.',hide:'Ocultar tokens',readingFiles:'Leyendo archivos…',unavailable:'No disponible',calcFailed:'El cálculo falló.',sharedResult:'Resultado compartido',tokenizerFailed:'El tokenizador local no pudo iniciarse. Recarga la página e inténtalo de nuevo.',shareRestoreFailed:'No se pudo restaurar este cálculo compartido.',clipboardBlocked:'Tu navegador bloqueó el acceso al portapapeles. Concede el permiso e inténtalo de nuevo.',shareClipboardBlocked:'Se creó el enlace, pero tu navegador bloqueó el portapapeles. Cópialo desde la barra de direcciones.',exactHelp:'Conteo local determinista con la codificación BPE y el vocabulario de la familia del modelo.',projectionHelp:'Proyección determinista por ratio de bytes UTF-8, calibrada por familia de tokenizador; el uso reportado por la API del proveedor sigue siendo la referencia para la facturación.',sharedRestored:'Cálculo compartido restaurado. Por privacidad, no se incluye el contenido original.',methodExact:'Tokenización BPE local exacta con {tokenizer}',methodProjection:'Proyección UTF-8 calibrada por proveedor'},
+  ja:{drop:'ファイルをドロップして追加',text:'計算するテキスト',placeholder:'計算するテキストやプロンプトを貼り付け…',add:'ファイルまたは画像を追加',show:'トークンを表示',stays:'すべてブラウザ内で処理されます',below:'結果は下に表示されます',live:'ライブ',types:'テキスト、コード、PDF、DOCX、PNG、JPEG、WebP、GIF · 1ファイル12 MB',results:'リアルタイムのトークン結果',measured:'入力を各プロバイダーで測定。',choose:'プロバイダーカードを選び、利用可能なモデルを確認します。',words:'単語',characters:'文字',attachments:'添付',calculating:'計算中…',details:'モデル詳細',pricing:'内蔵料金 · 使用時に更新',planner:'ワークロードとスケーリング',model:'料金モデル',output:'予想出力トークン',requests:'1日あたりのリクエスト',call:'1回あたり',daily:'1日',monthly:'1か月',copy:'Markdown内訳をコピー',share:'計算を共有',remove:'添付を削除',providerLabel:'プロバイダー',exactBpe:'厳密なBPEトークン化',projection:'プロバイダー校正済み推定',officialPricing:'公式料金',verified:'確認日',imageUnavailable:'画像入力は利用できません',tokensLabel:'トークン',inputLabel:'入力',cacheLabel:'キャッシュ',overflow:'コンテキスト超過: {limit} トークンの上限を超えています',viewResults:'結果を見る',copied:'コピーしました',linkCopied:'リンクをコピーしました',checkingPricing:'最新の料金を確認中…',livePricing:'最新料金 · Models.dev',bundledOffline:'内蔵料金 · オフライン',inspectHint:'トークン境界を確認するにはテキストを追加してください。',hide:'トークンを隠す',readingFiles:'ファイルを読み込み中…',unavailable:'利用できません',calcFailed:'計算に失敗しました。',sharedResult:'共有された結果',tokenizerFailed:'ローカルのトークナイザーを起動できませんでした。ページを再読み込みしてください。',shareRestoreFailed:'この共有された計算を復元できませんでした。',clipboardBlocked:'ブラウザがクリップボードへのアクセスを拒否しました。権限を許可して再試行してください。',shareClipboardBlocked:'共有リンクは作成されましたが、クリップボードがブロックされました。アドレスバーからコピーしてください。',exactHelp:'モデルファミリーのBPEエンコーディングと語彙を用いた、決定論的なローカル計算です。',projectionHelp:'プロバイダーのトークナイザーファミリーごとに校正した、決定論的なUTF-8バイト比の推定です。請求はプロバイダーAPIの使用量が優先されます。',sharedRestored:'共有された計算を復元しました。プライバシー保護のため、元の内容は含まれません。',methodExact:'{tokenizer} によるローカルBPEトークン化',methodProjection:'プロバイダー校正済みUTF-8推定'},
+  de:{drop:'Dateien hier ablegen',text:'Zu zählender Text',placeholder:'Text, Prompt oder zu zählenden Inhalt einfügen…',add:'Dateien oder Bilder hinzufügen',show:'Tokens anzeigen',stays:'Alles bleibt in diesem Browser',below:'Ergebnisse erscheinen unten',live:'Live',types:'Text, Code, PDF, DOCX, PNG, JPEG, WebP oder GIF · 12 MB pro Datei',results:'Live-Token-Ergebnisse',measured:'Deine Eingabe, über Anbieter hinweg gemessen.',choose:'Wähle einen Anbieter, um alle Modelle zu prüfen.',words:'Wörter',characters:'Zeichen',attachments:'Anhänge',calculating:'Berechnung…',details:'Modelldetails',pricing:'Integrierte Preise · Aktualisierung bei Nutzung',planner:'Arbeitslast- und Skalierungsplaner',model:'Preismodell',output:'Erwartete Ausgabe-Tokens',requests:'Anfragen pro Tag',call:'pro Aufruf',daily:'täglich',monthly:'monatlich',copy:'Markdown-Aufschlüsselung kopieren',share:'Berechnung teilen',remove:'Anhang entfernen',providerLabel:'Anbieter',exactBpe:'Exakte BPE-Tokenisierung',projection:'Anbieterkalibrierte Projektion',officialPricing:'Offizielle Preise',verified:'geprüft',imageUnavailable:'Bildeingabe nicht verfügbar',tokensLabel:'Tokens',inputLabel:'Eingabe',cacheLabel:'Cache',overflow:'Kontext überschritten: über dem Limit von {limit} Tokens',viewResults:'Ergebnisse ansehen',copied:'Kopiert',linkCopied:'Link kopiert',checkingPricing:'Live-Preise werden geprüft…',livePricing:'Live-Preise · Models.dev',bundledOffline:'Integrierte Preise · offline',inspectHint:'Text hinzufügen, um exakte Token-Grenzen zu prüfen.',hide:'Tokens ausblenden',readingFiles:'Dateien werden gelesen…',unavailable:'Nicht verfügbar',calcFailed:'Berechnung fehlgeschlagen.',sharedResult:'Geteiltes Ergebnis',tokenizerFailed:'Der lokale Tokenizer konnte nicht starten. Lade die Seite neu und versuche es erneut.',shareRestoreFailed:'Diese geteilte Berechnung konnte nicht wiederhergestellt werden.',clipboardBlocked:'Dein Browser hat den Zugriff auf die Zwischenablage blockiert. Erlaube den Zugriff und versuche es erneut.',shareClipboardBlocked:'Der Link wurde erstellt, aber die Zwischenablage war blockiert. Kopiere ihn aus der Adressleiste.',exactHelp:'Deterministische lokale Zählung mit der BPE-Kodierung und dem Vokabular der Modellfamilie.',projectionHelp:'Deterministische UTF-8-Byte-Projektion, kalibriert pro Tokenizer-Familie; für die Abrechnung gilt die vom Anbieter gemeldete Nutzung.',sharedRestored:'Geteilte Berechnung wiederhergestellt. Aus Datenschutzgründen ist der ursprüngliche Inhalt nicht enthalten.',methodExact:'Exakte lokale BPE-Tokenisierung mit {tokenizer}',methodProjection:'Anbieterkalibrierte UTF-8-Projektion'},
+  'pt-BR':{drop:'Solte arquivos para adicionar',text:'Texto para contar',placeholder:'Cole um texto, prompt ou conteúdo que deseja contar…',add:'Adicionar arquivos ou imagens',show:'Mostrar tokens',stays:'Tudo permanece neste navegador',below:'Os resultados aparecem abaixo',live:'Ao vivo',types:'Texto, código, PDF, DOCX, PNG, JPEG, WebP ou GIF · 12 MB por arquivo',results:'Resultados de tokens ao vivo',measured:'Sua entrada, medida entre provedores.',choose:'Escolha um provedor para conferir todos os modelos.',words:'palavras',characters:'caracteres',attachments:'anexos',calculating:'Calculando…',details:'detalhes do modelo',pricing:'Preços integrados · atualizados durante o uso',planner:'Planejador de carga e escala',model:'Modelo de preços',output:'Tokens de saída esperados',requests:'Solicitações por dia',call:'por chamada',daily:'diário',monthly:'mensal',copy:'Copiar detalhamento Markdown',share:'Compartilhar cálculo',remove:'Remover anexo',providerLabel:'Provedor',exactBpe:'Tokenização BPE exata',projection:'Projeção calibrada por provedor',officialPricing:'Preços oficiais',verified:'verificado',imageUnavailable:'Entrada de imagem indisponível',tokensLabel:'tokens',inputLabel:'entrada',cacheLabel:'cache',overflow:'Contexto excedido: acima do limite de {limit} tokens',viewResults:'Ver resultados',copied:'Copiado',linkCopied:'Link copiado',checkingPricing:'Verificando preços ao vivo…',livePricing:'Preços ao vivo · Models.dev',bundledOffline:'Preços integrados · offline',inspectHint:'Adicione texto para inspecionar os limites exatos dos tokens.',hide:'Ocultar tokens',readingFiles:'Lendo arquivos…',unavailable:'Indisponível',calcFailed:'O cálculo falhou.',sharedResult:'Resultado compartilhado',tokenizerFailed:'O tokenizador local não pôde iniciar. Recarregue a página e tente novamente.',shareRestoreFailed:'Não foi possível restaurar este cálculo compartilhado.',clipboardBlocked:'Seu navegador bloqueou o acesso à área de transferência. Conceda a permissão e tente novamente.',shareClipboardBlocked:'O link foi criado, mas a área de transferência foi bloqueada. Copie-o da barra de endereços.',exactHelp:'Contagem local determinística usando a codificação BPE e o vocabulário da família do modelo.',projectionHelp:'Projeção determinística por proporção de bytes UTF-8, calibrada por família de tokenizador; o uso relatado pela API do provedor prevalece para cobrança.',sharedRestored:'Cálculo compartilhado restaurado. Por privacidade, o conteúdo original não é incluído.',methodExact:'Tokenização BPE local exata com {tokenizer}',methodProjection:'Projeção UTF-8 calibrada por provedor'}
 } as const;
 const t=translations[locale];
 const visibleModels = provider ? MODELS.filter((model) => model.provider === provider) : MODELS;
 const visibleProviders = [...new Set(visibleModels.map((model) => model.provider))];
 ---
 
-<section class="shell relative z-10" data-calculator data-models={JSON.stringify(visibleModels)} data-provider={provider ?? ''}>
+<section class="shell relative z-10" data-calculator data-models={JSON.stringify(visibleModels)} data-provider={provider ?? ''} data-i18n={JSON.stringify(t)}>
   <div id="input-surface" class="max-w-4xl mx-auto panel composer-shadow rounded-xl overflow-hidden relative transition-colors">
     <div id="drop-overlay" class="hidden absolute inset-0 z-10 border-2 border-dashed border-[var(--accent)] bg-[color-mix(in_srgb,var(--accent)_7%,var(--panel))] place-items-center pointer-events-none"><span class="font-semibold text-[var(--accent)]">{t.drop}</span></div>
     <label for="prompt-input" class="sr-only">{t.text}</label>
@@ -66,7 +66,7 @@ const visibleProviders = [...new Set(visibleModels.map((model) => model.provider
 
     <div class="panel rounded-xl overflow-hidden mt-4">
       <div class="px-5 py-4 sm:px-6 border-b hairline flex flex-wrap items-center justify-between gap-3">
-        <div><span id="detail-provider" class="font-semibold">Provider</span><span class="muted text-sm ml-2">{t.details}</span></div>
+        <div><span id="detail-provider" class="font-semibold">{t.providerLabel}</span><span class="muted text-sm ml-2">{t.details}</span></div>
         <span id="pricing-status" class="mono text-[10px] uppercase tracking-wider muted">{t.pricing}</span>
       </div>
       <div id="model-results" class="divide-y divide-[var(--line)]"></div>
@@ -120,6 +120,9 @@ const visibleProviders = [...new Set(visibleModels.map((model) => model.provider
     const calculatorRoot = root;
     const $ = <T extends HTMLElement>(selector:string) => root.querySelector<T>(selector)!;
     let models = JSON.parse(root.dataset.models ?? '[]') as ModelConfig[];
+    // Locale strings, injected from the frontmatter. Without this every string the
+    // script renders would be English regardless of the page locale.
+    const t = JSON.parse(root.dataset.i18n ?? '{}') as Record<string, string>;
     let assets:Asset[] = [];
     let workerId = 0;
     let calculationSequence = 0;
@@ -139,10 +142,10 @@ const visibleProviders = [...new Set(visibleModels.map((model) => model.provider
     let pricingPromise:ReturnType<typeof loadLivePricing> | undefined;
     const ensurePricing = () => {
       if (pricingPromise) return pricingPromise;
-      $('#pricing-status').textContent = 'Checking live pricing…';
+      $('#pricing-status').textContent = t.checkingPricing;
       pricingPromise = loadLivePricing(models).then((snapshot) => {
         models = snapshot.models;
-        $('#pricing-status').textContent = snapshot.source === 'models.dev' ? 'Live pricing · Models.dev' : 'Bundled pricing · offline fallback';
+        $('#pricing-status').textContent = snapshot.source === 'models.dev' ? t.livePricing : t.bundledOffline;
         // Keep the server-rendered model table in step with the live rates, so the
         // static table and the calculator never show two different prices for one model.
         if (snapshot.source === 'models.dev') {
@@ -170,9 +173,9 @@ const visibleProviders = [...new Set(visibleModels.map((model) => model.provider
         pending.delete(event.data.id);
         if (event.data.ok && event.data.result) request.resolve(event.data.result);
         else if (event.data.ok && event.data.pieces) request.resolve(event.data.pieces);
-        else request.reject(new Error(event.data.error ?? 'Calculation failed.'));
+        else request.reject(new Error(event.data.error ?? t.calcFailed));
       };
-      worker.onerror = () => setError('The local tokenizer could not start. Reload the page and try again.');
+      worker.onerror = () => setError(t.tokenizerFailed);
       return worker;
     };
 
@@ -196,13 +199,13 @@ const visibleProviders = [...new Set(visibleModels.map((model) => model.provider
       const inspector=$('#token-inspector');
       if(!inspectionVisible)return;
       const text=combinedText();
-      if(!text){inspector.innerHTML='<span class="muted">Add text to inspect exact token boundaries.</span>';return;}
+      if(!text){inspector.innerHTML=`<span class="muted">${t.inspectHint}</span>`;return;}
       try {
         const pieces=await requestInspection(text);
         inspector.innerHTML='';
         const note=document.createElement('p');note.className='basis-full muted text-xs mb-2';note.textContent=`${pieces.reduce((total,piece)=>total+piece.tokenIds.length,0).toLocaleString()} exact BPE tokens. Unicode characters can span multiple tokens, so those tokens stay in one readable chip.`;inspector.append(note);
         pieces.forEach((piece)=>{const chip=document.createElement('span');chip.className='token-chip max-w-full rounded px-1.5 py-0.5 whitespace-pre-wrap';chip.textContent=piece.text;chip.title=piece.tokenIds.length===1?`Token ${piece.tokenIds[0]}`:`${piece.tokenIds.length} tokens: ${piece.tokenIds.join(', ')}`;chip.setAttribute('aria-label',`${piece.tokenIds.length} token${piece.tokenIds.length===1?'':'s'}: ${piece.text}`);inspector.append(chip);});
-      } catch(error) { inspector.innerHTML=`<span class="muted">${error instanceof Error?error.message:'Token inspection failed.'}</span>`; }
+      } catch(error) { inspector.innerHTML=`<span class="muted">${error instanceof Error?error.message:t.calcFailed}</span>`; }
     }
 
     function renderAttachments() {
@@ -221,7 +224,7 @@ const visibleProviders = [...new Set(visibleModels.map((model) => model.provider
     async function addFiles(files:FileList) {
       setError();
       revealAfterCalculation=true;
-      setLiveStatus('Reading files…',true);
+      setLiveStatus(t.readingFiles,true);
       for (const file of [...files]) {
         try {
           const id=crypto.randomUUID();
@@ -258,11 +261,11 @@ const visibleProviders = [...new Set(visibleModels.map((model) => model.provider
         const unsupported=item.unsupportedImages>0;
         const row=document.createElement('div');
         row.className='grid sm:grid-cols-[1.4fr_.75fr_.8fr_1fr] gap-3 sm:gap-5 px-5 py-5 sm:px-6 items-center';
-        const accuracy=item.model.textAccuracy==='exact'?'Exact BPE Tokenization':'Provider-Calibrated Projection';
-        const accuracyHelp=item.model.textAccuracy==='exact'?'Deterministic local count using the model family’s BPE encoding and vocabulary.':'Deterministic UTF-8 byte-ratio projection calibrated per provider tokenizer family; provider API usage remains authoritative for billing.';
+        const accuracy=item.model.textAccuracy==='exact'?t.exactBpe:t.projection;
+        const accuracyHelp=item.model.textAccuracy==='exact'?t.exactHelp:t.projectionHelp;
         const overflow=item.ratio>1;
         const rates=resolveRates(item.model,item.tokens);
-        row.innerHTML=`<div><strong class="block text-sm">${item.model.name}</strong><span class="inline-flex mt-1 text-[10px] mono rounded-full border hairline px-2 py-0.5" title="${accuracyHelp}">${accuracy}</span><span class="block text-[10px] muted mt-1">${item.method}</span><a class="inline-block text-[10px] text-[var(--accent)] mt-1" href="${item.model.pricingUrl}" target="_blank" rel="noreferrer">Official pricing ↗</a><span class="text-[10px] muted"> · verified ${item.model.verifiedAt}</span>${unsupported?'<span class="block text-xs text-[var(--warn)] mt-1">Image input unavailable</span>':''}</div><div><span class="mono block">${unsupported&&item.tokens===0?'—':item.tokens.toLocaleString()}</span><span class="text-xs muted">tokens</span></div><div><span class="mono block">${formatCost(item.cost)}</span><span class="text-xs muted">input · $${rates.inputPerMillion}/1M · cache $${rates.cachedInputPerMillion??'—'}/1M</span>${rates.label!=='Standard rate'?`<span class="block text-[10px] text-[var(--warn)] mt-1">${rates.label}</span>`:''}</div><div><div class="flex justify-between text-[10px] mono mb-1.5"><span>${(item.ratio*100).toFixed(item.ratio<.01?3:1)}%</span><span>${formatContext(item.model.contextWindow)}</span></div><div class="h-1.5 bg-[var(--panel-2)] rounded-full overflow-hidden"><div class="metric-bar h-full rounded-full" style="width:${Math.min(100,item.ratio*100)}%;background:${overflow?'var(--danger)':item.ratio>.8?'var(--warn)':'var(--accent)'}"></div></div>${overflow?`<span class="block text-[10px] text-[var(--danger)] mt-1">Context Overflow: Exceeds ${formatContext(item.model.contextWindow)} token limit</span>`:''}</div>`;
+        row.innerHTML=`<div><strong class="block text-sm">${item.model.name}</strong><span class="inline-flex mt-1 text-[10px] mono rounded-full border hairline px-2 py-0.5" title="${accuracyHelp}">${accuracy}</span><span class="block text-[10px] muted mt-1">${item.model.textAccuracy==='exact'?t.methodExact.replace('{tokenizer}',item.model.tokenizer):t.methodProjection}</span><a class="inline-block text-[10px] text-[var(--accent)] mt-1" href="${item.model.pricingUrl}" target="_blank" rel="noreferrer">${t.officialPricing} ↗</a><span class="text-[10px] muted"> · ${t.verified} ${item.model.verifiedAt}</span>${unsupported?`<span class="block text-xs text-[var(--warn)] mt-1">${t.imageUnavailable}</span>`:''}</div><div><span class="mono block">${unsupported&&item.tokens===0?'—':item.tokens.toLocaleString()}</span><span class="text-xs muted">${t.tokensLabel}</span></div><div><span class="mono block">${formatCost(item.cost)}</span><span class="text-xs muted">${t.inputLabel} · $${rates.inputPerMillion}/1M · ${t.cacheLabel} $${rates.cachedInputPerMillion??'—'}/1M</span>${rates.label!=='Standard rate'?`<span class="block text-[10px] text-[var(--warn)] mt-1">${rates.label}</span>`:''}</div><div><div class="flex justify-between text-[10px] mono mb-1.5"><span>${(item.ratio*100).toFixed(item.ratio<.01?3:1)}%</span><span>${formatContext(item.model.contextWindow)}</span></div><div class="h-1.5 bg-[var(--panel-2)] rounded-full overflow-hidden"><div class="metric-bar h-full rounded-full" style="width:${Math.min(100,item.ratio*100)}%;background:${overflow?'var(--danger)':item.ratio>.8?'var(--warn)':'var(--accent)'}"></div></div>${overflow?`<span class="block text-[10px] text-[var(--danger)] mt-1">${t.overflow.replace('{limit}',formatContext(item.model.contextWindow))}</span>`:''}</div>`;
         container.append(row);
       });
       const plannerSelect=$<HTMLSelectElement>('#planner-model');
@@ -297,8 +300,8 @@ const visibleProviders = [...new Set(visibleModels.map((model) => model.provider
       const dashboard=$('#results-dashboard');dashboard.classList.remove('hidden');
       const viewResults=$<HTMLButtonElement>('#view-results');
       const preferred=measurements.find((item)=>item.model.id===preferredIds[activeProvider])??measurements[0];
-      viewResults.disabled=false;viewResults.innerHTML=`View results${preferred?` · ${preferred.tokens.toLocaleString()} tokens`:''} <span aria-hidden="true">↓</span>`;
-      $('#result-announcer').textContent=shared?'Shared calculation restored. For privacy, the original content is not included.':`Results updated for ${words.toLocaleString()} words and ${assetCount.toLocaleString()} attachments.`;
+      viewResults.disabled=false;viewResults.innerHTML=`${t.viewResults}${preferred?` · ${preferred.tokens.toLocaleString()} ${t.tokensLabel}`:''} <span aria-hidden="true">↓</span>`;
+      $('#result-announcer').textContent=shared?t.sharedRestored:`Results updated for ${words.toLocaleString()} words and ${assetCount.toLocaleString()} attachments.`;
       if(revealAfterCalculation&&!shared){revealAfterCalculation=false;requestAnimationFrame(()=>dashboard.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'}));}
     }
 
@@ -306,23 +309,23 @@ const visibleProviders = [...new Set(visibleModels.map((model) => model.provider
       const sequence=++calculationSequence;
       const text=combinedText();
       const images=assets.filter((asset):asset is Extract<Asset,{kind:'image'}>=>asset.kind==='image');
-      if(!text.trim()&&!images.length){$('#results-dashboard').classList.add('hidden');const viewResults=$<HTMLButtonElement>('#view-results');viewResults.disabled=true;viewResults.innerHTML='Results appear below <span aria-hidden="true">↓</span>';setLiveStatus('Live');void renderTokenInspection();return;}
-      setLiveStatus('Calculating…',true);
+      if(!text.trim()&&!images.length){$('#results-dashboard').classList.add('hidden');const viewResults=$<HTMLButtonElement>('#view-results');viewResults.disabled=true;viewResults.innerHTML=`${t.below} <span aria-hidden="true">↓</span>`;setLiveStatus(t.live);void renderTokenInspection();return;}
+      setLiveStatus(t.calculating,true);
       await ensurePricing();
       const measurements=await Promise.all(models.map((model)=>measureModel(model,text,images)));
       if(sequence!==calculationSequence)return;
       const words=text.trim().match(/\S+/g)?.length??0;
       renderMeasurementDashboard(measurements,words,text.length,assets.length);
-      setLiveStatus('Live');
+      setLiveStatus(t.live);
       void renderTokenInspection();
     }
 
     $<HTMLInputElement>('#asset-input').addEventListener('change',(event)=>{const input=event.target as HTMLInputElement;if(input.files)addFiles(input.files);input.value='';});
     textarea.addEventListener('paste',()=>{revealAfterCalculation=true;});
-    textarea.addEventListener('input',()=>{setError();void calculate().catch((error)=>{setError(error instanceof Error?error.message:'Calculation failed.');setLiveStatus('Unavailable');});});
+    textarea.addEventListener('input',()=>{setError();void calculate().catch((error)=>{setError(error instanceof Error?error.message:t.calcFailed);setLiveStatus(t.unavailable);});});
     $('#token-toggle').addEventListener('click',async()=>{
       inspectionVisible=!inspectionVisible;
-      const toggle=$<HTMLButtonElement>('#token-toggle'); toggle.setAttribute('aria-pressed',String(inspectionVisible)); toggle.textContent=inspectionVisible?'Hide tokens':'Show tokens';
+      const toggle=$<HTMLButtonElement>('#token-toggle'); toggle.setAttribute('aria-pressed',String(inspectionVisible)); toggle.textContent=inspectionVisible?t.hide:t.show;
       textarea.classList.toggle('hidden',inspectionVisible); const inspector=$('#token-inspector'); inspector.classList.toggle('hidden',!inspectionVisible); inspector.classList.toggle('flex',inspectionVisible);
       await renderTokenInspection();
     });
@@ -340,14 +343,14 @@ const visibleProviders = [...new Set(visibleModels.map((model) => model.provider
     $('#copy-breakdown').addEventListener('click',async()=>{
       const rows=currentMeasurements.map((item)=>`| ${PROVIDERS[item.model.provider].name} | ${item.model.name} | ${item.tokens.toLocaleString()} | ${formatCost(item.cost)} |`);
       const markdown=['| Provider | Model | Input tokens | Input cost |','|---|---|---:|---:|',...rows].join('\n');
-      try { await navigator.clipboard.writeText(markdown); const button=$<HTMLButtonElement>('#copy-breakdown');button.textContent='Copied';setTimeout(()=>button.textContent='Copy Markdown breakdown',1500); }
-      catch { setError('Your browser blocked clipboard access. Allow clipboard permission and try again.'); }
+      try { await navigator.clipboard.writeText(markdown); const button=$<HTMLButtonElement>('#copy-breakdown');button.textContent=t.copied;setTimeout(()=>button.textContent=t.copy,1500); }
+      catch { setError(t.clipboardBlocked); }
     });
     $('#share-calculation').addEventListener('click',async()=>{
       const result=currentMeasurements.find((item)=>item.model.id===$<HTMLSelectElement>('#planner-model').value); if(!result)return;
       const url=new URL(location.href);url.search='';url.searchParams.set('counts',currentMeasurements.map((item)=>`${item.model.id}:${item.tokens}`).join(','));url.searchParams.set('model',result.model.id);url.searchParams.set('output',$<HTMLInputElement>('#output-token-slider').value);url.searchParams.set('requests',$<HTMLInputElement>('#request-slider').value);
-      try { history.replaceState(null,'',url);await navigator.clipboard.writeText(url.href);const button=$<HTMLButtonElement>('#share-calculation');button.textContent='Link copied';setTimeout(()=>button.textContent='Share calculation',1500); }
-      catch { setError('The share link was created, but your browser blocked clipboard access. Copy it from the address bar.'); }
+      try { history.replaceState(null,'',url);await navigator.clipboard.writeText(url.href);const button=$<HTMLButtonElement>('#share-calculation');button.textContent=t.linkCopied;setTimeout(()=>button.textContent=t.share,1500); }
+      catch { setError(t.shareClipboardBlocked); }
     });
 
     void (async()=>{
@@ -361,8 +364,8 @@ const visibleProviders = [...new Set(visibleModels.map((model) => model.provider
       if(selectedModel){activeProvider=selectedModel.provider;calculatorRoot.querySelectorAll<HTMLElement>('[data-provider-card]').forEach((card)=>{const selected=card.dataset.providerCard===activeProvider;card.dataset.active=String(selected);card.setAttribute('aria-pressed',String(selected));});}
       renderMeasurementDashboard(measurements,0,0,0,true);
       if(selectedModel&&$<HTMLSelectElement>('#planner-model').querySelector(`option[value="${CSS.escape(selectedModel.id)}"]`))$<HTMLSelectElement>('#planner-model').value=selectedModel.id;
-      renderPlanner();setLiveStatus('Shared result');
-    })().catch(()=>setError('This shared calculation could not be restored.'));
+      renderPlanner();setLiveStatus(t.sharedResult);
+    })().catch(()=>setError(t.shareRestoreFailed));
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initializeCalculator,{once:true});else initializeCalculator();
 </script>
