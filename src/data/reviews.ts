@@ -6,6 +6,8 @@ export interface UserReview {
   workload: string;
   inputTypes: string[];
   providers: string[];
+  /** Required: Google drops Review markup that carries no reviewRating. */
+  rating: number;
   datePublished: string;
   sourceUrl?: string;
   consentConfirmed: boolean;

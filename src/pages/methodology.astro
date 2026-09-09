@@ -1,7 +1,7 @@
 ---
 import ContentLayout from '../layouts/ContentLayout.astro';
 ---
-<ContentLayout title="Token Counting Methodology | TokenCalculator.dev" description="How TokenCalculator.dev counts and estimates LLM text, document, and image tokens." heading="Methodology">
+<ContentLayout title="Token Counting Methodology | TokenCalculator.dev" description="How TokenCalculator.dev counts LLM text, document, and image tokens: exact local BPE where a tokenizer exists, deterministic byte projection where it does not, and why." heading="Methodology">
   <p>TokenCalculator.dev separates exact counts, provider formulas, and estimates. The accuracy badge beside every result describes which method was used.</p>
   <h2>Text</h2><p>OpenAI content uses the matching local BPE encoding. Claude, Gemini, and DeepSeek use deterministic UTF-8 byte ratios calibrated by provider family. Estimates are useful for planning but the provider response remains the final billing record.</p>
   <h2>Documents</h2><p>Text and source files are read directly. DOCX and text-based PDF files are converted to plain text locally. Scans, layout, embedded images, and OCR are excluded.</p>

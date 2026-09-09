@@ -1,0 +1,10 @@
+# RFC 9116 security contact for TokenCalculator.dev
+# The public API at https://tokencalculator.dev/api/v1 needs no key, so please
+# report abuse or a vulnerability here rather than probing production.
+
+Contact: mailto:hello@tokencalculator.dev
+Contact: https://tokencalculator.dev/contact/
+Expires: 2027-09-09T00:00:00.000Z
+Preferred-Languages: en
+Canonical: https://tokencalculator.dev/.well-known/security.txt
+Policy: https://tokencalculator.dev/terms-of-service/

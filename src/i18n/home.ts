@@ -10,7 +10,7 @@ export interface HomeCopy {
 
 export const homeCopy: Record<Locale, HomeCopy> = {
   en: {
-    title: 'Text, File & Image LLM Token Calculator | TokenCalculator.dev',
+    title: 'LLM Token Calculator & Cost Estimator | TokenCalculator',
     description: 'Count LLM tokens and estimate API cost from text, PDF, DOCX, code, data files, and images with privacy-first browser-based processing.',
     eyebrow: 'Privacy-first · browser-based token calculator', heading: 'Count tokens in text, files, and images.',
     intro: 'Paste a prompt or attach PDF, DOCX, code, data files, and images. Provider results and costs update live without uploading your content.',

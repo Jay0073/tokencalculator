@@ -1,7 +1,80 @@
+# TokenCalculator.dev - all crawlers and AI agents are welcome, including the API.
+#
+# NOTE: Cloudflare may prepend a "Cloudflare Managed content" block above this file
+# that sets "Disallow: /" for the AI training crawlers. That block is a zone setting
+# and cannot be removed from this repository - turn it off under AI Crawl Control in
+# the Cloudflare dashboard. Until then, the explicit per-agent groups below merge with
+# Cloudflare's groups (RFC 9309 section 2.2.1) and an equally specific Allow wins over
+# a Disallow, which keeps at least the API and discovery files reachable.
+
 User-agent: *
+Allow: /
+
+# --- Search and answer-engine indexes (these produce citations) ---
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
 Allow: /
 
 User-agent: OAI-SearchBot
 Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Claude-SearchBot
+Allow: /
+
+User-agent: Applebot
+Allow: /
+
+User-agent: DuckDuckBot
+Allow: /
+
+# --- User-triggered fetchers (these let an agent read a page or call the API on demand) ---
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: Claude-User
+Allow: /
+
+User-agent: Perplexity-User
+Allow: /
+
+User-agent: Meta-ExternalFetcher
+Allow: /
+
+# --- Training and grounding crawlers ---
+User-agent: GPTBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+User-agent: Amazonbot
+Allow: /
+
+User-agent: Bytespider
+Allow: /
+
+User-agent: meta-externalagent
+Allow: /
+
+User-agent: CloudflareBrowserRenderingCrawler
+Allow: /
+
+# The free JSON API needs no key. Base URL: https://tokencalculator.dev/api/v1
+# Machine-readable contract: https://tokencalculator.dev/openapi.json
+# Agent summary: https://tokencalculator.dev/llms.txt
 
 Sitemap: https://tokencalculator.dev/sitemap-index.xml

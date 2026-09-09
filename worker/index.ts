@@ -35,36 +35,77 @@ const MAX_BATCH = 25;
 const MAX_TEXT_BYTES = 200 * 1024;
 const cors = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Methods': 'GET, HEAD, POST, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type, Accept, X-Request-Id',
   'Access-Control-Max-Age': '86400',
 };
 
 const json = (value: unknown, status = 200, extra: Record<string, string> = {}) => new Response(JSON.stringify(value), {
   status,
-  headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': status === 200 ? 'no-store' : 'no-store', ...cors, ...extra },
+  headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', ...cors, ...extra },
 });
 
-const problem = (status: number, title: string, detail: string, requestId: string, errors?: unknown[]) => new Response(JSON.stringify({
-  type: `https://tokencalculator.dev/docs/api/#errors`, title, status, detail, instance: `urn:tokencalculator:request:${requestId}`, ...(errors ? { errors } : {}),
-}), { status, headers: { 'Content-Type': 'application/problem+json; charset=utf-8', 'Cache-Control': 'no-store', ...cors } });
+/**
+ * Stable, per-class error identifiers. RFC 9457 makes `type` the field a client
+ * branches on, so each failure mode needs its own URI rather than one shared anchor.
+ */
+const PROBLEM_TYPES = {
+  invalid_json: 'invalid-json',
+  invalid_request: 'invalid-request',
+  unknown_model: 'unknown-model',
+  validation_failed: 'validation-failed',
+  unsupported_media_type: 'unsupported-media-type',
+  payload_too_large: 'payload-too-large',
+  method_not_allowed: 'method-not-allowed',
+  not_found: 'endpoint-not-found',
+  rate_limited: 'rate-limited',
+} as const;
+type ProblemKind = keyof typeof PROBLEM_TYPES;
+
+const problem = (
+  status: number,
+  kind: ProblemKind,
+  title: string,
+  detail: string,
+  requestId: string,
+  extra: { errors?: unknown[]; headers?: Record<string, string> } = {},
+) => new Response(JSON.stringify({
+  type: `https://tokencalculator.dev/docs/api/#error-${PROBLEM_TYPES[kind]}`,
+  title,
+  status,
+  detail,
+  instance: `urn:tokencalculator:request:${requestId}`,
+  ...(extra.errors?.length ? { errors: extra.errors } : {}),
+}), {
+  status,
+  headers: {
+    'Content-Type': 'application/problem+json; charset=utf-8',
+    'Cache-Control': 'no-store',
+    // Errors carry the same correlation headers as successes, so logging middleware
+    // that harvests X-Request-Id keeps working on exactly the responses that need it.
+    'X-Request-Id': requestId,
+    'X-API-Version': API_VERSION,
+    ...cors,
+    ...(extra.headers ?? {}),
+  },
+});
 
 const finiteNonNegative = (value: unknown, fallback = 0) => typeof value === 'number' && Number.isFinite(value) && value >= 0 ? Math.round(value) : fallback;
 const byteLength = (value: string) => new TextEncoder().encode(value).length;
 
 async function readJson(request: Request, requestId: string): Promise<JsonRecord | Response> {
   const contentType = request.headers.get('content-type') ?? '';
-  if (!contentType.toLowerCase().includes('application/json')) return problem(415, 'Unsupported media type', 'Send a JSON request with Content-Type: application/json.', requestId);
+  if (!contentType.toLowerCase().includes('application/json')) return problem(415, 'unsupported_media_type', 'Unsupported media type', 'Send a JSON request with Content-Type: application/json.', requestId);
   const declared = Number(request.headers.get('content-length') ?? 0);
-  if (declared > MAX_BODY_BYTES) return problem(413, 'Payload too large', `Request bodies are limited to ${MAX_BODY_BYTES} bytes.`, requestId);
+  if (declared > MAX_BODY_BYTES) return problem(413, 'payload_too_large', 'Payload too large', `Request bodies are limited to ${MAX_BODY_BYTES} bytes.`, requestId);
   const raw = await request.text();
-  if (byteLength(raw) > MAX_BODY_BYTES) return problem(413, 'Payload too large', `Request bodies are limited to ${MAX_BODY_BYTES} bytes.`, requestId);
+  if (byteLength(raw) > MAX_BODY_BYTES) return problem(413, 'payload_too_large', 'Payload too large', `Request bodies are limited to ${MAX_BODY_BYTES} bytes.`, requestId);
   try {
     const parsed: unknown = JSON.parse(raw);
-    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return problem(400, 'Invalid request', 'The JSON body must be an object.', requestId);
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return problem(400, 'invalid_request', 'Invalid request', 'The JSON body must be an object.', requestId);
     return parsed as JsonRecord;
   } catch {
-    return problem(400, 'Invalid JSON', 'The request body could not be parsed as JSON.', requestId);
+    return problem(400, 'invalid_json', 'Invalid JSON', 'The request body could not be parsed as JSON.', requestId);
   }
 }
 
@@ -135,19 +176,82 @@ async function measure(request: MeasurementRequest) {
 
 const modelJson = (model: ModelConfig) => ({ id: model.id, name: model.name, provider: model.provider, description: model.description, tokenizer: model.tokenizer, accuracy: model.accuracy, context_window: model.contextWindow, max_output: model.maxOutput, vision: model.vision ?? null, pricing: { input_per_million: model.inputPerMillion, cached_input_per_million: model.cachedInputPerMillion ?? null, output_per_million: model.outputPerMillion, tiers: model.pricingTiers ?? [], currency: 'USD', verified_at: model.verifiedAt, source: model.pricingUrl } });
 
+/** Methods each route answers. Drives both routing and the Allow header on a 405. */
+const ROUTES: Record<string, readonly string[]> = {
+  '/api/v1/health': ['GET', 'HEAD'],
+  '/api/v1/models': ['GET', 'HEAD'],
+  '/api/v1/count': ['POST'],
+  '/api/v1/batch': ['POST'],
+  '/api/v1/compare': ['POST'],
+};
+
+const RATE_LIMIT = 60;
+const RATE_WINDOW_SECONDS = 60;
+/** Catalogue and health are derived from a static build, so they are safely cacheable. */
+const CATALOG_CACHE = `public, max-age=${RATE_WINDOW_SECONDS * 5}, stale-while-revalidate=600`;
+
+/** Weak entity tag over a JSON body, so agents can revalidate instead of re-downloading. */
+async function etagOf(body: string): Promise<string> {
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(body));
+  const hex = [...new Uint8Array(digest).slice(0, 16)].map(b => b.toString(16).padStart(2, '0')).join('');
+  return `"${hex}"`;
+}
+
+/** A cacheable GET/HEAD response with ETag and conditional-request support. */
+async function cacheableJson(value: unknown, request: Request, extra: Record<string, string>): Promise<Response> {
+  const body = JSON.stringify(value);
+  const etag = await etagOf(body);
+  const headers = {
+    'Content-Type': 'application/json; charset=utf-8',
+    'Cache-Control': CATALOG_CACHE,
+    ETag: etag,
+    ...cors,
+    ...extra,
+  };
+  if (request.headers.get('if-none-match') === etag) return new Response(null, { status: 304, headers });
+  // HEAD must return the same headers as GET but no body (RFC 9110).
+  return new Response(request.method === 'HEAD' ? null : body, { status: 200, headers });
+}
+
 async function api(request: Request, env: Env): Promise<Response> {
   const url = new URL(request.url);
   const requestId = request.headers.get('x-request-id')?.slice(0, 96) || request.headers.get('cf-ray') || crypto.randomUUID();
   if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors });
+
+  const allowed = ROUTES[url.pathname];
+  // Resolve the path before the method, so an unknown path is a 404 for every verb
+  // instead of a misleading "wrong method" answer.
+  if (!allowed) {
+    return problem(404, 'not_found', 'Endpoint not found', `No API route matches ${url.pathname}. See https://tokencalculator.dev/docs/api/ for available endpoints.`, requestId);
+  }
+  if (!allowed.includes(request.method)) {
+    return problem(405, 'method_not_allowed', 'Method not allowed', `${url.pathname} accepts ${allowed.join(', ')}.`, requestId, {
+      headers: { Allow: allowed.join(', ') },
+    });
+  }
+
   const clientKey = request.headers.get('cf-connecting-ip') ?? 'local';
   if (env.PUBLIC_API_RATE_LIMITER) {
     const rate = await env.PUBLIC_API_RATE_LIMITER.limit({ key: `${clientKey}:${url.pathname}` });
-    if (!rate.success) return problem(429, 'Rate limit exceeded', 'The free API permits 60 requests per minute per route and edge location. Retry after 60 seconds.', requestId);
+    if (!rate.success) {
+      return problem(429, 'rate_limited', 'Rate limit exceeded', `The free API permits ${RATE_LIMIT} requests per minute, per client, per route. Retry after ${RATE_WINDOW_SECONDS} seconds.`, requestId, {
+        headers: {
+          // Machine-readable wait signal. Standard retry middleware reads these; the
+          // English sentence in `detail` alone is not actionable.
+          'Retry-After': String(RATE_WINDOW_SECONDS),
+          'RateLimit-Limit': String(RATE_LIMIT),
+          'RateLimit-Remaining': '0',
+          'RateLimit-Reset': String(RATE_WINDOW_SECONDS),
+          'RateLimit-Policy': `${RATE_LIMIT};w=${RATE_WINDOW_SECONDS}`,
+        },
+      });
+    }
   }
-  const headers = { 'X-Request-Id': requestId, 'X-API-Version': API_VERSION };
-  if (request.method === 'GET' && url.pathname === '/api/v1/health') return json({ object: 'health', status: 'ok', version: API_VERSION }, 200, headers);
-  if (request.method === 'GET' && url.pathname === '/api/v1/models') return json({ object: 'list', data: MODELS.map(modelJson) }, 200, headers);
-  if (request.method !== 'POST') return problem(405, 'Method not allowed', 'Use GET for model discovery or POST for measurements.', requestId);
+
+  const headers = { 'X-Request-Id': requestId, 'X-API-Version': API_VERSION, 'RateLimit-Limit': String(RATE_LIMIT), 'RateLimit-Policy': `${RATE_LIMIT};w=${RATE_WINDOW_SECONDS}` };
+  if (url.pathname === '/api/v1/health') return cacheableJson({ object: 'health', status: 'ok', version: API_VERSION }, request, headers);
+  if (url.pathname === '/api/v1/models') return cacheableJson({ object: 'list', data: MODELS.map(modelJson) }, request, headers);
+
   const body = await readJson(request, requestId);
   if (body instanceof Response) return body;
   try {
@@ -156,7 +260,15 @@ async function api(request: Request, env: Env): Promise<Response> {
       const requests = body.requests;
       if (!Array.isArray(requests) || !requests.length) throw new TypeError('requests must be a non-empty array.');
       if (requests.length > MAX_BATCH) throw new RangeError(`A batch is limited to ${MAX_BATCH} measurements.`);
-      const data = await Promise.all(requests.map(async (item, index) => ({ index, ...(await measure(assertMeasurement(item))) })));
+      const data = await Promise.all(requests.map(async (item, index) => {
+        try {
+          return { index, ...(await measure(assertMeasurement(item))) };
+        } catch (error) {
+          // Attribute the failure to its position so the caller can fix one entry
+          // instead of guessing which of 25 requests was wrong.
+          throw new BatchItemError(index, error);
+        }
+      }));
       return json({ object: 'list', request_id: requestId, data }, 200, headers);
     }
     if (url.pathname === '/api/v1/compare') {
@@ -167,17 +279,33 @@ async function api(request: Request, env: Env): Promise<Response> {
       const data = await Promise.all(modelIds.map(model => measure(assertMeasurement({ ...(base as object), model }))));
       return json({ object: 'comparison', request_id: requestId, data }, 200, headers);
     }
-    return problem(404, 'Endpoint not found', 'See /docs/api/ for available API endpoints.', requestId);
+    return problem(404, 'not_found', 'Endpoint not found', 'See https://tokencalculator.dev/docs/api/ for available endpoints.', requestId);
   } catch (error) {
-    const detail = error instanceof Error ? error.message : 'The request is invalid.';
-    return problem(error instanceof RangeError ? 422 : 400, 'Validation failed', detail, requestId);
+    const cause = error instanceof BatchItemError ? error.cause : error;
+    const detail = cause instanceof Error ? cause.message : 'The request is invalid.';
+    const errors = error instanceof BatchItemError ? [{ index: error.index, detail }] : undefined;
+    // An unknown model id is a caller mistake, not a recoverable range condition.
+    const unknownModel = cause instanceof RangeError && /^Unknown model:/.test(detail);
+    if (unknownModel) {
+      return problem(400, 'unknown_model', 'Unknown model', `${detail} Call GET /api/v1/models for the supported list.`, requestId, { errors });
+    }
+    return problem(cause instanceof RangeError ? 422 : 400, 'validation_failed', 'Validation failed', detail, requestId, { errors });
+  }
+}
+
+/** Wraps a batch item failure with its index so the error can name the offending entry. */
+class BatchItemError extends Error {
+  constructor(readonly index: number, readonly cause: unknown) {
+    super('Batch item failed');
   }
 }
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
-    if (url.pathname.startsWith('/api/')) return api(request, env);
+    // Match the bare /api too. Agents routinely trim the trailing slash, and letting
+    // that fall through to the static handler returns an HTML page where JSON is expected.
+    if (url.pathname === '/api' || url.pathname.startsWith('/api/')) return api(request, env);
     return env.ASSETS.fetch(request);
   },
 };

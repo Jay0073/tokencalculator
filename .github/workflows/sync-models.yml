@@ -1,0 +1,117 @@
+name: Sync model catalogue
+
+# Keeps the published model list current without anyone remembering to do it.
+# The job only ever regenerates from models.dev - it never writes a price by hand,
+# and no language model is involved in producing the numbers.
+#
+# It opens a pull request rather than pushing to master on purpose: a bad upstream
+# change should be reviewable before it reaches the live pricing tables.
+
+on:
+  schedule:
+    # 06:00 UTC every Monday.
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+    inputs:
+      autoMerge:
+        description: 'Commit straight to master instead of opening a pull request'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: sync-models
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    name: Regenerate from models.dev
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Regenerate catalogue
+        id: sync
+        run: |
+          npm run sync:models | tee sync-report.txt
+          {
+            echo 'report<<REPORT_EOF'
+            cat sync-report.txt
+            echo 'REPORT_EOF'
+          } >> "$GITHUB_OUTPUT"
+
+      # The script stamps verifiedAt with today's date on every run, so a plain git diff
+      # is always dirty. MATERIAL_CHANGE reports whether a rate, context window or the
+      # model list actually moved, which is the only thing worth a pull request.
+      - name: Detect changes
+        id: diff
+        run: |
+          if grep -q '^MATERIAL_CHANGE=yes$' sync-report.txt; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            git --no-pager diff --stat -- src/data/models.ts packages public/llms.txt scripts/models.snapshot.json
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "No material catalogue change; only the verification date moved."
+            git checkout -- . || true
+          fi
+
+      # Verify before proposing. A generated catalogue that fails typecheck or the
+      # catalogue invariants must never reach a reviewer as "ready to merge".
+      - name: Type-check and test
+        if: steps.diff.outputs.changed == 'true'
+        run: |
+          npm run build:core
+          npm test
+          npm run check
+
+      - name: Open pull request
+        if: steps.diff.outputs.changed == 'true' && inputs.autoMerge != true
+        uses: peter-evans/create-pull-request@v6
+        with:
+          add-paths: |
+            src/data/models.ts
+            packages
+            public/llms.txt
+            scripts/models.snapshot.json
+          branch: automation/model-catalogue
+          delete-branch: true
+          commit-message: 'chore: sync model catalogue from models.dev'
+          title: 'chore: sync model catalogue from models.dev'
+          labels: automated, models
+          body: |
+            Automated regeneration from [models.dev](https://models.dev/api.json).
+
+            Every rate in this diff comes from that feed. Nothing was written by hand
+            and no language model produced these numbers.
+
+            ```
+            ${{ steps.sync.outputs.report }}
+            ```
+
+            **Review checklist**
+            - [ ] No price moved by an implausible multiple (a 3x jump usually means an upstream unit change, not a real price cut)
+            - [ ] No well-known model silently disappeared - add it to `pinned` in `scripts/model-policy.json` if so
+            - [ ] Long-context tiers in `overrides` still match the provider's pricing page
+
+      - name: Commit to master
+        if: steps.diff.outputs.changed == 'true' && inputs.autoMerge == true
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          rm -f sync-report.txt
+          git add src/data/models.ts packages public/llms.txt scripts/models.snapshot.json
+          git commit -m 'chore: sync model catalogue from models.dev'
+          git push

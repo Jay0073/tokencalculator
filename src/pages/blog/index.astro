@@ -3,7 +3,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import Breadcrumbs from '../../components/seo/Breadcrumbs.astro';
 import KnowledgeCard from '../../components/knowledge/KnowledgeCard.astro';
 import { blogPosts } from '../../data/knowledge';
-const breadcrumbs=[{label:'Home',href:'/'},{label:'Blog'}];
+const breadcrumbs=[{label:'Token calculator',href:'/'},{label:'Blog'}];
 ---
 <BaseLayout title="LLM Token Engineering Blog | TokenCalculator.dev" description="Primary-source technical guides for measuring text, document, source-code, and image tokens and projecting LLM API cost." {breadcrumbs}>
   <Breadcrumbs items={breadcrumbs}/><section class="knowledge-index shell pt-12">

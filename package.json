@@ -20,7 +20,9 @@
     "pack:n8n": "npm pack --dry-run --workspace @jay0073/n8n-nodes-tokencalculator",
     "build:activepieces": "npm run build --workspace @jay0073/piece-tokencalculator",
     "pack:activepieces": "npm pack --dry-run --workspace @jay0073/piece-tokencalculator",
-    "test:activepieces": "npm test --workspace @jay0073/piece-tokencalculator"
+    "test:activepieces": "npm test --workspace @jay0073/piece-tokencalculator",
+    "sync:models": "node scripts/sync-models.mjs",
+    "sync:models:offline": "node scripts/sync-models.mjs --offline"
   },
   "dependencies": {
     "@astrojs/sitemap": "latest",

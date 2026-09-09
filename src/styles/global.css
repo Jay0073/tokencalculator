@@ -358,3 +358,20 @@ button,select { cursor:pointer; }
 
 ::view-transition-old(root) { z-index: 1; }
 ::view-transition-new(root) { z-index: 9999; }
+
+/* Mobile navigation. The primary nav is lg-and-up only; this is its replacement
+   below that breakpoint, built on <details> so it works without JavaScript. */
+.mobile-menu > summary::-webkit-details-marker { display: none; }
+.mobile-menu[open] > summary { color: var(--text); border-color: var(--line-strong); }
+.mobile-menu-link {
+  display: flex;
+  align-items: center;
+  min-height: 2.25rem;
+  padding: 0 .75rem;
+  border-radius: .5rem;
+  font-size: .875rem;
+  color: var(--text);
+  text-decoration: none;
+}
+.mobile-menu-link:hover,
+.mobile-menu-link:focus-visible { background: var(--panel); color: var(--accent); }

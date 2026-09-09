@@ -1,0 +1,149 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumbs from '../components/seo/Breadcrumbs.astro';
+import FAQ from '../components/seo/FAQ.astro';
+import ProviderLinks from '../components/seo/ProviderLinks.astro';
+import { MODELS } from '../data/models';
+import { PROVIDERS } from '../data/providers';
+
+const breadcrumbs = [{ label: 'Token calculator', href: '/' }, { label: 'Prompt caching cost' }];
+
+/**
+ * A twenty-turn agent loop that resends the same prefix on every turn. This is the
+ * shape where caching matters, and the numbers come from the maintained catalogue
+ * rather than from a provider's marketing percentage.
+ */
+const PREFIX_TOKENS = 100_000;   // System prompt, tool definitions, retrieved context.
+const FRESH_TOKENS = 1_500;      // The new user turn.
+const OUTPUT_TOKENS = 600;
+const TURNS = 20;
+// Providers document a cache write at roughly 1.25x the base input rate for a short
+// time-to-live. Anthropic charges 2x for a one-hour window.
+const WRITE_MULTIPLIER = 1.25;
+
+const rows = MODELS
+  .filter((model) => model.cachedInputPerMillion !== undefined && model.cachedInputPerMillion < model.inputPerMillion)
+  .filter((model) => ['gpt-6-astra', 'claude-fable-5-1', 'gpt-5.6-terra', 'claude-sonnet-5', 'gemini-3.8-flash', 'qwen3.8-max', 'deepseek-v4-flash'].includes(model.id))
+  .map((model) => {
+    const inRate = model.inputPerMillion / 1_000_000;
+    const cacheRate = model.cachedInputPerMillion! / 1_000_000;
+    const outRate = model.outputPerMillion / 1_000_000;
+    const perTurnOutput = OUTPUT_TOKENS * outRate + FRESH_TOKENS * inRate;
+
+    // Without caching every turn pays full input price for the whole prefix.
+    const uncached = TURNS * (PREFIX_TOKENS * inRate) + TURNS * perTurnOutput;
+    // With caching the prefix is written once at a premium, then read at the cached rate.
+    const cached = PREFIX_TOKENS * inRate * WRITE_MULTIPLIER
+      + (TURNS - 1) * (PREFIX_TOKENS * cacheRate)
+      + TURNS * perTurnOutput;
+
+    const discount = 1 - model.cachedInputPerMillion! / model.inputPerMillion;
+    // Reads needed before the write premium is repaid.
+    const breakEven = Math.max(1, Math.ceil((model.inputPerMillion * (WRITE_MULTIPLIER - 1)) / (model.inputPerMillion - model.cachedInputPerMillion!)));
+    return { model, uncached, cached, saved: uncached - cached, share: 1 - cached / uncached, discount, breakEven };
+  })
+  .sort((a, b) => b.share - a.share);
+
+const usd = (value: number) => value < 0.01 ? `$${value.toFixed(4)}` : value < 1 ? `$${value.toFixed(3)}` : `$${value.toFixed(2)}`;
+const best = rows[0];
+const worst = rows[rows.length - 1];
+
+const faq = [
+  { question: 'How much does prompt caching actually save?', answer: 'It depends on the cached-input discount and on how often the prefix is reused. In the twenty-turn agent loop priced on this page the saving ranges from about ' + Math.round(worst.share * 100) + ' to ' + Math.round(best.share * 100) + ' percent of the total bill, depending on the model.' },
+  { question: 'How many times must a prompt be reused before caching pays off?', answer: 'Usually once or twice. A cache write costs roughly 1.25 times the base input rate for a short lifetime, while a read costs a fraction of it, so the premium is repaid almost immediately and every later read is nearly free by comparison.' },
+  { question: 'Do all providers charge for writing to the cache?', answer: 'No. Anthropic charges a write premium, 1.25x for a five-minute lifetime and 2x for one hour. OpenAI caches automatically once a prompt exceeds about 1,024 tokens with no write premium. Google offers implicit caching at a smaller discount, and explicit caching that adds a storage fee per hour.' },
+  { question: 'How do I structure a prompt so it caches well?', answer: 'Put everything static at the top and everything variable at the bottom. Caching matches on a prefix, so a single changing token near the start, such as a timestamp or a user id, invalidates the whole cache for that request.' },
+  { question: 'Does caching change the answer the model gives?', answer: 'No. It changes how the input is billed and how quickly the request is served. The tokens the model sees are identical.' },
+];
+---
+<BaseLayout
+  title="Prompt Caching Cost: Cached vs Uncached Compared"
+  description="A cached prompt prefix bills at a fraction of the fresh input rate. Compare a real twenty-turn agent loop with and without caching across current models."
+  canonical="/prompt-caching-cost/"
+  {breadcrumbs} {faq} application
+>
+  <Breadcrumbs items={breadcrumbs} />
+  <section class="shell max-w-4xl pt-12 sm:pt-16 pb-8 relative z-10">
+    <span class="eyebrow">Request economics</span>
+    <h1 class="m-0 mt-4 text-[clamp(2.25rem,5vw,3.75rem)] leading-[1.02] tracking-[-.055em] max-w-4xl">Prompt caching cost.</h1>
+    <p class="muted text-[16px] sm:text-[17px] mt-4 mb-0 max-w-3xl">
+      Agents resend the same system prompt and context on every turn. Those repeated tokens do not have
+      to bill at the full rate, and on a long loop that difference is most of the invoice.
+    </p>
+  </section>
+
+  <section class="shell mt-8 relative z-10" aria-labelledby="loop-title">
+    <div class="content-heading">
+      <span class="eyebrow">Computed from current rates</span>
+      <h2 id="loop-title" class="section-title mt-3">A {TURNS}-turn agent loop, with and without caching</h2>
+    </div>
+    <p class="muted max-w-3xl mt-4 mb-6">
+      Each turn carries a {PREFIX_TOKENS.toLocaleString()}-token prefix, adds {FRESH_TOKENS.toLocaleString()} new
+      tokens, and returns {OUTPUT_TOKENS} output tokens. Uncached, the prefix is billed at full input price
+      {TURNS} times. Cached, it is written once at a {WRITE_MULTIPLIER}x premium and read {TURNS - 1} times
+      at the cached rate.
+    </p>
+    <div class="table-shell overflow-x-auto">
+      <table class="seo-table">
+        <thead><tr><th>Model</th><th>Provider</th><th>Uncached</th><th>Cached</th><th>Saved</th><th>Cut</th><th>Break-even</th></tr></thead>
+        <tbody>
+          {rows.map((row) => (
+            <tr>
+              <td><strong>{row.model.name}</strong></td>
+              <td>{PROVIDERS[row.model.provider].name}</td>
+              <td>{usd(row.uncached)}</td>
+              <td>{usd(row.cached)}</td>
+              <td>{usd(row.saved)}</td>
+              <td>{Math.round(row.share * 100)}%</td>
+              <td>{row.breakEven} read{row.breakEven === 1 ? '' : 's'}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <p class="text-xs muted mt-4">
+      Rates are USD per 1,000,000 tokens from the maintained catalogue. The write premium is the
+      short-lifetime figure providers currently document; a longer lifetime costs more to write and is
+      only worth it across many more reads.
+    </p>
+  </section>
+
+  <section class="shell mt-16 grid md:grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)] gap-8 md:gap-16 relative z-10">
+    <div><h2 class="section-title m-0">The cached rate, not the headline rate, decides an agent bill</h2></div>
+    <div class="muted">
+      <p>On this workload caching removes {Math.round(best.share * 100)}% of the bill on {best.model.name} and {Math.round(worst.share * 100)}% on {worst.model.name}. The spread comes from the discount each provider offers: {best.model.name} reads cached tokens at {Math.round(best.discount * 100)}% below its fresh rate, {worst.model.name} at {Math.round(worst.discount * 100)}%.</p>
+      <p>This is why two models with an identical headline price can produce very different invoices. A comparison that comes down to input and output rates alone will get an agent workload wrong, because the tokens that repeat are the ones that dominate.</p>
+      <p>The effect grows with prefix size and turn count. A short prompt asked once sees none of it.</p>
+    </div>
+  </section>
+
+  <section class="shell mt-16 grid md:grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)] gap-8 md:gap-16 relative z-10">
+    <div><h2 class="section-title m-0">Providers implement it differently</h2></div>
+    <div class="muted">
+      <p>Anthropic requires you to mark what to cache and charges to write it: 1.25 times the base input rate for a five-minute lifetime, twice for an hour. Reads are heavily discounted. The one-hour option only pays back across a large number of reads.</p>
+      <p>OpenAI caches automatically once a prompt passes roughly 1,024 tokens, with no write premium. You get less control over where the cache boundary falls, and in exchange there is nothing to implement.</p>
+      <p>Google offers implicit caching at a smaller discount, and explicit caching that adds a storage fee charged per hour. That storage fee is unique among the three and makes explicit caching worth it mainly for large, long-lived content such as a code repository or a long video.</p>
+    </div>
+  </section>
+
+  <section class="shell mt-16 grid md:grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)] gap-8 md:gap-16 relative z-10">
+    <div><h2 class="section-title m-0">Put the static part first</h2></div>
+    <div class="muted">
+      <p>Caching matches on a prefix. Everything up to the first difference can be reused; everything after it cannot. So the order of a prompt decides whether caching works at all.</p>
+      <p>Static content at the top: system instructions, tool definitions, few-shot examples, retrieved context that does not change within the session. Variable content at the bottom: the user turn, timestamps, request identifiers.</p>
+      <p>The common failure is a single moving token near the start. A current date injected into the system prompt, or a user id in the first line, invalidates the cache on every request and produces the uncached column of the table above while looking like the cached one in the code.</p>
+    </div>
+  </section>
+
+  <section class="shell mt-16 grid md:grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)] gap-8 md:gap-16 relative z-10">
+    <div><h2 class="section-title m-0">Where caching does not help</h2></div>
+    <div class="muted">
+      <p>One-shot requests over content that differs every time see no benefit, and the write premium makes them marginally more expensive if you cache anyway.</p>
+      <p>Traffic spread thinly across many different documents behaves the same way: each request writes a cache entry that expires before anything reads it. Caching rewards concentration, not volume.</p>
+      <p>If your workload is large single documents rather than repeated prefixes, the lever is architectural instead. <a href="/long-context-vs-rag-cost/" class="text-[var(--accent)]">Compare long context against retrieval →</a></p>
+    </div>
+  </section>
+
+  <ProviderLinks current="/prompt-caching-cost/" limit={4} />
+  <FAQ items={faq} />
+</BaseLayout>

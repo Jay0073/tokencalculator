@@ -4,9 +4,11 @@ import ProviderIcon from './ProviderIcon.astro';
 import UiIcon from './UiIcon.astro';
 import { localeNames, locales, localizedPath, type Locale } from '../../i18n/config';
 import { homeCopy } from '../../i18n/home';
+import { navCopy } from '../../i18n/nav';
 interface Props { locale?: Locale }
 const { locale='en' } = Astro.props;
 const copy=homeCopy[locale];
+const nav=navCopy[locale];
 const currentPath=Astro.url.pathname;
 const hasLocalizedEquivalent=currentPath==='/' || locales.some((item)=>currentPath===`/${item}/`);
 const localeDestination=(item:Locale)=>localizedPath(hasLocalizedEquivalent?currentPath:'/',item);
@@ -17,76 +19,103 @@ const localeDestination=(item:Locale)=>localizedPath(hasLocalizedEquivalent?curr
       <BrandMark size={36}/>
       <span class="font-semibold tracking-[-.04em] text-[17px] sm:text-[18px]">TokenCalculator<span class="text-[var(--accent)]">.dev</span></span>
     </a>
-    <nav class="hidden lg:flex items-center justify-center gap-1" aria-label="Primary navigation">
+    <nav class="hidden lg:flex items-center justify-center gap-1" aria-label={nav.calculators}>
       <details class="mega-menu relative" data-header-menu>
         <summary class="nav-provider cursor-pointer list-none">
-          Calculators
+          {nav.calculators}
           <svg class="mega-chevron" width="13" height="13" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 4.5 3 3 3-3"/></svg>
         </summary>
         <div class="mega-popover fixed left-1/2 top-[80px] z-50 w-[min(680px,calc(100vw-32px))] -translate-x-1/2 overflow-hidden rounded-2xl border hairline bg-[var(--panel-raised)] shadow-[var(--shadow)]">
           <div class="mega-grid">
             <section aria-labelledby="mega-input-title">
-              <p class="mega-label" id="mega-input-title">Input and planning</p>
+              <p class="mega-label" id="mega-input-title">{nav.inputAndPlanning}</p>
               <a class="mega-link" href={localizedPath('/',locale)}>
                 <span class="mega-icon"><UiIcon name="calculator"/></span>
-                <span><strong>Token calculator</strong><small>Count text, PDF, DOCX, source code, data files, and image tokens locally.</small></span>
+                <span><strong>{nav.tokenCalculator}</strong><small>{nav.tokenCalculatorDetail}</small></span>
               </a>
               <a class="mega-link" href="/tokens-to-words-converter/">
                 <span class="mega-icon"><UiIcon name="convert"/></span>
-                <span><strong>Tokens ↔ words</strong><small>Translate context-window sizes into content-aware planning ranges.</small></span>
+                <span><strong>{nav.tokensToWords}</strong><small>{nav.tokensToWordsDetail}</small></span>
               </a>
               <a class="mega-link" href="/estimators/">
                 <span class="mega-icon"><UiIcon name="cost"/></span>
-                <span><strong>Cost Lab</strong><small>Model pricing, batch projections, cache effects, and request economics.</small></span>
+                <span><strong>{nav.costLab}</strong><small>{nav.costLabDetail}</small></span>
               </a>
             </section>
             <section aria-labelledby="mega-provider-title">
-              <p class="mega-label" id="mega-provider-title">Provider calculators</p>
+              <p class="mega-label" id="mega-provider-title">{nav.providerCalculators}</p>
               <a class="mega-link mega-link-compact" href="/openai-token-counter/"><span class="mega-icon"><ProviderIcon provider="openai"/></span><span><strong>OpenAI</strong></span></a>
               <a class="mega-link mega-link-compact" href="/claude-token-counter/"><span class="mega-icon"><ProviderIcon provider="anthropic"/></span><span><strong>Claude</strong></span></a>
               <a class="mega-link mega-link-compact" href="/gemini-token-counter/"><span class="mega-icon"><ProviderIcon provider="google"/></span><span><strong>Gemini</strong></span></a>
               <a class="mega-link mega-link-compact" href="/deepseek-token-counter/"><span class="mega-icon"><ProviderIcon provider="deepseek"/></span><span><strong>DeepSeek</strong></span></a>
             </section>
           </div>
-          <a class="mega-footer-link" href="/estimators/">Open all model and workload cost calculators <span aria-hidden="true">→</span></a>
+          <a class="mega-footer-link" href="/estimators/">{nav.providerCalculatorsDetail} <span aria-hidden="true">→</span></a>
         </div>
       </details>
       <details class="mega-menu relative" data-header-menu>
         <summary class="nav-provider cursor-pointer list-none">
-          Explore
+          {nav.explore}
           <svg class="mega-chevron" width="13" height="13" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 4.5 3 3 3-3"/></svg>
         </summary>
         <div class="mega-popover fixed left-1/2 top-[80px] z-50 w-[min(680px,calc(100vw-32px))] -translate-x-1/2 overflow-hidden rounded-2xl border hairline bg-[var(--panel-raised)] shadow-[var(--shadow)]">
           <div class="mega-grid">
             <section aria-labelledby="mega-learn-title">
-              <p class="mega-label" id="mega-learn-title">Learn and verify</p>
+              <p class="mega-label" id="mega-learn-title">{nav.learnAndVerify}</p>
               <a class="mega-link" href="/docs/">
                 <span class="mega-icon"><UiIcon name="book"/></span>
-                <span><strong>Documentation</strong><small>Technical guides for text, files, images, APIs, and workflow nodes.</small></span>
+                <span><strong>{nav.documentation}</strong><small>{nav.documentationDetail}</small></span>
               </a>
               <a class="mega-link" href="/methodology/">
                 <span class="mega-icon"><UiIcon name="methodology"/></span>
-                <span><strong>Methodology</strong><small>Tokenizer provenance, provider formulas, accuracy levels, and limits.</small></span>
+                <span><strong>{nav.methodology}</strong><small>{nav.methodologyDetail}</small></span>
               </a>
-              <a class="mega-link" href="/docs/privacy-architecture/"><span class="mega-icon"><UiIcon name="shield"/></span><span><strong>Privacy architecture</strong><small>Inspect the browser-local processing boundary and network behavior.</small></span></a>
+              <a class="mega-link" href="/docs/privacy-architecture/"><span class="mega-icon"><UiIcon name="shield"/></span><span><strong>{nav.privacyArchitecture}</strong><small>{nav.privacyArchitectureDetail}</small></span></a>
             </section>
             <section aria-labelledby="mega-company-title">
-              <p class="mega-label" id="mega-company-title">Resources</p>
-              <a class="mega-link mega-link-compact" href="/blog/"><span class="mega-icon"><UiIcon name="blog"/></span><span><strong>Engineering blog</strong></span></a>
-              <a class="mega-link" href="/docs/api/"><span class="mega-icon"><UiIcon name="api" size={20}/></span><span><strong>API reference</strong><small>Request contracts, batch counting, response fields, errors, and SDK usage.</small></span></a>
-              <a class="mega-link mega-link-compact" href="/about/"><span class="mega-icon"><UiIcon name="info"/></span><span><strong>About</strong></span></a>
-              <a class="mega-link mega-link-compact" href="/contact/"><span class="mega-icon"><UiIcon name="mail"/></span><span><strong>Contact</strong></span></a>
+              <p class="mega-label" id="mega-company-title">{nav.resources}</p>
+              <a class="mega-link mega-link-compact" href="/blog/"><span class="mega-icon"><UiIcon name="blog"/></span><span><strong>{nav.engineeringBlog}</strong></span></a>
+              <a class="mega-link" href="/docs/api/"><span class="mega-icon"><UiIcon name="api" size={20}/></span><span><strong>{nav.apiReference}</strong><small>{nav.apiReferenceDetail}</small></span></a>
+              <a class="mega-link mega-link-compact" href="/about/"><span class="mega-icon"><UiIcon name="info"/></span><span><strong>{copy.about}</strong></span></a>
+              <a class="mega-link mega-link-compact" href="/contact/"><span class="mega-icon"><UiIcon name="mail"/></span><span><strong>{copy.contact}</strong></span></a>
             </section>
           </div>
         </div>
       </details>
-      <a class="nav-provider" href="/integrations/" aria-current={currentPath==='/integrations/'?'page':undefined}><UiIcon name="plug" size={17}/>Integrations</a>
+      <a class="nav-provider" href="/integrations/" aria-current={currentPath==='/integrations/'?'page':undefined}><UiIcon name="plug" size={17}/>{nav.integrations}</a>
       <a class="nav-provider nav-api" href="/developers/api/" aria-current={currentPath==='/developers/api/'?'page':undefined}>
         <UiIcon name="api" size={19}/>
-        Developers
+        {nav.developers}
       </a>
     </nav>
     <div class="flex items-center justify-end gap-2">
+      {/* Below the lg breakpoint the primary nav is display:none and there was no
+          replacement, so on a phone the calculators, converter and integrations were
+          unreachable from any menu. Plain <details> keeps it crawlable and needs no JS. */}
+      <details class="mobile-menu relative lg:hidden" data-header-menu>
+        <summary class="size-9 grid place-items-center border hairline rounded-full bg-[var(--panel)] text-[var(--muted)] hover:text-[var(--text)] cursor-pointer list-none" aria-label={nav.openMenu}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+        </summary>
+        <nav class="mobile-menu-panel absolute right-0 top-[calc(100%+.55rem)] z-50 w-[268px] max-h-[70vh] overflow-y-auto rounded-xl border hairline bg-[var(--panel-raised)] p-2 shadow-[var(--shadow)]" aria-label={nav.calculators}>
+          <p class="eyebrow px-3 pt-2 pb-1 m-0">{nav.calculators}</p>
+          <a class="mobile-menu-link" href={localizedPath('/',locale)}>{nav.tokenCalculator}</a>
+          <a class="mobile-menu-link" href="/openai-token-counter/">{`OpenAI ${nav.tokenCounterSuffix}`}</a>
+          <a class="mobile-menu-link" href="/claude-token-counter/">{`Claude ${nav.tokenCounterSuffix}`}</a>
+          <a class="mobile-menu-link" href="/gemini-token-counter/">{`Gemini ${nav.tokenCounterSuffix}`}</a>
+          <a class="mobile-menu-link" href="/deepseek-token-counter/">{`DeepSeek ${nav.tokenCounterSuffix}`}</a>
+          <a class="mobile-menu-link" href="/tokens-to-words-converter/">{nav.tokensToWords}</a>
+          <a class="mobile-menu-link" href="/estimators/">{nav.costLab}</a>
+          <p class="eyebrow px-3 pt-3 pb-1 m-0">{nav.learnAndVerify}</p>
+          <a class="mobile-menu-link" href="/docs/">{nav.documentation}</a>
+          <a class="mobile-menu-link" href="/methodology/">{nav.methodology}</a>
+          <a class="mobile-menu-link" href="/docs/privacy-architecture/">{nav.privacyArchitecture}</a>
+          <a class="mobile-menu-link" href="/blog/">{nav.engineeringBlog}</a>
+          <p class="eyebrow px-3 pt-3 pb-1 m-0">{nav.developers}</p>
+          <a class="mobile-menu-link" href="/developers/api/">{nav.freeApi}</a>
+          <a class="mobile-menu-link" href="/docs/api/">{nav.apiReference}</a>
+          <a class="mobile-menu-link" href="/integrations/">{nav.integrations}</a>
+        </nav>
+      </details>
       <span class="privacy-pill hidden xl:inline-flex h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 text-sm font-semibold" title={copy.privacyDetail}>
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 5 6v5c0 4.6 2.8 8 7 10 4.2-2 7-5.4 7-10V6l-7-3Z"/><path d="m9.5 12 1.7 1.7 3.5-3.7"/></svg>
         <span>{copy.privacyFirst}</span>
@@ -111,8 +140,8 @@ const localeDestination=(item:Locale)=>localizedPath(hasLocalizedEquivalent?curr
 <aside id="locale-suggestion" class="hidden fixed z-50 bottom-4 left-4 right-4 sm:left-auto sm:max-w-sm panel rounded-xl p-4 shadow-xl" aria-live="polite">
   <p id="locale-suggestion-text" class="text-sm m-0"></p>
   <div class="flex justify-end gap-2 mt-3">
-    <button id="locale-stay" class="soft-button rounded-full px-4 py-2 text-xs" type="button">Stay in English</button>
-    <a id="locale-switch" class="primary-button rounded-full px-4 py-2 text-xs no-underline" href="/">Switch language</a>
+    <button id="locale-stay" class="soft-button rounded-full px-4 py-2 text-xs" type="button">{nav.stayInEnglish}</button>
+    <a id="locale-switch" class="primary-button rounded-full px-4 py-2 text-xs no-underline" href="/">{nav.switchLanguage}</a>
   </div>
 </aside>
 
@@ -120,10 +149,8 @@ const localeDestination=(item:Locale)=>localizedPath(hasLocalizedEquivalent?curr
   const root = document.documentElement;
   const saved = localStorage.getItem('theme');
   if (saved !== 'dark') root.classList.add('light');
-  document.querySelector('#theme-toggle')?.addEventListener('click', () => {
-    root.classList.toggle('light');
-    localStorage.setItem('theme', root.classList.contains('light') ? 'light' : 'dark');
-  });
+  // The theme button is #theme-transition-toggle and is wired up further down. An
+  // earlier listener here bound to a #theme-toggle element that does not exist.
   const languageMenu = document.querySelector('#language-menu');
   const headerMenus = document.querySelectorAll('[data-header-menu]');
   languageMenu?.querySelectorAll('[data-locale-name]').forEach((link) => {

@@ -8,9 +8,17 @@ type ModelsDevModel = {
 
 type ModelsDevResponse = Partial<Record<ProviderId, { models?: Record<string, ModelsDevModel> }>>;
 
-const MODEL_ALIASES: Partial<Record<string, string>> = {
-  'claude-opus-4.8': 'claude-opus-4-8',
-};
+// Explicit overrides for ids that do not follow the dotted -> dashed convention.
+const MODEL_ALIASES: Partial<Record<string, string>> = {};
+
+// models.dev writes Anthropic versions with dashes ('claude-opus-4-8') while this
+// catalogue uses dots ('claude-opus-4.8'). Try the exact id first, then the dashed
+// form, so every current and future Claude release resolves without a hand-written entry.
+function candidateIds(id: string): string[] {
+  const alias = MODEL_ALIASES[id];
+  const dashed = id.replace(/\./g, '-');
+  return [...new Set([alias, id, dashed].filter(Boolean) as string[])];
+}
 
 export interface PricingSnapshot {
   models: ModelConfig[];
@@ -23,8 +31,10 @@ export async function loadLivePricing(models: ModelConfig[]): Promise<PricingSna
     if (!response.ok) throw new Error(`Models.dev returned ${response.status}`);
     const catalog = await response.json() as ModelsDevResponse;
     const updated = models.map((model) => {
-      const externalId = MODEL_ALIASES[model.id] ?? model.id;
-      const live = catalog[model.provider]?.models?.[externalId];
+      const providerModels = catalog[model.provider]?.models;
+      const live = providerModels
+        ? candidateIds(model.id).map((id) => providerModels[id]).find(Boolean)
+        : undefined;
       if (!live) return model;
       return {
         ...model,

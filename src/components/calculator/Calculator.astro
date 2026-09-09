@@ -143,6 +143,19 @@ const visibleProviders = [...new Set(visibleModels.map((model) => model.provider
       pricingPromise = loadLivePricing(models).then((snapshot) => {
         models = snapshot.models;
         $('#pricing-status').textContent = snapshot.source === 'models.dev' ? 'Live pricing · Models.dev' : 'Bundled pricing · offline fallback';
+        // Keep the server-rendered model table in step with the live rates, so the
+        // static table and the calculator never show two different prices for one model.
+        if (snapshot.source === 'models.dev') {
+          for (const model of snapshot.models) {
+            const escaped = (window.CSS && CSS.escape) ? CSS.escape(model.id) : model.id.replace(/["\\]/g, '\\$&');
+            const put = (attr: string, value: string) => {
+              document.querySelectorAll(`[data-live-${attr}="${escaped}"]`).forEach((cell) => { cell.textContent = value; });
+            };
+            put('input', `$${model.inputPerMillion}`);
+            put('output', `$${model.outputPerMillion}`);
+            put('context', model.contextWindow.toLocaleString());
+          }
+        }
         return snapshot;
       });
       return pricingPromise;

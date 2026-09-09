@@ -1,6 +1,32 @@
-export type ProviderId = 'openai' | 'anthropic' | 'google' | 'deepseek';
+/**
+ * Provider keys match the top-level keys in the models.dev catalogue, so the
+ * generated catalogue can be produced without a translation table.
+ */
+export type ProviderId =
+  | 'openai'
+  | 'anthropic'
+  | 'google'
+  | 'deepseek'
+  | 'alibaba'
+  | 'moonshotai'
+  | 'xai'
+  | 'zai'
+  | 'meta';
+
 export type Accuracy = 'exact' | 'provider-formula' | 'estimated';
-export type TokenizerStrategy = 'o200k_base' | 'cl100k_base' | 'claude-estimate' | 'gemini-estimate' | 'deepseek-estimate';
+
+export type TokenizerStrategy =
+  | 'o200k_base'
+  | 'cl100k_base'
+  | 'claude-estimate'
+  | 'gemini-estimate'
+  | 'deepseek-estimate'
+  | 'qwen-estimate'
+  | 'kimi-estimate'
+  | 'grok-estimate'
+  | 'glm-estimate'
+  | 'llama-estimate';
+
 export type VisionStrategy = 'openai-tiles' | 'claude-patches' | 'gemini-tiles';
 
 export interface PricingTier {
@@ -26,6 +52,8 @@ export interface ModelConfig {
   pricingTiers?: PricingTier[];
   vision?: VisionStrategy;
   pricingUrl: string;
+  /** Upstream launch date, used to sort and to surface how current a model is. */
+  releaseDate?: string;
   verifiedAt: string;
   isDefault?: boolean;
 }
