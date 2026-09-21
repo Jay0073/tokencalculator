@@ -4,6 +4,7 @@ import { MODELS as SITE_MODELS } from '../src/data/models';
 import { MODELS as PIECE_MODELS } from '../packages/activepieces-tokencalculator/src/lib/calculator';
 import { PROVIDERS } from '../src/data/providers';
 import policy from '../scripts/model-policy.json';
+import { COMPARISONS } from '../src/data/comparisons';
 
 /**
  * The catalogue is generated from models.dev by scripts/sync-models.mjs into three
@@ -65,6 +66,27 @@ describe('generated model catalogue', () => {
   it('covers every provider named in the sync policy', () => {
     for (const providerId of Object.keys(policy.providers)) {
       expect(MODELS.some((model) => model.provider === providerId), `no models published for '${providerId}'`).toBe(true);
+    }
+  });
+
+  it('publishes both models of every comparison page', () => {
+    // The site's getModel falls back to the default model for an unknown id, so a
+    // comparison whose model was dropped would quietly show GPT-5.6 Terra instead.
+    for (const page of COMPARISONS) {
+      for (const id of [page.leftId, page.rightId]) {
+        expect(SITE_MODELS.some((model) => model.id === id), `${page.slug} uses unpublished model '${id}'`).toBe(true);
+        expect(policy.pinned, `${page.slug} uses '${id}', which is not pinned`).toContain(id);
+      }
+    }
+  });
+
+  it('applies every sourced price correction and marks it', () => {
+    for (const [id, fix] of Object.entries(policy.corrections as Record<string, { inputPerMillion: number; outputPerMillion: number; source: string }>)) {
+      const model = SITE_MODELS.find((candidate) => candidate.id === id);
+      expect(model, `corrected model '${id}' is not published`).toBeDefined();
+      expect(model!.inputPerMillion, id).toBe(fix.inputPerMillion);
+      expect(model!.outputPerMillion, id).toBe(fix.outputPerMillion);
+      expect(model!.rateSource, id).toBe(fix.source);
     }
   });
 

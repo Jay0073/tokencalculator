@@ -1,0 +1,44 @@
+---
+import ImagePair from '../components/seo/ImagePair.astro';
+---
+<ImagePair
+  slug="gpt-image-2-5-vs-nano-banana-2-cost"
+  leftId="gpt-image-2.5"
+  rightId="nano-banana-2"
+  title="GPT Image 2.5 vs Nano Banana 2: Cost per Image"
+  description="GPT Image 2.5 costs $0.013 to $0.053 per 1K image depending on quality. Nano Banana 2 costs $0.067, or $0.034 in batch. Compare real monthly image cost."
+  crumb="GPT Image 2.5 vs Nano Banana 2"
+  heading="GPT Image 2.5 vs Nano Banana 2 cost."
+  intro="Both bill image output by the token, and both turn that into very different prices per image. GPT Image 2.5 is cheaper per image at standard quality; Nano Banana 2 is the only one of the two with a batch discount."
+  decision="For interactive generation where quality leads, GPT Image 2.5 at medium or high costs less per 1K image than Nano Banana 2. For large offline jobs, Nano Banana 2 through the Batch API is cheaper than GPT Image 2.5 at high quality. Price the tier you will actually ship, not the default."
+  analysis={[
+    {
+      heading: 'At 1K, the quality setting decides which is cheaper',
+      body: [
+        'GPT Image 2.5 bills image output at $30 per million tokens, and its quality setting changes the token count. A 1024×1024 image costs about $0.013 at medium, $0.053 at high, $0.094 at xhigh and $0.21 at max, using the token counts in OpenAI\'s own cost calculator.',
+        'Nano Banana 2 bills $60 per million tokens with a fixed 1,120 tokens for a 1K image: $0.067, whatever the prompt. So GPT Image 2.5 is cheaper up to high quality and more expensive from xhigh upwards.',
+      ],
+    },
+    {
+      heading: 'Batch processing reverses part of the gap',
+      body: [
+        'Google halves Nano Banana 2 prices through its Batch API, to $0.034 per 1K image. That undercuts GPT Image 2.5 at high quality ($0.053) but not at medium ($0.013).',
+        'OpenAI offers no batch pricing for GPT Image 2.5. For catalogue images, overnight asset generation or anything that can wait, the batch option is the largest saving on either side.',
+        'For large images the comparison depends on quality again. GPT Image 2.5 at 3840×2160 costs about $0.10 at high and $0.40 at max. Nano Banana 2 at 4K (4096×4096) costs $0.151, or $0.076 in batch.',
+      ],
+    },
+    {
+      heading: 'Rankings favour GPT Image 2.5',
+      body: [
+        'On the Arena text-to-image leaderboard updated on 7 September 2026, GPT Image 2.5 Sunburst ranked first (1421) and Flare second (1399), both marked preliminary. Nano Banana 2 ranked ninth (1261).',
+        'Leaderboard votes measure preference on general prompts, not your use case. Product photography, text in images and character consistency each favour different models, so test both on your own prompts before committing a budget.',
+      ],
+    },
+  ]}
+  faq={[
+    { question: 'Which is cheaper, GPT Image 2.5 or Nano Banana 2?', answer: 'At standard processing, GPT Image 2.5 is cheaper for a 1K image at medium ($0.013) or high ($0.053) quality than Nano Banana 2 ($0.067). Nano Banana 2 through the Batch API ($0.034) is cheaper than GPT Image 2.5 at high quality.' },
+    { question: 'How much does Nano Banana 2 cost per image?', answer: '$0.045 at 0.5K, $0.067 at 1K, $0.101 at 2K and $0.151 at 4K, from Google\'s published token counts at $60 per million output tokens. The Batch API halves each price.' },
+    { question: 'How much does GPT Image 2.5 cost per image?', answer: 'For 1024×1024: about $0.0059 at low, $0.013 at medium, $0.053 at high, $0.094 at xhigh and $0.21 at max quality. Flare and Sunburst cost the same.' },
+    { question: 'Does GPT Image 2.5 have a batch discount?', answer: 'No. OpenAI\'s batch price list includes GPT Image 2 but not GPT Image 2.5.' },
+  ]}
+/>

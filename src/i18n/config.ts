@@ -2,6 +2,18 @@ export const locales = ['en', 'es', 'ja', 'de', 'pt-BR'] as const;
 export type Locale = (typeof locales)[number];
 export const defaultLocale: Locale = 'en';
 
+/**
+ * Two-letter codes for narrow viewports. The full names run to "Português (Brasil)",
+ * which forces the header control wide enough to unbalance the mobile layout.
+ */
+export const localeShort: Record<Locale, string> = {
+  en: 'EN',
+  es: 'ES',
+  ja: 'JA',
+  de: 'DE',
+  'pt-BR': 'PT',
+};
+
 export const localeNames: Record<Locale, string> = {
   en: 'English',
   es: 'Español',

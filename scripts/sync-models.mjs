@@ -36,6 +36,10 @@ async function loadCatalog() {
 
 const matches = (id, patterns) => patterns.some((pattern) => new RegExp(pattern).test(id));
 
+/** Things a person must act on, printed at the end of every run. */
+const warnings = [];
+const RATE_KEYS = ['inputPerMillion', 'cachedInputPerMillion', 'outputPerMillion'];
+
 /** Mirrors BYTES_PER_TOKEN in the core package, for the flatter Activepieces shape. */
 const BYTES_PER_TOKEN = {
   o200k_base: 4,
@@ -108,6 +112,24 @@ function selectModels(providerId, config, catalog) {
       model[key] = value;
     }
   }
+
+  // Sourced corrections: the rare case where models.dev disagrees with the provider's
+  // own pricing page. Each one names its source, the date it was checked, and the
+  // upstream values it replaced, so it can never silently outlive its reason.
+  for (const model of chosen) {
+    const fix = policy.corrections?.[model.id];
+    if (!fix) continue;
+    const upstreamNow = Object.fromEntries(RATE_KEYS.map((key) => [key, model[key]]));
+    const same = (a, b) => RATE_KEYS.every((key) => (a[key] ?? null) === (b[key] ?? null));
+    if (same(upstreamNow, fix)) {
+      warnings.push(`models.dev now agrees with the correction for '${model.id}'. Remove it from model-policy.json.`);
+    } else if (!same(upstreamNow, fix.upstream)) {
+      warnings.push(`models.dev changed '${model.id}' after the correction was checked on ${fix.checked}. Re-check ${fix.source}.`);
+    }
+    for (const key of RATE_KEYS) if (fix[key] !== undefined) model[key] = fix[key];
+    // The browser refresh reads models.dev too; this field tells it to leave these rates alone.
+    model.rateSource = fix.source;
+  }
   return chosen;
 }
 
@@ -129,6 +151,7 @@ function serialize(model, { accuracyKey = 'textAccuracy', defaultId } = {}) {
     ...(model.pricingTiers ? [`pricingTiers:${JSON.stringify(model.pricingTiers).replace(/"([a-zA-Z]+)":/g, '$1:').replace(/"/g, "'")}`] : []),
     ...(model.vision ? [`vision:'${model.vision}'`] : []),
     `pricingUrl:'${model.pricingUrl}'`,
+    ...(model.rateSource ? [`rateSource:'${model.rateSource}'`] : []),
     `releaseDate:'${model.releaseDate}'`,
     `verifiedAt:'${model.verifiedAt}'`,
     ...(model.id === defaultId ? ['isDefault:true'] : []),
@@ -185,10 +208,13 @@ function main(catalog) {
 
   // Site catalogue: this file is generated end to end.
   const siteBody = selected.map((model) => serialize(model, { defaultId: policy.defaultModel })).join('\n');
+  // Provider-wide billing facts a single rate cannot express, such as time-of-day pricing.
+  const pricingNotes = Object.fromEntries(Object.entries(policy.providers).filter(([, config]) => config.pricingNote).map(([id, config]) => [id, config.pricingNote]));
   writeFileSync(
     path.join(root, 'src/data/models.ts'),
-    `${BANNER}\nimport type { ModelConfig } from '../domain/models';\n\n`
+    `${BANNER}\nimport type { ModelConfig, ProviderId } from '../domain/models';\n\n`
       + `export const MODELS: ModelConfig[] = [\n${siteBody}\n];\n\n`
+      + `export const PRICING_NOTES: Partial<Record<ProviderId, string>> = ${JSON.stringify(pricingNotes, null, 2)};\n\n`
       + `export const DEFAULT_MODEL = MODELS.find((model) => model.isDefault) ?? MODELS[0];\n`
       + `export const getModel = (id: string) => MODELS.find((model) => model.id === id) ?? DEFAULT_MODEL;\n`,
     'utf8',
@@ -253,6 +279,8 @@ function main(catalog) {
     ...selected.map((model) => `| ${model.name} | ${policy.providers[model.provider].label} | ${money(model.inputPerMillion)} | ${money(model.cachedInputPerMillion)} | ${money(model.outputPerMillion)} | ${model.contextWindow.toLocaleString('en-US')} |`),
     '',
     `Models with a long-context tier: ${selected.filter((m) => m.pricingTiers).map((m) => m.name).join(', ') || 'none'}. Above the tier threshold the higher rate applies to the whole request.`,
+    ...Object.entries(pricingNotes).map(([id, note]) => `\n${policy.providers[id].label}: ${note}`),
+    ...selected.filter((m) => m.rateSource).map((m) => `\n${m.name}: models.dev disagreed with the provider, so this rate is taken from the official pricing page (${m.rateSource}), checked ${policy.corrections[m.id].checked}.`),
     '<!-- generated-pricing:end -->',
   ].join('\n');
   const pricingPattern = /<!-- generated-pricing:start -->[\s\S]*?<!-- generated-pricing:end -->/;
@@ -268,6 +296,7 @@ function main(catalog) {
 
   console.log(`\nGenerated ${selected.length} models across ${Object.keys(policy.providers).length} providers:\n${report.join('\n')}\n`);
   console.log(`Snapshot written to scripts/models.snapshot.json`);
+  if (warnings.length) console.log(`\nACTION NEEDED:\n${warnings.map((warning) => `  ! ${warning}`).join('\n')}`);
 }
 
 main(await loadCatalog());

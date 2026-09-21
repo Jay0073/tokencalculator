@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Results redesign v2 - three non-table layouts</title>
+<!--
+  PROTOTYPE ONLY. prototypes/ sits outside src/pages, so Astro never builds it.
+
+  v1 was rejected: a chart, an accordion and a table are what anyone would reach for.
+  These three start from a different question instead of a different shape.
+
+    D  What am I willing to spend?      -> shelves by price band, provider demoted to a badge
+    E  What does my budget buy?         -> reverse the calculation, answer in requests not dollars
+    F  What am I actually being billed? -> an itemised receipt you fix by swapping one line
+
+  MODELS is generated from src/data/models.ts and verified field by field.
+-->
+<style>
+  :root{
+    --font-sans:"Manrope","Segoe UI",system-ui,sans-serif;
+    --font-mono:"IBM Plex Mono","Cascadia Code",ui-monospace,monospace;
+    --bg:#0d0f12; --panel:#14171b; --panel-2:#1b1f24; --panel-raised:#171a1f;
+    --line:#292e35; --line-strong:#3b424c; --text:#f1f3f5; --muted:#9ba3ad; --faint:#68717d;
+    --accent:#45b8d8; --accent-soft:#12343e; --accent-strong:#247c94;
+    --success:#43b581; --warn:#e4a34f; --danger:#ef6464;
+    --shadow:0 16px 50px rgba(0,0,0,.28);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-sans);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+  .shell{max-width:1080px;margin:0 auto;padding:0 16px}
+  .muted{color:var(--muted)} .faint{color:var(--faint)}
+  .mono{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+  .eyebrow{font-family:var(--font-mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint)}
+  h1{font-size:clamp(1.5rem,4vw,2.1rem);letter-spacing:-.04em;margin:.35rem 0 0}
+  header.top{border-bottom:1px solid var(--line);background:var(--panel-raised);padding:20px 0 18px;margin-bottom:22px}
+  .lede{max-width:66ch;color:var(--muted);font-size:13.5px;margin:.55rem 0 0}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+
+  .tabs{display:flex;gap:6px;flex-wrap:wrap;margin:16px 0 4px}
+  .tab{background:var(--panel);border:1px solid var(--line);color:var(--muted);border-radius:999px;padding:8px 15px;font:inherit;font-size:13px;cursor:pointer;text-align:left}
+  .tab[aria-selected=true]{background:var(--accent-soft);border-color:var(--accent-strong);color:var(--text);font-weight:600}
+  .tab b{display:block;font-size:11px;font-weight:500;color:var(--faint);margin-top:1px}
+  .tab[aria-selected=true] b{color:var(--accent)}
+  .variant{display:none} .variant.on{display:block}
+  .why{margin:14px 0 0;padding:12px 14px;border-left:2px solid var(--accent-strong);background:var(--panel-raised);border-radius:0 10px 10px 0;font-size:13px;color:var(--muted)}
+  .why b{color:var(--text)}
+
+  /* ---------- workload controls ---------- */
+  .ctrl{display:flex;flex-wrap:wrap;gap:12px 22px;align-items:center;padding:14px 16px;border-bottom:1px solid var(--line);background:var(--panel-raised)}
+  .ctrl label{display:flex;align-items:center;gap:9px;font-size:12.5px;color:var(--muted);flex:1 1 210px}
+  .ctrl input[type=range]{accent-color:var(--accent);flex:1;min-width:90px}
+  .ctrl .v{font-family:var(--font-mono);font-size:12.5px;color:var(--text);min-width:62px;text-align:right}
+
+  /* ================= D: PRICE SHELVES ================= */
+  .shelves{padding:6px 0 10px}
+  .shelf{border-top:1px solid var(--line)}
+  .shelf:first-child{border-top:0}
+  .shelf-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;padding:14px 16px 9px}
+  .shelf-head .price{font-family:var(--font-mono);font-size:13px;font-weight:600;letter-spacing:-.01em}
+  .shelf-head .count{font-family:var(--font-mono);font-size:10.5px;color:var(--faint)}
+  .shelf-head .verdict{font-size:11.5px;color:var(--muted);margin-left:auto;text-align:right}
+  .shelf-body{display:flex;flex-wrap:wrap;gap:7px;padding:0 16px 15px}
+  .shelf.empty .shelf-body:after{content:"nothing lands here at this workload";color:var(--faint);font-size:12px;font-style:italic}
+
+  .pill{display:inline-flex;align-items:center;gap:8px;background:var(--panel-2);border:1px solid var(--line);
+        border-radius:10px;padding:8px 11px;cursor:pointer;font:inherit;text-align:left;transition:border-color .12s,transform .12s}
+  .pill:hover{border-color:var(--line-strong);transform:translateY(-1px)}
+  .pill[aria-expanded=true]{border-color:var(--accent-strong);background:var(--accent-soft)}
+  .pill .dot{width:8px;height:8px;border-radius:50%;flex:none}
+  .pill .nm{font-size:12.5px;font-weight:600;letter-spacing:-.01em;color:var(--text)}
+  .pill .pc{font-family:var(--font-mono);font-size:11.5px;color:var(--muted);padding-left:2px}
+  .pill.moved{animation:flash .7s ease-out}
+  @keyframes flash{from{border-color:var(--accent);background:var(--accent-soft)}to{}}
+
+  .detail{flex-basis:100%;margin-top:2px;border:1px solid var(--accent-strong);border-radius:12px;background:var(--panel-raised);padding:13px 15px}
+  .detail h4{margin:0;font-size:14px;letter-spacing:-.02em}
+  .detail .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(108px,1fr));gap:10px 16px;margin-top:11px}
+  .detail .grid div{font-size:11.5px;color:var(--faint)}
+  .detail .grid b{display:block;font-family:var(--font-mono);font-size:13px;color:var(--text);font-weight:600;margin-top:2px}
+
+  /* ================= E: BUDGET FIRST ================= */
+  .budget-head{padding:16px;border-bottom:1px solid var(--line);background:var(--panel-raised)}
+  .budget-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .budget-row .cur{font-family:var(--font-mono);font-size:26px;color:var(--faint)}
+  .budget-row input[type=number]{background:var(--panel-2);border:1px solid var(--line-strong);color:var(--text);
+    border-radius:10px;padding:7px 12px;width:126px;font-family:var(--font-mono);font-size:24px;font-weight:600}
+  .budget-row .per{font-size:13px;color:var(--muted)}
+  .presets{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto}
+  .presets button{background:var(--panel-2);border:1px solid var(--line);color:var(--muted);border-radius:999px;padding:5px 11px;font:inherit;font-size:12px;cursor:pointer}
+  .presets button:hover{border-color:var(--line-strong);color:var(--text)}
+
+  .runs{padding:8px 10px 14px}
+  .run{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 14px;align-items:center;
+       padding:11px 8px;border-bottom:1px solid var(--line);position:relative}
+  .run:last-child{border-bottom:0}
+  .run .who{display:flex;align-items:center;gap:9px;min-width:0}
+  .run .who .dot{width:9px;height:9px;border-radius:50%;flex:none}
+  .run .who strong{font-size:13.5px;font-weight:600;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .run .who span{font-size:11px;color:var(--faint);white-space:nowrap}
+  .run .qty{font-family:var(--font-mono);font-size:17px;font-weight:600;text-align:right;white-space:nowrap}
+  .run .qty small{display:block;font-size:10.5px;font-weight:400;color:var(--faint);letter-spacing:.04em}
+  /* the fill is a readable proportion, not a chart axis */
+  .run .fill{grid-column:1/-1;height:3px;border-radius:99px;background:var(--panel-2);overflow:hidden}
+  .run .fill i{display:block;height:100%;border-radius:99px}
+  .run.top .qty{color:var(--success)}
+  .run.thin .qty{color:var(--warn)}
+  .budget-note{padding:12px 16px;border-top:1px solid var(--line);font-size:12.5px;color:var(--muted)}
+  .budget-note b{color:var(--text)}
+
+  /* ================= F: RECEIPT ================= */
+  .receipt-wrap{display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:0}
+  @media(max-width:760px){.receipt-wrap{grid-template-columns:1fr}}
+  .receipt{padding:20px 18px;font-family:var(--font-mono);font-size:12.5px;border-right:1px solid var(--line);background:var(--panel-raised)}
+  @media(max-width:760px){.receipt{border-right:0;border-bottom:1px solid var(--line)}}
+  .receipt .tear{height:1px;background:repeating-linear-gradient(90deg,var(--line) 0 6px,transparent 6px 12px);margin:13px 0}
+  .receipt .r-title{font-family:var(--font-sans);font-size:15px;font-weight:650;letter-spacing:-.02em}
+  .receipt .r-sub{color:var(--faint);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;margin-top:3px}
+  .receipt .line{display:grid;grid-template-columns:1fr auto;gap:2px 10px;margin:9px 0}
+  .receipt .line .lbl{color:var(--muted)}
+  .receipt .line .calc{grid-column:1/-1;color:var(--faint);font-size:10.5px}
+  .receipt .line .amt{text-align:right}
+  .receipt .total{display:flex;justify-content:space-between;align-items:baseline;font-size:15px;font-weight:600;margin-top:4px}
+  .receipt .total .was{font-size:11px;color:var(--faint);text-decoration:line-through;margin-right:8px;font-weight:400}
+  .receipt .foot{color:var(--faint);font-size:10px;margin-top:14px;line-height:1.6}
+
+  .swap{padding:16px}
+  .swap h3{margin:0 0 3px;font-size:14px;letter-spacing:-.02em}
+  .swap p.sub{margin:0 0 13px;font-size:12.5px;color:var(--muted)}
+  .swap-list{display:grid;gap:7px}
+  .swap-item{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:11px;align-items:center;
+    background:var(--panel-2);border:1px solid var(--line);border-radius:11px;padding:10px 13px;cursor:pointer;font:inherit;text-align:left;width:100%}
+  .swap-item:hover{border-color:var(--line-strong)}
+  .swap-item[aria-current=true]{border-color:var(--accent-strong);background:var(--accent-soft)}
+  .swap-item .dot{width:9px;height:9px;border-radius:50%}
+  .swap-item .nm{font-size:13px;font-weight:600;letter-spacing:-.01em}
+  .swap-item .meta{font-size:11px;color:var(--faint);font-family:var(--font-mono)}
+  .swap-item .delta{font-family:var(--font-mono);font-size:13px;font-weight:600;text-align:right;white-space:nowrap}
+  .delta.down{color:var(--success)} .delta.up{color:var(--danger)} .delta.same{color:var(--faint)}
+  .swap-filter{display:flex;gap:6px;flex-wrap:wrap;margin:13px 0 0}
+  .swap-filter button{background:transparent;border:1px solid var(--line);color:var(--muted);border-radius:999px;padding:4px 11px;font:inherit;font-size:11.5px;cursor:pointer}
+  .swap-filter button[aria-pressed=true]{background:var(--accent-soft);border-color:var(--accent-strong);color:var(--text)}
+  .foot{padding:11px 16px;border-top:1px solid var(--line);font-size:11.5px;color:var(--faint)}
+</style>
+</head>
+<body>
+
+<header class="top"><div class="shell">
+  <span class="eyebrow">Prototype v2 · results section</span>
+  <h1>Three layouts that are not a table</h1>
+  <p class="lede">Each one starts from a different question rather than a different shape. Drag the
+    workload controls and watch what each layout does: that behaviour is the point of the design, not
+    the styling. All three use the live 35-model catalogue and real arithmetic.</p>
+</div></header>
+
+<div class="shell">
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" aria-selected="true" data-v="d">D · Price shelves<b>What am I willing to spend?</b></button>
+    <button class="tab" role="tab" aria-selected="false" data-v="e">E · Budget first<b>What does my budget buy?</b></button>
+    <button class="tab" role="tab" aria-selected="false" data-v="f">F · The receipt<b>What am I being billed?</b></button>
+  </div>
+
+  <!-- ============ D ============ -->
+  <section class="variant on" id="v-d">
+    <p class="why"><b>Provider is the wrong top-level grouping.</b> Nobody decides "I want an Anthropic
+      model" before knowing the price. They decide what they are willing to spend. So the shelves are
+      price bands and the provider drops to a coloured dot. <b>Drag the output slider and watch models
+      jump between shelves</b> - that reshuffle is the insight the current design hides, because
+      output-heavy work reorders the market completely. Tap any model to open it in place.</p>
+    <div class="panel" style="margin-top:14px">
+      <div class="ctrl" id="ctrl-d"></div>
+      <div class="shelves" id="shelves-d"></div>
+      <div class="foot" id="foot-d"></div>
+    </div>
+  </section>
+
+  <!-- ============ E ============ -->
+  <section class="variant" id="v-e">
+    <p class="why"><b>Reverse the calculation.</b> A price per call is an abstraction; nobody has an
+      intuition for $0.000124. The question people actually ask is "I have this much a month, how far
+      does it go?" So the input is a budget and the answer is a number of requests. It makes a 20x
+      price gap feel like what it is: 40,000 requests against 800,000.</p>
+    <div class="panel" style="margin-top:14px">
+      <div class="budget-head">
+        <div class="budget-row">
+          <span class="cur">$</span>
+          <input type="number" id="budget" value="50" min="1" step="10" aria-label="Monthly budget">
+          <span class="per">per month, on this workload</span>
+          <span class="presets">
+            <button data-b="10">$10</button><button data-b="50">$50</button>
+            <button data-b="250">$250</button><button data-b="1000">$1,000</button>
+          </span>
+        </div>
+      </div>
+      <div class="ctrl" id="ctrl-e"></div>
+      <div class="runs" id="runs-e"></div>
+      <div class="budget-note" id="note-e"></div>
+    </div>
+  </section>
+
+  <!-- ============ F ============ -->
+  <section class="variant" id="v-f">
+    <p class="why"><b>Show the bill, then let them fix one line.</b> A receipt is a format everyone can
+      already read, and it makes the input-versus-output split obvious without a legend. Comparison
+      happens by substitution rather than scanning: pick an alternative, the receipt re-renders and the
+      old total stays struck through so the change is legible.</p>
+    <div class="panel" style="margin-top:14px">
+      <div class="ctrl" id="ctrl-f"></div>
+      <div class="receipt-wrap">
+        <div class="receipt" id="receipt-f"></div>
+        <div class="swap">
+          <h3>Swap the model</h3>
+          <p class="sub">Same workload, priced on every other model. Sorted by what it saves.</p>
+          <div class="swap-filter" id="filter-f">
+            <button data-f="all" aria-pressed="true">All 35</button>
+            <button data-f="cheaper" aria-pressed="false">Cheaper only</button>
+            <button data-f="exact" aria-pressed="false">Exact counting</button>
+            <button data-f="vision" aria-pressed="false">Accepts images</button>
+          </div>
+          <div class="swap-list" id="swaps-f" style="margin-top:12px"></div>
+        </div>
+      </div>
+      <div class="foot" id="foot-f"></div>
+    </div>
+  </section>
+</div>
+
+<script>
+const MODELS = [{"id":"gpt-6-astra","name":"GPT-6 Astra","provider":"openai","ctx":1050000,"inp":10,"out":50,"cache":1,"acc":"exact","vision":true},{"id":"gpt-5.6-luna","name":"GPT-5.6 Luna","provider":"openai","ctx":1050000,"inp":0.2,"out":1.2,"cache":0.02,"acc":"exact","vision":true},{"id":"gpt-5.6-sol","name":"GPT-5.6 Sol","provider":"openai","ctx":1050000,"inp":4,"out":20,"cache":0.4,"acc":"exact","vision":true},{"id":"gpt-5.6-terra","name":"GPT-5.6 Terra","provider":"openai","ctx":1050000,"inp":2,"out":12,"cache":0.2,"acc":"exact","vision":true},{"id":"claude-fable-5-1","name":"Claude Fable 5.1","provider":"anthropic","ctx":1000000,"inp":10,"out":50,"cache":0.25,"acc":"estimated","vision":true},{"id":"claude-opus-5","name":"Claude Opus 5","provider":"anthropic","ctx":1000000,"inp":5,"out":25,"cache":0.5,"acc":"estimated","vision":true},{"id":"claude-sonnet-5","name":"Claude Sonnet 5","provider":"anthropic","ctx":1000000,"inp":2,"out":10,"cache":0.2,"acc":"estimated","vision":true},{"id":"claude-opus-4-8","name":"Claude Opus 4.8","provider":"anthropic","ctx":1000000,"inp":5,"out":25,"cache":0.5,"acc":"estimated","vision":true},{"id":"claude-haiku-4-5","name":"Claude Haiku 4.5","provider":"anthropic","ctx":200000,"inp":1,"out":5,"cache":0.1,"acc":"estimated","vision":true},{"id":"gemini-3.8-flash","name":"Gemini 3.8 Flash","provider":"google","ctx":1048576,"inp":0.75,"out":3.75,"cache":0.075,"acc":"estimated","vision":true},{"id":"gemini-3.7-flash","name":"Gemini 3.7 Flash","provider":"google","ctx":1048576,"inp":0.75,"out":3.75,"cache":0.075,"acc":"estimated","vision":true},{"id":"gemini-3.5-flash-lite","name":"Gemini 3.5 Flash Lite","provider":"google","ctx":1048576,"inp":0.3,"out":2.5,"cache":0.03,"acc":"estimated","vision":true},{"id":"gemini-3.1-flash-lite","name":"Gemini 3.1 Flash Lite","provider":"google","ctx":1048576,"inp":0.25,"out":1.5,"cache":0.025,"acc":"estimated","vision":true},{"id":"gemini-2.5-pro","name":"Gemini 2.5 Pro","provider":"google","ctx":1048576,"inp":1.25,"out":10,"cache":0.125,"acc":"estimated","vision":true},{"id":"deepseek-v4-pro","name":"DeepSeek V4 Pro","provider":"deepseek","ctx":1000000,"inp":0.435,"out":0.87,"cache":0.003625,"acc":"estimated","vision":false},{"id":"deepseek-v4-flash","name":"DeepSeek V4 Flash","provider":"deepseek","ctx":1000000,"inp":0.14,"out":0.28,"cache":0.0028,"acc":"estimated","vision":false},{"id":"qwen3.8-flash","name":"Qwen3.8 Flash","provider":"alibaba","ctx":1000000,"inp":0.15,"out":0.47,"cache":0.016,"acc":"estimated","vision":false},{"id":"qwen3.8-max","name":"Qwen3.8 Max","provider":"alibaba","ctx":1000000,"inp":2,"out":6,"cache":0.25,"acc":"estimated","vision":false},{"id":"qwen3.7-plus","name":"Qwen3.7 Plus","provider":"alibaba","ctx":1000000,"inp":0.5,"out":3,"cache":0.05,"acc":"estimated","vision":false},{"id":"qwen3.7-max","name":"Qwen3.7 Max","provider":"alibaba","ctx":1000000,"inp":2.5,"out":7.5,"cache":0.5,"acc":"estimated","vision":false},{"id":"qwen3.6-flash","name":"Qwen3.6 Flash","provider":"alibaba","ctx":1000000,"inp":0.1875,"out":1.125,"cache":null,"acc":"estimated","vision":false},{"id":"kimi-k3","name":"Kimi K3","provider":"moonshotai","ctx":1048576,"inp":3,"out":15,"cache":0.3,"acc":"estimated","vision":false},{"id":"kimi-k2.7-code","name":"Kimi K2.7 Code","provider":"moonshotai","ctx":262144,"inp":0.95,"out":4,"cache":0.19,"acc":"estimated","vision":false},{"id":"kimi-k2.6","name":"Kimi K2.6","provider":"moonshotai","ctx":262144,"inp":0.95,"out":4,"cache":0.16,"acc":"estimated","vision":false},{"id":"grok-4.6","name":"Grok 4.6","provider":"xai","ctx":500000,"inp":2,"out":6,"cache":0.5,"acc":"estimated","vision":false},{"id":"grok-4.5","name":"Grok 4.5","provider":"xai","ctx":500000,"inp":2,"out":6,"cache":0.3,"acc":"estimated","vision":false},{"id":"grok-4.3","name":"Grok 4.3","provider":"xai","ctx":1000000,"inp":1.25,"out":2.5,"cache":0.2,"acc":"estimated","vision":false},{"id":"glm-5.3-flash","name":"GLM-5.3-Flash","provider":"zai","ctx":1000000,"inp":0.075,"out":0.25,"cache":0.015,"acc":"estimated","vision":false},{"id":"glm-5.3","name":"GLM-5.3","provider":"zai","ctx":1000000,"inp":1.4,"out":4.4,"cache":0.26,"acc":"estimated","vision":false},{"id":"glm-5.2","name":"GLM-5.2","provider":"zai","ctx":1000000,"inp":1.4,"out":4.4,"cache":0.26,"acc":"estimated","vision":false},{"id":"glm-5.1","name":"GLM-5.1","provider":"zai","ctx":200000,"inp":1.4,"out":4.4,"cache":0.26,"acc":"estimated","vision":false},{"id":"glm-5-turbo","name":"GLM-5-Turbo","provider":"zai","ctx":200000,"inp":1.2,"out":4,"cache":0.24,"acc":"estimated","vision":false},{"id":"muse-spark-1.3","name":"Muse Spark 1.3","provider":"meta","ctx":1048576,"inp":1.25,"out":4.25,"cache":0.15,"acc":"estimated","vision":false},{"id":"muse-spark-1.2","name":"Muse Spark 1.2","provider":"meta","ctx":1048576,"inp":1.25,"out":4.25,"cache":0.15,"acc":"estimated","vision":false},{"id":"muse-spark-1.1","name":"Muse Spark 1.1","provider":"meta","ctx":1048576,"inp":1.25,"out":4.25,"cache":0.15,"acc":"estimated","vision":false}];
+const PROVIDERS = {
+  openai:{name:'OpenAI',color:'#10a37f'}, anthropic:{name:'Anthropic',color:'#d97757'},
+  google:{name:'Google',color:'#4285f4'}, deepseek:{name:'DeepSeek',color:'#5b7cff'},
+  alibaba:{name:'Qwen',color:'#a855f7'},  moonshotai:{name:'Moonshot',color:'#e4a34f'},
+  xai:{name:'xAI',color:'#9ba3ad'},       zai:{name:'Z.ai',color:'#43b581'},
+  meta:{name:'Meta',color:'#0866ff'},
+};
+
+const S = { inTok: 12000, outTok: 800, budget: 50, open: null, model: 'gpt-5.6-terra', prev: null, filter: 'all' };
+
+const cost = m => (S.inTok/1e6)*m.inp + (S.outTok/1e6)*m.out;
+const usd = v => v === 0 ? '$0' : v < 0.0001 ? '$'+v.toFixed(7) : v < 0.01 ? '$'+v.toFixed(5) : v < 1 ? '$'+v.toFixed(4) : '$'+v.toFixed(2);
+const rate = v => v == null ? '—' : '$'+(v < 0.01 ? v.toFixed(4) : v.toFixed(2));
+const big = n => n >= 1e9 ? (n/1e9).toFixed(1)+'B' : n >= 1e6 ? (n/1e6).toFixed(n < 1e7 ? 2 : 1)+'M' : n >= 1e3 ? (n/1e3).toFixed(n < 1e4 ? 1 : 0)+'K' : String(Math.floor(n));
+const ctx = n => n >= 1e6 ? (n/1e6).toFixed(n%1e6 ? 1 : 0)+'M' : Math.round(n/1e3)+'K';
+
+function ctrl(host, id){
+  host.innerHTML = `
+    <label>Input tokens
+      <input type="range" min="500" max="300000" step="500" value="${S.inTok}" data-k="inTok">
+      <span class="v" data-v="inTok">${S.inTok.toLocaleString()}</span></label>
+    <label>Output tokens
+      <input type="range" min="0" max="16000" step="100" value="${S.outTok}" data-k="outTok">
+      <span class="v" data-v="outTok">${S.outTok.toLocaleString()}</span></label>`;
+  host.querySelectorAll('input').forEach(r => r.addEventListener('input', () => {
+    S[r.dataset.k] = +r.value;
+    document.querySelectorAll(`[data-v="${r.dataset.k}"]`).forEach(s => s.textContent = (+r.value).toLocaleString());
+    document.querySelectorAll(`input[data-k="${r.dataset.k}"]`).forEach(o => { o.value = r.value; });
+    render();
+  }));
+}
+
+/* ================= D: price shelves ================= */
+// Bands are absolute cost per call. They stay fixed while the workload changes, which is
+// what makes models visibly migrate between them.
+const BANDS = [
+  { max: 0.002,  label: 'Under $0.002',        verdict: 'Effectively free. Run it on everything.' },
+  { max: 0.005,  label: '$0.002 – $0.005',    verdict: 'Cheap enough to ignore at most volumes.' },
+  { max: 0.02,   label: '$0.005 – $0.02',     verdict: 'Budget this one if you serve real traffic.' },
+  { max: 0.1,    label: '$0.02 – $0.10',      verdict: 'Reserve for work that needs the quality.' },
+  { max: Infinity, label: 'Over $0.10',       verdict: 'Per-call cost you must justify.' },
+];
+let lastBand = {};
+function renderD(){
+  const host = document.getElementById('shelves-d');
+  const priced = MODELS.map(m => ({ ...m, c: cost(m) }));
+  const bandOf = c => BANDS.findIndex(b => c < b.max);
+  host.innerHTML = BANDS.map((b, i) => {
+    const set = priced.filter(m => bandOf(m.c) === i).sort((x,y) => x.c - y.c);
+    return `<div class="shelf${set.length ? '' : ' empty'}">
+      <div class="shelf-head">
+        <span class="price">${b.label}</span>
+        <span class="count">${set.length} model${set.length === 1 ? '' : 's'}</span>
+        <span class="verdict">${b.verdict}</span>
+      </div>
+      <div class="shelf-body">${set.map(m => {
+        const moved = lastBand[m.id] !== undefined && lastBand[m.id] !== i;
+        const open = S.open === m.id;
+        return `<button class="pill${moved ? ' moved' : ''}" data-id="${m.id}" aria-expanded="${open}">
+            <span class="dot" style="background:${PROVIDERS[m.provider].color}"></span>
+            <span class="nm">${m.name}</span><span class="pc">${usd(m.c)}</span>
+          </button>${open ? detailCard(m) : ''}`;
+      }).join('')}</div></div>`;
+  }).join('');
+  priced.forEach(m => { lastBand[m.id] = bandOf(m.c); });
+  host.querySelectorAll('.pill').forEach(p => p.addEventListener('click', () => {
+    S.open = S.open === p.dataset.id ? null : p.dataset.id; renderD();
+  }));
+  const spread = Math.max(...priced.map(m => m.c)) / Math.min(...priced.map(m => m.c));
+  document.getElementById('foot-d').textContent =
+    `35 models · ${spread.toFixed(0)}x between the cheapest and dearest at this workload · bands are cost per call, so models move as you change the shape`;
+}
+function detailCard(m){
+  return `<div class="detail">
+    <h4>${m.name} <span class="faint" style="font-weight:400;font-size:12px">· ${PROVIDERS[m.provider].name}</span></h4>
+    <div class="grid">
+      <div>Input / 1M<b>${rate(m.inp)}</b></div>
+      <div>Output / 1M<b>${rate(m.out)}</b></div>
+      <div>Cached / 1M<b>${rate(m.cache)}</b></div>
+      <div>Context<b>${ctx(m.ctx)}</b></div>
+      <div>Counting<b>${m.acc === 'exact' ? 'Exact' : 'Estimated'}</b></div>
+      <div>Images<b>${m.vision ? 'Yes' : 'No'}</b></div>
+      <div>Cost per call<b style="color:var(--accent)">${usd(cost(m))}</b></div>
+      <div>Context used<b>${(S.inTok/m.ctx*100).toFixed(S.inTok/m.ctx < .01 ? 2 : 1)}%</b></div>
+    </div></div>`;
+}
+
+/* ================= E: budget first ================= */
+function renderE(){
+  const rows = MODELS.map(m => ({ ...m, c: cost(m) }))
+    .map(m => ({ ...m, runs: m.c > 0 ? S.budget / m.c : Infinity }))
+    .sort((a,b) => b.runs - a.runs);
+  const max = rows[0].runs;
+  document.getElementById('runs-e').innerHTML = rows.map((r,i) => `
+    <div class="run ${i < 3 ? 'top' : ''} ${r.runs < max/100 ? 'thin' : ''}">
+      <span class="who"><span class="dot" style="background:${PROVIDERS[r.provider].color}"></span>
+        <strong>${r.name}</strong><span>${PROVIDERS[r.provider].name}</span></span>
+      <span class="qty">${big(r.runs)}<small>requests / month</small></span>
+      <span class="fill"><i style="width:${Math.max(0.4, r.runs/max*100)}%;background:${PROVIDERS[r.provider].color}"></i></span>
+    </div>`).join('');
+  const best = rows[0], worst = rows[rows.length-1];
+  document.getElementById('note-e').innerHTML =
+    `At <b>$${S.budget.toLocaleString()}</b> a month this workload buys <b>${big(best.runs)}</b> requests on ${best.name} `
+    + `and <b>${big(worst.runs)}</b> on ${worst.name} — a <b>${(best.runs/worst.runs).toFixed(0)}x</b> difference in how far the same money goes. `
+    + `That is <b>${big(best.runs/30)}</b> against <b>${big(worst.runs/30)}</b> per day.`;
+}
+
+/* ================= F: receipt ================= */
+function renderF(){
+  const m = MODELS.find(x => x.id === S.model) ?? MODELS[0];
+  const inCost = (S.inTok/1e6)*m.inp, outCost = (S.outTok/1e6)*m.out, total = inCost + outCost;
+  const prev = S.prev ? cost(MODELS.find(x => x.id === S.prev)) : null;
+  document.getElementById('receipt-f').innerHTML = `
+    <div class="r-title">${m.name}</div>
+    <div class="r-sub">${PROVIDERS[m.provider].name} · one request</div>
+    <div class="tear"></div>
+    <div class="line"><span class="lbl">Input tokens</span><span class="amt">${usd(inCost)}</span>
+      <span class="calc">${S.inTok.toLocaleString()} × ${rate(m.inp)} / 1M</span></div>
+    <div class="line"><span class="lbl">Output tokens</span><span class="amt">${usd(outCost)}</span>
+      <span class="calc">${S.outTok.toLocaleString()} × ${rate(m.out)} / 1M</span></div>
+    <div class="tear"></div>
+    <div class="total"><span>Total</span><span>${prev !== null && Math.abs(prev-total) > 1e-12 ? `<span class="was">${usd(prev)}</span>` : ''}${usd(total)}</span></div>
+    <div class="line" style="margin-top:10px"><span class="lbl">× 1,000 / day</span><span class="amt">${usd(total*1000)}</span></div>
+    <div class="line"><span class="lbl">× 30 days</span><span class="amt">${usd(total*30000)}</span></div>
+    <div class="foot">Context ${ctx(m.ctx)} · ${(S.inTok/m.ctx*100).toFixed(2)}% used<br>
+      Counting: ${m.acc === 'exact' ? 'exact local BPE' : 'calibrated projection'}<br>
+      Cached input would bill at ${rate(m.cache)} / 1M</div>`;
+
+  let list = MODELS.filter(x => x.id !== m.id).map(x => ({ ...x, c: cost(x), d: cost(x) - total }));
+  if (S.filter === 'cheaper') list = list.filter(x => x.d < 0);
+  if (S.filter === 'exact')   list = list.filter(x => x.acc === 'exact');
+  if (S.filter === 'vision')  list = list.filter(x => x.vision);
+  list.sort((a,b) => a.c - b.c);
+
+  document.getElementById('swaps-f').innerHTML = list.length ? list.map(x => {
+    const pct = total > 0 ? (x.c/total - 1)*100 : 0;
+    const cls = Math.abs(pct) < 0.5 ? 'same' : pct < 0 ? 'down' : 'up';
+    return `<button class="swap-item" data-id="${x.id}">
+      <span class="dot" style="background:${PROVIDERS[x.provider].color}"></span>
+      <span><span class="nm">${x.name}</span><br><span class="meta">${usd(x.c)} · ${rate(x.inp)} in / ${rate(x.out)} out</span></span>
+      <span class="delta ${cls}">${pct > 0 ? '+' : ''}${Math.abs(pct) < 0.5 ? 'same' : pct.toFixed(0)+'%'}</span></button>`;
+  }).join('') : `<p class="faint" style="font-size:12.5px;margin:4px 2px">No model matches that filter.</p>`;
+
+  document.querySelectorAll('#swaps-f .swap-item').forEach(b => b.addEventListener('click', () => {
+    S.prev = S.model; S.model = b.dataset.id; renderF();
+  }));
+  document.getElementById('foot-f').textContent =
+    `Showing ${list.length} alternative${list.length === 1 ? '' : 's'} · the struck-through total is the model you came from`;
+}
+document.querySelectorAll('#filter-f button').forEach(b => b.addEventListener('click', () => {
+  S.filter = b.dataset.f;
+  document.querySelectorAll('#filter-f button').forEach(o => o.setAttribute('aria-pressed', String(o === b)));
+  renderF();
+}));
+document.getElementById('budget').addEventListener('input', e => { S.budget = Math.max(1, +e.target.value || 1); renderE(); });
+document.querySelectorAll('.presets button').forEach(b => b.addEventListener('click', () => {
+  S.budget = +b.dataset.b; document.getElementById('budget').value = S.budget; renderE();
+}));
+
+function render(){ renderD(); renderE(); renderF(); }
+['ctrl-d','ctrl-e','ctrl-f'].forEach(id => ctrl(document.getElementById(id), id));
+render();
+
+document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => {
+  document.querySelectorAll('.tab').forEach(o => o.setAttribute('aria-selected', String(o === t)));
+  document.querySelectorAll('.variant').forEach(v => v.classList.toggle('on', v.id === 'v-' + t.dataset.v));
+}));
+</script>
+</body>
+</html>

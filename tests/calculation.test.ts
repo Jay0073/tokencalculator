@@ -37,7 +37,7 @@ describe('pricing and context', () => {
   });
 
   it('marks context overflow', () => {
-    const model = getModel('deepseek-v4-flash');
+    const model = getModel('deepseek-flash');
     expect(calculateResult(1_000_001, model, 'estimated', 'test').overContext).toBe(true);
   });
 

@@ -183,4 +183,48 @@ export const DIRECTORY_BADGES = [
     width: 195,
     height: 42,
   },
+  {
+    name: 'SimilarLabs',
+    href: 'https://similarlabs.com',
+    src: 'https://similarlabs.com/similarlabs-embed-badge-light.svg',
+    alt: 'Featured on SimilarLabs',
+    width: 127,
+    height: 43,
+  },
+  {
+    // Supplied as inline SVG that loads its logo from indie.deals. An <img> cannot load
+    // external files from inside an SVG, so the same badge is kept locally with the
+    // logo embedded. The link and its ref parameter are exactly as supplied.
+    name: 'Indie.Deals',
+    href: 'https://indie.deals?ref=https%3A%2F%2Ftokencalculator.dev%2F',
+    src: '/badges/indie-deals.svg',
+    alt: 'Find us on Indie.Deals',
+    width: 180,
+    height: 60,
+  },
+  {
+    name: 'Startup Inspire',
+    href: 'https://www.startupinspire.com',
+    src: 'https://www.startupinspire.com/images/badge_3.svg',
+    alt: 'Featured on Startup Inspire',
+    width: 149,
+    height: 43,
+  },
+  {
+    // Supplied at height 55 with automatic width; the SVG is 300x80.
+    name: 'StartupBase',
+    href: 'https://startupbase.io/products/tokencalculator-dev?utm_source=startupbase&utm_medium=badge&utm_campaign=featured-badge-neutral',
+    src: 'https://statics.startupbase.io/site/badges/featured-on-sb-neutral.svg',
+    alt: 'Featured on StartupBase',
+    width: 206,
+    height: 55,
+  },
+  {
+    name: 'Huzzler',
+    href: 'https://huzzler.so/products/Us68WDYnXK/tokencalculatordev?utm_source=huzzler_product_website&utm_medium=badge&utm_campaign=free_listing',
+    src: 'https://huzzler.so/assets/images/embeddable-badges/featured.png',
+    alt: 'Huzzler Embed Badge',
+    width: 159,
+    height: 55,
+  },
 ];

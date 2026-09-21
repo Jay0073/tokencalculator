@@ -11,7 +11,7 @@ export const inputProperties = {
 
 export const modelProperty = Property.StaticDropdown<string>({ displayName: 'Model', required: true, defaultValue: 'gpt-5.6-terra', options: { options: modelOptions } });
 
-export const modelsProperty = Property.StaticMultiSelectDropdown<string>({ displayName: 'Models', description: 'Models to include in the comparison.', required: true, defaultValue: ['gpt-5.6-terra', 'claude-sonnet-5', 'gemini-3.1-flash-lite', 'deepseek-v4-flash'], options: { options: modelOptions } });
+export const modelsProperty = Property.StaticMultiSelectDropdown<string>({ displayName: 'Models', description: 'Models to include in the comparison.', required: true, defaultValue: ['gpt-5.6-terra', 'claude-sonnet-5', 'gemini-3.1-flash-lite', 'deepseek-flash'], options: { options: modelOptions } });
 
 export const outputTokensProperty = Property.Number({ displayName: 'Expected Output Tokens', description: 'Expected generated tokens used for the cost estimate.', required: false, defaultValue: 0 });
 

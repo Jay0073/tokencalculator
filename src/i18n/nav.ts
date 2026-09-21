@@ -29,6 +29,9 @@ export interface NavCopy {
   apiReference: string;
   apiReferenceDetail: string;
   integrations: string;
+  compare: string;
+  compareModels: string;
+  compareModelsDetail: string;
   developers: string;
   freeApi: string;
   tokenCounterSuffix: string;
@@ -65,6 +68,9 @@ export const navCopy: Record<Locale, NavCopy> = {
     apiReference: 'API reference',
     apiReferenceDetail: 'Request contracts, batch counting, response fields, errors, and SDK usage.',
     integrations: 'Integrations',
+    compare: 'Compare',
+    compareModels: 'Compare models',
+    compareModelsDetail: 'Side-by-side API cost for GPT, Claude, Gemini, DeepSeek and more.',
     developers: 'Developers',
     freeApi: 'Free API',
     tokenCounterSuffix: 'token counter',
@@ -99,6 +105,9 @@ export const navCopy: Record<Locale, NavCopy> = {
     apiReference: 'Referencia de la API',
     apiReferenceDetail: 'Contratos de solicitud, conteo por lotes, campos de respuesta, errores y uso del SDK.',
     integrations: 'Integraciones',
+    compare: 'Comparar',
+    compareModels: 'Comparar modelos',
+    compareModelsDetail: 'Coste de API lado a lado para GPT, Claude, Gemini, DeepSeek y más.',
     developers: 'Desarrolladores',
     freeApi: 'API gratuita',
     tokenCounterSuffix: 'contador de tokens',
@@ -133,6 +142,9 @@ export const navCopy: Record<Locale, NavCopy> = {
     apiReference: 'APIリファレンス',
     apiReferenceDetail: 'リクエスト仕様、バッチ計算、レスポンス項目、エラー、SDKの使い方。',
     integrations: '連携',
+    compare: '比較',
+    compareModels: 'モデルを比較',
+    compareModelsDetail: 'GPT、Claude、Gemini、DeepSeek などの API コストを並べて比較。',
     developers: '開発者向け',
     freeApi: '無料API',
     tokenCounterSuffix: 'トークンカウンター',
@@ -167,6 +179,9 @@ export const navCopy: Record<Locale, NavCopy> = {
     apiReference: 'API-Referenz',
     apiReferenceDetail: 'Anfrageverträge, Batch-Zählung, Antwortfelder, Fehler und SDK-Nutzung.',
     integrations: 'Integrationen',
+    compare: 'Vergleichen',
+    compareModels: 'Modelle vergleichen',
+    compareModelsDetail: 'API-Kosten von GPT, Claude, Gemini, DeepSeek und mehr im direkten Vergleich.',
     developers: 'Entwickler',
     freeApi: 'Kostenlose API',
     tokenCounterSuffix: 'Token-Zähler',
@@ -201,6 +216,9 @@ export const navCopy: Record<Locale, NavCopy> = {
     apiReference: 'Referência da API',
     apiReferenceDetail: 'Contratos de requisição, contagem em lote, campos de resposta, erros e uso do SDK.',
     integrations: 'Integrações',
+    compare: 'Comparar',
+    compareModels: 'Comparar modelos',
+    compareModelsDetail: 'Custo de API lado a lado para GPT, Claude, Gemini, DeepSeek e outros.',
     developers: 'Desenvolvedores',
     freeApi: 'API gratuita',
     tokenCounterSuffix: 'contador de tokens',

@@ -35,7 +35,9 @@ export async function loadLivePricing(models: ModelConfig[]): Promise<PricingSna
       const live = providerModels
         ? candidateIds(model.id).map((id) => providerModels[id]).find(Boolean)
         : undefined;
-      if (!live) return model;
+      // A corrected model carries the provider's official rate because models.dev is
+      // wrong for it. Refreshing from models.dev would put the wrong rate straight back.
+      if (!live || model.rateSource) return model;
       return {
         ...model,
         contextWindow: live.limit?.context ?? model.contextWindow,

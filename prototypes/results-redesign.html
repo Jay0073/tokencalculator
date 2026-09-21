@@ -1,0 +1,434 @@
+<!doctype html>
+<html lang="en" class="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Results section redesign - prototype</title>
+<!--
+  PROTOTYPE ONLY. Not part of the build; prototypes/ is outside src/pages so Astro
+  ignores it. Open this file directly in a browser.
+
+  Problem it addresses: with 9 providers and 35 models, the current results section
+  makes you pick a provider card at the top, then scroll to a separate panel to see
+  that provider's models. Provider and model are disconnected, only one provider is
+  visible at a time, and output cost is not shown at all even though it usually
+  dominates the bill.
+
+  Three variants below. Real catalogue data, real arithmetic.
+-->
+<style>
+  :root{
+    --font-sans:"Manrope","Segoe UI",system-ui,sans-serif;
+    --font-mono:"IBM Plex Mono","Cascadia Code",ui-monospace,monospace;
+    --bg:#0d0f12; --panel:#14171b; --panel-2:#1b1f24; --panel-raised:#171a1f;
+    --line:#292e35; --line-strong:#3b424c; --text:#f1f3f5; --muted:#9ba3ad; --faint:#68717d;
+    --accent:#45b8d8; --accent-hover:#69c8e1; --accent-soft:#12343e; --accent-soft-strong:#247c94;
+    --success:#43b581; --warn:#e4a34f; --danger:#ef6464;
+    --shadow:0 16px 50px rgba(0,0,0,.28);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-sans);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+  .shell{max-width:1180px;margin:0 auto;padding:0 20px}
+  .mono{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+  .muted{color:var(--muted)} .faint{color:var(--faint)}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:14px}
+  .eyebrow{font-family:var(--font-mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint)}
+  h1{font-size:clamp(1.6rem,3vw,2.2rem);letter-spacing:-.04em;margin:.4rem 0 0}
+  h2{font-size:1.05rem;letter-spacing:-.02em;margin:0}
+  header.top{border-bottom:1px solid var(--line);padding:22px 0 20px;margin-bottom:26px;background:var(--panel-raised)}
+  .note{max-width:70ch;color:var(--muted);font-size:13.5px;margin:.6rem 0 0}
+
+  /* ---- variant switcher ---- */
+  .tabs{display:flex;gap:6px;flex-wrap:wrap;margin:18px 0 6px}
+  .tab{background:var(--panel);border:1px solid var(--line);color:var(--muted);border-radius:999px;padding:7px 15px;font:inherit;font-size:13px;cursor:pointer}
+  .tab[aria-selected=true]{background:var(--accent-soft);border-color:var(--accent-soft-strong);color:var(--accent-hover);font-weight:600}
+  .variant{display:none} .variant.on{display:block}
+
+  /* ---- shared control bar ---- */
+  .controls{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;padding:14px 16px;border-bottom:1px solid var(--line)}
+  .field{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
+  .field input[type=range]{accent-color:var(--accent);width:150px}
+  .field input[type=number]{background:var(--panel-2);border:1px solid var(--line);color:var(--text);border-radius:7px;padding:5px 8px;width:92px;font-family:var(--font-mono);font-size:12.5px}
+  .val{font-family:var(--font-mono);color:var(--text);font-size:12.5px;min-width:64px;text-align:right}
+
+  /* ---- provider filter chips ---- */
+  .chips{display:flex;gap:7px;flex-wrap:wrap;padding:13px 16px;border-bottom:1px solid var(--line)}
+  .chip{display:inline-flex;align-items:center;gap:7px;background:var(--panel-2);border:1px solid var(--line);color:var(--muted);
+        border-radius:999px;padding:5px 11px 5px 7px;font-size:12.5px;cursor:pointer;font:inherit;font-size:12.5px}
+  .chip[aria-pressed=true]{background:var(--accent-soft);border-color:var(--accent-soft-strong);color:var(--text)}
+  .chip .dot{width:9px;height:9px;border-radius:50%;flex:none}
+  .chip .n{font-family:var(--font-mono);font-size:10.5px;color:var(--faint)}
+
+  /* ---- table ---- */
+  table{width:100%;border-collapse:collapse}
+  thead th{position:sticky;top:0;z-index:3;background:var(--panel-raised);border-bottom:1px solid var(--line);
+           text-align:left;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);
+           font-family:var(--font-mono);font-weight:500;padding:11px 14px;white-space:nowrap;cursor:pointer;user-select:none}
+  thead th.num{text-align:right}
+  thead th[aria-sort]{color:var(--accent)}
+  thead th .arrow{opacity:.5;font-size:9px}
+  td{padding:11px 14px;border-bottom:1px solid var(--line);font-size:13.5px;vertical-align:middle}
+  td.num{text-align:right;font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+  tbody tr:hover{background:var(--panel-2)}
+  tr.best td{background:linear-gradient(90deg,rgba(67,181,129,.10),transparent 60%)}
+
+  /* provider band inside the grouped table */
+  tr.band td{background:var(--panel-2);border-bottom:1px solid var(--line-strong);padding:8px 14px}
+  .band-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .band-row .name{font-weight:650;font-size:12.5px;letter-spacing:-.01em}
+  .band-row .range{font-family:var(--font-mono);font-size:11px;color:var(--muted)}
+  .band-row .sep{color:var(--line-strong)}
+
+  .mname{display:flex;align-items:center;gap:9px}
+  .swatch{width:3px;height:26px;border-radius:2px;flex:none}
+  .mname strong{font-weight:600;font-size:13.5px;letter-spacing:-.01em}
+  .mname .sub{display:block;font-size:10.5px;color:var(--faint);font-family:var(--font-mono);margin-top:1px}
+  .tag{display:inline-block;font-family:var(--font-mono);font-size:9.5px;border:1px solid var(--line-strong);
+       border-radius:999px;padding:1px 6px;color:var(--muted);margin-left:6px;vertical-align:1px}
+  .tag.exact{color:var(--success);border-color:rgba(67,181,129,.4)}
+
+  /* cost bar behind the number */
+  .bar{position:relative;display:block}
+  .bar i{position:absolute;left:0;top:50%;transform:translateY(-50%);height:16px;border-radius:3px;opacity:.16;z-index:0}
+  .bar span{position:relative;z-index:1;padding-left:5px}
+
+  /* context meter */
+  .meter{width:92px;height:5px;background:var(--panel-2);border-radius:99px;overflow:hidden;margin-left:auto}
+  .meter i{display:block;height:100%;border-radius:99px;background:var(--accent)}
+
+  /* ---- variant B: provider lanes ---- */
+  .lanes{display:grid;gap:10px;padding:14px 16px}
+  .lane{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--panel-raised)}
+  .lane summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:minmax(150px,1fr) auto auto auto;
+                gap:14px;align-items:center;padding:13px 15px}
+  .lane summary::-webkit-details-marker{display:none}
+  .lane[open] summary{border-bottom:1px solid var(--line);background:var(--panel-2)}
+  .lane summary:hover{background:var(--panel-2)}
+  .lane .pname{display:flex;align-items:center;gap:9px;font-weight:650;font-size:14px}
+  .lane .cheapest{font-family:var(--font-mono);font-size:11.5px;color:var(--muted);white-space:nowrap}
+  .lane .cheapest b{color:var(--text);font-weight:600}
+  .lane .chev{color:var(--faint);transition:transform .15s}
+  .lane[open] .chev{transform:rotate(180deg)}
+  .lane table{font-size:13px}
+  .lane td{padding:9px 15px}
+  .lane thead th{position:static;background:var(--panel-raised)}
+
+  /* ---- variant C: price map ---- */
+  .map-wrap{display:grid;grid-template-columns:minmax(0,1fr) 250px;gap:0}
+  @media(max-width:820px){.map-wrap{grid-template-columns:1fr}}
+  .map{position:relative;height:420px;margin:22px 18px 46px 58px}
+  .map .axis{position:absolute;background:var(--line)}
+  .map .axis.x{left:0;right:0;bottom:0;height:1px}
+  .map .axis.y{left:0;top:0;bottom:0;width:1px}
+  .map .grid-line{position:absolute;border-left:1px dashed var(--line);top:0;bottom:0;opacity:.5}
+  .map .grid-line.h{border-left:0;border-top:1px dashed var(--line);left:0;right:0;top:auto;opacity:.5}
+  .map .tick{position:absolute;font-family:var(--font-mono);font-size:9.5px;color:var(--faint);white-space:nowrap}
+  .map .tick.x{bottom:-19px;transform:translateX(-50%)}
+  .map .tick.y{left:-50px;transform:translateY(-50%);text-align:right;width:44px}
+  .map .lbl{position:absolute;font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+  .map .lbl.x{bottom:-40px;left:50%;transform:translateX(-50%)}
+  .map .lbl.y{left:-52px;top:50%;transform:rotate(-90deg) translateX(-50%);transform-origin:left center}
+  .pt{position:absolute;width:11px;height:11px;border-radius:50%;transform:translate(-50%,50%);cursor:pointer;
+      border:1.5px solid var(--bg);transition:width .12s,height .12s}
+  .pt:hover,.pt[data-on=true]{width:17px;height:17px;z-index:5}
+  .map-side{border-left:1px solid var(--line);padding:16px}
+  @media(max-width:820px){.map-side{border-left:0;border-top:1px solid var(--line)}}
+  .readout .rname{font-weight:650;font-size:15px;letter-spacing:-.02em}
+  .readout dl{display:grid;grid-template-columns:auto 1fr;gap:6px 12px;margin:14px 0 0;font-size:12.5px}
+  .readout dt{color:var(--faint)} .readout dd{margin:0;font-family:var(--font-mono);text-align:right}
+  .hint{color:var(--faint);font-size:12.5px}
+
+  .foot{padding:12px 16px;border-top:1px solid var(--line);font-size:11.5px;color:var(--faint)}
+  .why{margin:12px 0 0;padding:12px 14px;border-left:2px solid var(--accent-soft-strong);background:var(--panel-raised);
+       border-radius:0 8px 8px 0;font-size:13px;color:var(--muted)}
+  .why b{color:var(--text);font-weight:600}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="shell">
+    <span class="eyebrow">Prototype · results section</span>
+    <h1>Connecting providers and models</h1>
+    <p class="note">
+      Three ways to replace the current "pick a provider card, then scroll to a separate model panel"
+      flow. All three use the live 35-model catalogue and real arithmetic, so the numbers move when you
+      change the workload. Pick one and I will implement it.
+    </p>
+  </div>
+</header>
+
+<div class="shell">
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" aria-selected="true" data-variant="a">A · Grouped matrix</button>
+    <button class="tab" role="tab" aria-selected="false" data-variant="b">B · Provider lanes</button>
+    <button class="tab" role="tab" aria-selected="false" data-variant="c">C · Price map</button>
+  </div>
+
+  <!-- ============================= VARIANT A ============================= -->
+  <section class="variant on" id="v-a">
+    <p class="why"><b>One table, everything visible.</b> Provider becomes a grouping band and a filter,
+      not a separate click-through. Input and output cost sit side by side, each with a bar so the
+      spread is readable without doing arithmetic. Sort by any column to answer "what is cheapest for
+      my shape of workload".</p>
+    <div class="panel" style="margin-top:14px;overflow:hidden">
+      <div class="controls" id="ctrl-a"></div>
+      <div class="chips" id="chips-a"></div>
+      <div style="max-height:620px;overflow:auto">
+        <table id="tbl-a">
+          <thead><tr>
+            <th data-sort="name">Model <span class="arrow">↕</span></th>
+            <th class="num" data-sort="tokens">Input tokens <span class="arrow">↕</span></th>
+            <th class="num" data-sort="inp">Input / 1M <span class="arrow">↕</span></th>
+            <th class="num" data-sort="out">Output / 1M <span class="arrow">↕</span></th>
+            <th class="num" data-sort="total">Cost per call <span class="arrow">↕</span></th>
+            <th class="num" data-sort="ctx">Context used <span class="arrow">↕</span></th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="foot" id="foot-a"></div>
+    </div>
+  </section>
+
+  <!-- ============================= VARIANT B ============================= -->
+  <section class="variant" id="v-b">
+    <p class="why"><b>Provider stays the unit, models come to you.</b> Each provider is a row that
+      expands in place, so nothing is hidden behind a scroll. The collapsed header already answers the
+      common question: how cheap can this provider be, and how many models does it have. Several can be
+      open at once for a direct comparison.</p>
+    <div class="panel" style="margin-top:14px;overflow:hidden">
+      <div class="controls" id="ctrl-b"></div>
+      <div class="lanes" id="lanes-b"></div>
+      <div class="foot" id="foot-b"></div>
+    </div>
+  </section>
+
+  <!-- ============================= VARIANT C ============================= -->
+  <section class="variant" id="v-c">
+    <p class="why"><b>See the whole market at once.</b> Every model plotted by input cost against
+      output cost, both on a log scale because the range spans three orders of magnitude. Cheap models
+      cluster bottom-left, frontier models top-right, and the outliers become obvious. Hover or tap a
+      point for detail. Best used alongside variant A, not instead of it.</p>
+    <div class="panel" style="margin-top:14px;overflow:hidden">
+      <div class="chips" id="chips-c"></div>
+      <div class="map-wrap">
+        <div class="map" id="map-c">
+          <div class="axis x"></div><div class="axis y"></div>
+          <span class="lbl x">Input cost per 1M tokens</span>
+          <span class="lbl y">Output cost per 1M</span>
+        </div>
+        <div class="map-side"><div class="readout" id="readout-c">
+          <p class="hint">Hover a point to inspect a model.</p>
+        </div></div>
+      </div>
+      <div class="foot">Log scale on both axes. Dot colour is the provider.</div>
+    </div>
+  </section>
+</div>
+
+<script>
+const MODELS = [{"id":"gpt-6-astra","name":"GPT-6 Astra","provider":"openai","ctx":1050000,"inp":10,"out":50,"cache":1,"acc":"exact","vision":true},{"id":"gpt-5.6-luna","name":"GPT-5.6 Luna","provider":"openai","ctx":1050000,"inp":0.2,"out":1.2,"cache":0.02,"acc":"exact","vision":true},{"id":"gpt-5.6-sol","name":"GPT-5.6 Sol","provider":"openai","ctx":1050000,"inp":4,"out":20,"cache":0.4,"acc":"exact","vision":true},{"id":"gpt-5.6-terra","name":"GPT-5.6 Terra","provider":"openai","ctx":1050000,"inp":2,"out":12,"cache":0.2,"acc":"exact","vision":true},{"id":"claude-fable-5-1","name":"Claude Fable 5.1","provider":"anthropic","ctx":1000000,"inp":10,"out":50,"cache":0.25,"acc":"estimated","vision":true},{"id":"claude-opus-5","name":"Claude Opus 5","provider":"anthropic","ctx":1000000,"inp":5,"out":25,"cache":0.5,"acc":"estimated","vision":true},{"id":"claude-sonnet-5","name":"Claude Sonnet 5","provider":"anthropic","ctx":1000000,"inp":2,"out":10,"cache":0.2,"acc":"estimated","vision":true},{"id":"claude-opus-4-8","name":"Claude Opus 4.8","provider":"anthropic","ctx":1000000,"inp":5,"out":25,"cache":0.5,"acc":"estimated","vision":true},{"id":"claude-haiku-4-5","name":"Claude Haiku 4.5","provider":"anthropic","ctx":200000,"inp":1,"out":5,"cache":0.1,"acc":"estimated","vision":true},{"id":"gemini-3.8-flash","name":"Gemini 3.8 Flash","provider":"google","ctx":1048576,"inp":0.75,"out":3.75,"cache":0.075,"acc":"estimated","vision":true},{"id":"gemini-3.7-flash","name":"Gemini 3.7 Flash","provider":"google","ctx":1048576,"inp":0.75,"out":3.75,"cache":0.075,"acc":"estimated","vision":true},{"id":"gemini-3.5-flash-lite","name":"Gemini 3.5 Flash Lite","provider":"google","ctx":1048576,"inp":0.3,"out":2.5,"cache":0.03,"acc":"estimated","vision":true},{"id":"gemini-3.1-flash-lite","name":"Gemini 3.1 Flash Lite","provider":"google","ctx":1048576,"inp":0.25,"out":1.5,"cache":0.025,"acc":"estimated","vision":true},{"id":"gemini-2.5-pro","name":"Gemini 2.5 Pro","provider":"google","ctx":1048576,"inp":1.25,"out":10,"cache":0.125,"acc":"estimated","vision":true},{"id":"deepseek-v4-pro","name":"DeepSeek V4 Pro","provider":"deepseek","ctx":1000000,"inp":0.435,"out":0.87,"cache":0.003625,"acc":"estimated","vision":false},{"id":"deepseek-v4-flash","name":"DeepSeek V4 Flash","provider":"deepseek","ctx":1000000,"inp":0.14,"out":0.28,"cache":0.0028,"acc":"estimated","vision":false},{"id":"qwen3.8-flash","name":"Qwen3.8 Flash","provider":"alibaba","ctx":1000000,"inp":0.15,"out":0.47,"cache":0.016,"acc":"estimated","vision":false},{"id":"qwen3.8-max","name":"Qwen3.8 Max","provider":"alibaba","ctx":1000000,"inp":2,"out":6,"cache":0.25,"acc":"estimated","vision":false},{"id":"qwen3.7-plus","name":"Qwen3.7 Plus","provider":"alibaba","ctx":1000000,"inp":0.5,"out":3,"cache":0.05,"acc":"estimated","vision":false},{"id":"qwen3.7-max","name":"Qwen3.7 Max","provider":"alibaba","ctx":1000000,"inp":2.5,"out":7.5,"cache":0.5,"acc":"estimated","vision":false},{"id":"qwen3.6-flash","name":"Qwen3.6 Flash","provider":"alibaba","ctx":1000000,"inp":0.1875,"out":1.125,"cache":null,"acc":"estimated","vision":false},{"id":"kimi-k3","name":"Kimi K3","provider":"moonshotai","ctx":1048576,"inp":3,"out":15,"cache":0.3,"acc":"estimated","vision":false},{"id":"kimi-k2.7-code","name":"Kimi K2.7 Code","provider":"moonshotai","ctx":262144,"inp":0.95,"out":4,"cache":0.19,"acc":"estimated","vision":false},{"id":"kimi-k2.6","name":"Kimi K2.6","provider":"moonshotai","ctx":262144,"inp":0.95,"out":4,"cache":0.16,"acc":"estimated","vision":false},{"id":"grok-4.6","name":"Grok 4.6","provider":"xai","ctx":500000,"inp":2,"out":6,"cache":0.5,"acc":"estimated","vision":false},{"id":"grok-4.5","name":"Grok 4.5","provider":"xai","ctx":500000,"inp":2,"out":6,"cache":0.3,"acc":"estimated","vision":false},{"id":"grok-4.3","name":"Grok 4.3","provider":"xai","ctx":1000000,"inp":1.25,"out":2.5,"cache":0.2,"acc":"estimated","vision":false},{"id":"glm-5.3-flash","name":"GLM-5.3-Flash","provider":"zai","ctx":1000000,"inp":0.075,"out":0.25,"cache":0.015,"acc":"estimated","vision":false},{"id":"glm-5.3","name":"GLM-5.3","provider":"zai","ctx":1000000,"inp":1.4,"out":4.4,"cache":0.26,"acc":"estimated","vision":false},{"id":"glm-5.2","name":"GLM-5.2","provider":"zai","ctx":1000000,"inp":1.4,"out":4.4,"cache":0.26,"acc":"estimated","vision":false},{"id":"glm-5.1","name":"GLM-5.1","provider":"zai","ctx":200000,"inp":1.4,"out":4.4,"cache":0.26,"acc":"estimated","vision":false},{"id":"glm-5-turbo","name":"GLM-5-Turbo","provider":"zai","ctx":200000,"inp":1.2,"out":4,"cache":0.24,"acc":"estimated","vision":false},{"id":"muse-spark-1.3","name":"Muse Spark 1.3","provider":"meta","ctx":1048576,"inp":1.25,"out":4.25,"cache":0.15,"acc":"estimated","vision":false},{"id":"muse-spark-1.2","name":"Muse Spark 1.2","provider":"meta","ctx":1048576,"inp":1.25,"out":4.25,"cache":0.15,"acc":"estimated","vision":false},{"id":"muse-spark-1.1","name":"Muse Spark 1.1","provider":"meta","ctx":1048576,"inp":1.25,"out":4.25,"cache":0.15,"acc":"estimated","vision":false}];
+
+const PROVIDERS = {
+  openai:{name:'OpenAI',color:'#10a37f'}, anthropic:{name:'Anthropic',color:'#d97757'},
+  google:{name:'Google',color:'#4285f4'}, deepseek:{name:'DeepSeek',color:'#5b7cff'},
+  alibaba:{name:'Qwen',color:'#a855f7'},  moonshotai:{name:'Moonshot Kimi',color:'#e4a34f'},
+  xai:{name:'xAI Grok',color:'#9ba3ad'},  zai:{name:'Z.ai GLM',color:'#43b581'},
+  meta:{name:'Meta',color:'#0866ff'},
+};
+const ORDER = Object.keys(PROVIDERS);
+
+/* ---------- shared state ---------- */
+const state = { inputTokens: 12000, outputTokens: 800, active: new Set(ORDER), sort:'total', dir:1 };
+
+const usd = v => v === 0 ? '$0'
+  : v < 0.001 ? '$' + v.toFixed(6)
+  : v < 1     ? '$' + v.toFixed(4)
+  : '$' + v.toFixed(2);
+const perM = v => v == null ? '—' : '$' + (v < 0.01 ? v.toFixed(4) : v < 1 ? v.toFixed(2) : v.toFixed(2));
+const compact = n => n >= 1e6 ? (n/1e6).toFixed(n%1e6?1:0)+'M' : n >= 1e3 ? Math.round(n/1e3)+'K' : String(n);
+
+/** Cost of one call at the current workload. */
+const priceOf = m => (state.inputTokens/1e6)*m.inp + (state.outputTokens/1e6)*m.out;
+const rowsFor = () => MODELS.filter(m => state.active.has(m.provider)).map(m => ({
+  ...m, tokens: state.inputTokens, total: priceOf(m), ctxRatio: state.inputTokens/m.ctx,
+}));
+
+/* ---------- controls ---------- */
+function controlBar(host){
+  host.innerHTML = `
+    <span class="eyebrow">Your workload</span>
+    <label class="field">Input tokens
+      <input type="range" min="500" max="400000" step="500" value="${state.inputTokens}" data-k="inputTokens">
+      <span class="val" data-v="inputTokens">${state.inputTokens.toLocaleString()}</span></label>
+    <label class="field">Output tokens
+      <input type="range" min="0" max="20000" step="100" value="${state.outputTokens}" data-k="outputTokens">
+      <span class="val" data-v="outputTokens">${state.outputTokens.toLocaleString()}</span></label>`;
+  host.querySelectorAll('input[type=range]').forEach(r => r.addEventListener('input', () => {
+    state[r.dataset.k] = +r.value;
+    document.querySelectorAll(`[data-v="${r.dataset.k}"]`).forEach(s => s.textContent = (+r.value).toLocaleString());
+    document.querySelectorAll(`input[data-k="${r.dataset.k}"]`).forEach(o => o.value = r.value);
+    renderAll();
+  }));
+}
+
+/* ---------- provider chips ---------- */
+function chipBar(host){
+  host.innerHTML = ORDER.map(p => {
+    const n = MODELS.filter(m => m.provider === p).length;
+    return `<button class="chip" data-p="${p}" aria-pressed="${state.active.has(p)}">
+      <span class="dot" style="background:${PROVIDERS[p].color}"></span>${PROVIDERS[p].name}<span class="n">${n}</span></button>`;
+  }).join('') + `<button class="chip" data-p="__all" aria-pressed="false" style="margin-left:6px">All / none</button>`;
+  host.querySelectorAll('.chip').forEach(c => c.addEventListener('click', () => {
+    const p = c.dataset.p;
+    if (p === '__all') { state.active = state.active.size === ORDER.length ? new Set() : new Set(ORDER); }
+    else if (state.active.has(p)) state.active.delete(p); else state.active.add(p);
+    renderAll();
+  }));
+}
+
+/* ================= VARIANT A: grouped matrix ================= */
+function renderA(){
+  const rows = rowsFor();
+  const tbody = document.querySelector('#tbl-a tbody');
+  if (!rows.length){ tbody.innerHTML = `<tr><td colspan="6" class="muted" style="padding:26px;text-align:center">No providers selected.</td></tr>`;
+    document.getElementById('foot-a').textContent = ''; return; }
+
+  const maxIn = Math.max(...rows.map(r => r.inp)), maxOut = Math.max(...rows.map(r => r.out));
+  const cheapest = rows.reduce((a,b) => a.total < b.total ? a : b);
+
+  // Grouped by provider unless the user is sorting by a numeric column.
+  const grouped = state.sort === 'name';
+  let html = '';
+  const paint = r => {
+    const c = PROVIDERS[r.provider].color;
+    return `<tr class="${r.id === cheapest.id ? 'best' : ''}">
+      <td><span class="mname"><i class="swatch" style="background:${c}"></i><span>
+        <strong>${r.name}</strong>${r.acc === 'exact' ? '<span class="tag exact">exact</span>' : '<span class="tag">estimated</span>'}
+        <span class="sub">${PROVIDERS[r.provider].name} · ${compact(r.ctx)} ctx${r.vision ? ' · vision' : ''}</span>
+      </span></span></td>
+      <td class="num">${r.tokens.toLocaleString()}</td>
+      <td class="num"><span class="bar"><i style="width:${(r.inp/maxIn*100).toFixed(1)}%;background:${c}"></i><span>${perM(r.inp)}</span></span></td>
+      <td class="num"><span class="bar"><i style="width:${(r.out/maxOut*100).toFixed(1)}%;background:${c}"></i><span>${perM(r.out)}</span></span></td>
+      <td class="num" style="font-weight:600">${usd(r.total)}</td>
+      <td class="num"><span style="display:flex;align-items:center;gap:8px;justify-content:flex-end">
+        <span class="faint" style="font-size:11px">${(r.ctxRatio*100).toFixed(r.ctxRatio < .01 ? 2 : 1)}%</span>
+        <span class="meter"><i style="width:${Math.min(100, r.ctxRatio*100)}%;background:${r.ctxRatio > 1 ? 'var(--danger)' : c}"></i></span>
+      </span></td></tr>`;
+  };
+
+  if (grouped){
+    for (const p of ORDER){
+      const set = rows.filter(r => r.provider === p);
+      if (!set.length) continue;
+      const lo = Math.min(...set.map(s => s.inp)), hi = Math.max(...set.map(s => s.inp));
+      html += `<tr class="band"><td colspan="6"><span class="band-row">
+        <span class="dot" style="width:9px;height:9px;border-radius:50%;background:${PROVIDERS[p].color}"></span>
+        <span class="name">${PROVIDERS[p].name}</span>
+        <span class="sep">·</span><span class="range">${set.length} models</span>
+        <span class="sep">·</span><span class="range">input ${perM(lo)}${lo === hi ? '' : ' – ' + perM(hi)} / 1M</span>
+        <span class="sep">·</span><span class="range">from ${usd(Math.min(...set.map(s => s.total)))} per call</span>
+      </span></td></tr>`;
+      html += set.sort((a,b) => a.total - b.total).map(paint).join('');
+    }
+  } else {
+    html = rows.sort((a,b) => (a[state.sort] - b[state.sort]) * state.dir).map(paint).join('');
+  }
+  tbody.innerHTML = html;
+  document.getElementById('foot-a').textContent =
+    `${rows.length} models across ${new Set(rows.map(r => r.provider)).size} providers · cheapest for this workload: ${cheapest.name} at ${usd(cheapest.total)} per call · `
+    + `${(rows.reduce((a,b) => a.total > b.total ? a : b).total / cheapest.total).toFixed(0)}x spread between cheapest and dearest`;
+}
+document.querySelectorAll('#tbl-a thead th').forEach(th => th.addEventListener('click', () => {
+  const k = th.dataset.sort;
+  state.dir = state.sort === k ? -state.dir : 1; state.sort = k;
+  document.querySelectorAll('#tbl-a thead th').forEach(o => o.removeAttribute('aria-sort'));
+  th.setAttribute('aria-sort', state.dir === 1 ? 'ascending' : 'descending');
+  renderA();
+}));
+
+/* ================= VARIANT B: provider lanes ================= */
+function renderB(){
+  const host = document.getElementById('lanes-b');
+  host.innerHTML = ORDER.map(p => {
+    const set = MODELS.filter(m => m.provider === p).map(m => ({...m, total: priceOf(m)})).sort((a,b) => a.total - b.total);
+    const c = PROVIDERS[p].color, lo = set[0];
+    return `<details class="lane"${p === 'openai' ? ' open' : ''}>
+      <summary>
+        <span class="pname"><span class="dot" style="width:10px;height:10px;border-radius:50%;background:${c}"></span>${PROVIDERS[p].name}</span>
+        <span class="cheapest">${set.length} models</span>
+        <span class="cheapest">from <b>${usd(lo.total)}</b> per call · <b>${lo.name}</b></span>
+        <span class="chev">▾</span>
+      </summary>
+      <table><thead><tr>
+        <th>Model</th><th class="num">Input / 1M</th><th class="num">Output / 1M</th>
+        <th class="num">Cached / 1M</th><th class="num">Context</th><th class="num">Cost per call</th>
+      </tr></thead><tbody>${set.map(m => `<tr>
+        <td><strong style="font-weight:600">${m.name}</strong>${m.acc === 'exact' ? '<span class="tag exact">exact</span>' : ''}</td>
+        <td class="num">${perM(m.inp)}</td><td class="num">${perM(m.out)}</td>
+        <td class="num faint">${perM(m.cache)}</td><td class="num faint">${compact(m.ctx)}</td>
+        <td class="num" style="font-weight:600">${usd(m.total)}</td></tr>`).join('')}</tbody></table>
+    </details>`;
+  }).join('');
+  const all = MODELS.map(m => priceOf(m));
+  document.getElementById('foot-b').textContent =
+    `9 providers · 35 models · cost per call ranges ${usd(Math.min(...all))} to ${usd(Math.max(...all))} at this workload`;
+}
+
+/* ================= VARIANT C: price map ================= */
+function renderC(){
+  const map = document.getElementById('map-c');
+  map.querySelectorAll('.pt,.tick,.grid-line').forEach(n => n.remove());
+  const rows = rowsFor(); if (!rows.length) return;
+  const lx = v => Math.log10(v), TICKS = [0.05,0.1,0.5,1,5,10,50];
+  const xMin = lx(0.04), xMax = lx(12), yMin = lx(0.2), yMax = lx(60);
+  const px = v => ((lx(v) - xMin)/(xMax - xMin))*100, py = v => ((lx(v) - yMin)/(yMax - yMin))*100;
+
+  for (const t of TICKS){
+    if (t >= 0.04 && t <= 12){
+      map.insertAdjacentHTML('beforeend', `<div class="grid-line" style="left:${px(t)}%"></div><span class="tick x" style="left:${px(t)}%">$${t}</span>`);
+    }
+    if (t >= 0.2 && t <= 60){
+      map.insertAdjacentHTML('beforeend', `<div class="grid-line h" style="bottom:${py(t)}%"></div><span class="tick y" style="bottom:${py(t)}%">$${t}</span>`);
+    }
+  }
+  rows.forEach(r => {
+    const el = document.createElement('button');
+    el.className = 'pt'; el.style.left = px(r.inp)+'%'; el.style.bottom = py(r.out)+'%';
+    el.style.background = PROVIDERS[r.provider].color; el.title = r.name;
+    el.addEventListener('mouseenter', () => showC(r)); el.addEventListener('focus', () => showC(r));
+    el.addEventListener('click', () => showC(r));
+    map.append(el);
+  });
+  showC(rows.reduce((a,b) => a.total > b.total ? a : b));
+}
+function showC(r){
+  document.getElementById('readout-c').innerHTML = `
+    <span class="eyebrow">${PROVIDERS[r.provider].name}</span>
+    <p class="rname" style="margin:4px 0 0">${r.name}</p>
+    <dl>
+      <dt>Input / 1M</dt><dd>${perM(r.inp)}</dd>
+      <dt>Output / 1M</dt><dd>${perM(r.out)}</dd>
+      <dt>Cached / 1M</dt><dd>${perM(r.cache)}</dd>
+      <dt>Context</dt><dd>${compact(r.ctx)}</dd>
+      <dt>Counting</dt><dd>${r.acc}</dd>
+      <dt>Cost per call</dt><dd style="color:var(--accent)">${usd(priceOf(r))}</dd>
+    </dl>`;
+}
+
+/* ---------- boot ---------- */
+function renderAll(){ renderA(); renderB(); renderC(); }
+controlBar(document.getElementById('ctrl-a'));
+controlBar(document.getElementById('ctrl-b'));
+chipBar(document.getElementById('chips-a'));
+chipBar(document.getElementById('chips-c'));
+renderAll();
+
+document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => {
+  document.querySelectorAll('.tab').forEach(o => o.setAttribute('aria-selected', String(o === t)));
+  document.querySelectorAll('.variant').forEach(v => v.classList.toggle('on', v.id === 'v-' + t.dataset.variant));
+}));
+</script>
+</body>
+</html>

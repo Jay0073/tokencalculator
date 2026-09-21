@@ -1,0 +1,141 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumbs from '../components/seo/Breadcrumbs.astro';
+import { COMPARISONS, COMPARISON_GROUPS, COST_GUIDES } from '../data/comparisons';
+import { IMAGE_PAGES } from '../data/image-models';
+import { blogPosts } from '../data/knowledge';
+import { getModel } from '../data/models';
+
+// One hub for every comparison page. Before this, comparisons were reachable only from
+// the cards near the bottom of the landing page, so neither visitors nor crawlers had
+// one place that listed them all.
+const breadcrumbs = [{ label: 'Token calculator', href: '/' }, { label: 'Compare models' }];
+// Exact published rate, never rounded, with at least two decimals ($0.20, not $0.2).
+const money = (value: number | undefined) => value === undefined ? '—' : `$${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 6 })}`;
+const sections = COMPARISON_GROUPS
+  .map((group) => ({ ...group, pages: COMPARISONS.filter((page) => page.group === group.id) }))
+  .filter((section) => section.pages.length > 0);
+const latest = blogPosts.slice(0, 3);
+
+// A machine-readable list of every page this hub links to, so search engines and AI
+// answer engines can see the whole comparison set in one place.
+const SITE = 'https://tokencalculator.dev';
+const listed = [
+  ...COMPARISONS.map((page) => ({ url: `/${page.slug}/`, name: page.card.title })),
+  ...IMAGE_PAGES.map((page) => ({ url: page.href, name: page.title })),
+  ...COST_GUIDES.map((page) => ({ url: page.href, name: page.title })),
+];
+const collection = {
+  '@context': 'https://schema.org',
+  '@type': 'CollectionPage',
+  '@id': `${SITE}/compare/#collection`,
+  name: 'LLM and image model cost comparisons',
+  url: `${SITE}/compare/`,
+  mainEntity: {
+    '@type': 'ItemList',
+    numberOfItems: listed.length,
+    itemListElement: listed.map((item, index) => ({ '@type': 'ListItem', position: index + 1, name: item.name, url: `${SITE}${item.url}` })),
+  },
+};
+---
+<BaseLayout
+  title="Compare LLM API Costs, Model by Model | TokenCalculator.dev"
+  description="Side-by-side API cost comparisons for GPT, Claude, Gemini, DeepSeek, Qwen, Kimi, GLM and Muse models, plus image models. Every page uses current rates."
+  canonical="/compare/"
+  {breadcrumbs}
+>
+  <script is:inline type="application/ld+json" set:html={JSON.stringify(collection)} />
+  <Breadcrumbs items={breadcrumbs} />
+  <section class="shell max-w-4xl pt-12 sm:pt-16 pb-4 relative z-10">
+    <span class="eyebrow">Model comparisons</span>
+    <h1 class="m-0 mt-4 text-[clamp(2.25rem,5vw,3.75rem)] leading-[1.02] tracking-[-.055em]">Compare LLM API cost, model against model.</h1>
+    <p class="muted text-[16px] sm:text-[17px] mt-4 mb-0 max-w-3xl">Each comparison prices the same prompt on two models at their current rates. Paste your own prompt on any page to see what it costs on both. Card rates are input and output prices per 1 million tokens.</p>
+  </section>
+
+  {sections.map((section) => (
+    <section class="shell mt-12 relative z-10" aria-labelledby={`group-${section.id}`}>
+      <span class="eyebrow">{section.eyebrow}</span>
+      <h2 id={`group-${section.id}`} class="section-title mt-3 mb-2">{section.title}</h2>
+      <p class="muted mt-0 mb-6 max-w-3xl">{section.detail}</p>
+      <ul class="grid md:grid-cols-2 gap-3 list-none p-0 m-0">
+        {section.pages.map((page) => {
+          const pair = [getModel(page.leftId), getModel(page.rightId)];
+          return (
+            <li>
+              <a href={`/${page.slug}/`} class="compare-card panel group">
+                <strong class="block text-[17px] leading-snug">{page.card.title}</strong>
+                <span class="block text-sm muted mt-1">{page.card.detail}</span>
+                <span class="compare-rates">
+                  {pair.map((model) => (
+                    <span><span class="muted">{model.name}</span><span class="mono">{money(model.inputPerMillion)} / {money(model.outputPerMillion)}</span></span>
+                  ))}
+                </span>
+                <span class="compare-open">Open comparison <span aria-hidden="true">→</span></span>
+              </a>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  ))}
+
+  <section class="shell mt-12 relative z-10" aria-labelledby="group-images">
+    <span class="eyebrow">Image generation models</span>
+    <h2 id="group-images" class="section-title mt-3 mb-2">Image models, priced per image</h2>
+    <p class="muted mt-0 mb-6 max-w-3xl">Image APIs bill per image or per image token, so these pages price generated images rather than text. <a class="text-[var(--accent)]" href="/docs/image-generation-cost/">How image generation APIs bill →</a></p>
+    <ul class="grid md:grid-cols-2 gap-3 list-none p-0 m-0">
+      {IMAGE_PAGES.map((page) => (
+        <li>
+          <a href={page.href} class="compare-card panel group">
+            <strong class="block text-[17px] leading-snug">{page.title}</strong>
+            <span class="block text-sm muted mt-1">{page.detail}</span>
+            <span class="compare-open">Open comparison <span aria-hidden="true">→</span></span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <section class="shell mt-12 relative z-10" aria-labelledby="group-analysis">
+    <span class="eyebrow">Latest model analysis</span>
+    <h2 id="group-analysis" class="section-title mt-3 mb-6">What changed this month</h2>
+    <ul class="grid md:grid-cols-3 gap-3 list-none p-0 m-0">
+      {latest.map((post) => (
+        <li>
+          <a href={post.href} class="compare-card panel group">
+            <span class="eyebrow">{post.label}</span>
+            <strong class="block text-[16px] leading-snug mt-2">{post.title}</strong>
+            <span class="compare-open">Read the analysis <span aria-hidden="true">→</span></span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <section class="shell mt-12 mb-8 relative z-10" aria-labelledby="group-guides">
+    <span class="eyebrow">Cost guides</span>
+    <h2 id="group-guides" class="section-title mt-3 mb-6">Compare approaches, not just models</h2>
+    <ul class="grid md:grid-cols-2 gap-3 list-none p-0 m-0">
+      {COST_GUIDES.map((guide) => (
+        <li>
+          <a href={guide.href} class="compare-card panel group">
+            <strong class="block text-[17px] leading-snug">{guide.title}</strong>
+            <span class="block text-sm muted mt-1">{guide.detail}</span>
+            <span class="compare-open">Read the guide <span aria-hidden="true">→</span></span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </section>
+</BaseLayout>
+
+<style>
+  .compare-card { display: flex; flex-direction: column; height: 100%; padding: 1.25rem; border-radius: .75rem; text-decoration: none; transition: border-color .2s ease, transform .2s ease; }
+  .compare-card:hover { border-color: var(--line-strong); transform: translateY(-2px); }
+  .compare-rates { display: grid; gap: .3rem; margin-top: 1rem; padding-top: .85rem; border-top: 1px solid var(--line); font-size: .8125rem; }
+  .compare-rates > span { display: flex; justify-content: space-between; gap: 1rem; }
+  .compare-open { margin-top: auto; padding-top: 1rem; color: var(--accent); font-size: .875rem; font-weight: 600; }
+  .compare-open span { display: inline-block; transition: transform .2s ease; }
+  .compare-card:hover .compare-open span, .compare-card:focus-visible .compare-open span { transform: translateX(4px); }
+  @media (prefers-reduced-motion: reduce) { .compare-card, .compare-open span { transition: none; } .compare-card:hover { transform: none; } }
+</style>

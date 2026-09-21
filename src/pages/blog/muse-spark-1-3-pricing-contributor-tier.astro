@@ -1,0 +1,74 @@
+---
+import KnowledgeLayout from '../../layouts/KnowledgeLayout.astro';
+const toc=[{id:'new',label:'What is new'},{id:'prices',label:'Two ways to pay'},{id:'contributor',label:'The Contributor trade'},{id:'example',label:'A worked example'},{id:'scores',label:'Independent scores'},{id:'task',label:'Cost per task'},{id:'open',label:'Open weights'}];
+---
+<KnowledgeLayout title="Muse Spark 1.3 Pricing: Standard vs Contributor Tier" description="Meta's Muse Spark 1.3 costs $1.25 and $4.25 per million tokens, or $0.10 and $0.20 if Meta may train on your data. What each tier really costs you." heading="Muse Spark 1.3: what it costs, and what the Contributor tier costs you" eyebrow="Model analysis · New release" datePublished="2026-09-21" dateModified="2026-09-21" section="LLM API cost" keywords={['Muse Spark 1.3','Meta Muse Spark pricing','Contributor tier','Muse Spark vs Claude Opus 5','Meta Model API']} {toc}>
+  <p class="knowledge-lead">Meta released Muse Spark 1.3 on 2 September 2026. It keeps the price of 1.2, $1.25 per million input tokens and $4.25 per million output tokens, and it can also be bought on the Contributor tier: $0.10 and $0.20, if Meta may train on your prompts and completions.</p>
+
+  <h2 id="new">What is new in 1.3</h2>
+  <p>Meta describes these changes from Muse Spark 1.2:</p>
+  <ul>
+    <li>About 20 percent fewer tool calls and about 25 percent fewer tokens.</li>
+    <li>It asks clarifying questions when a prompt is ambiguous, instead of guessing.</li>
+    <li>It follows long, complex instructions more reliably.</li>
+    <li>The maximum reasoning setting is now available on Muse Code and the Meta Model API.</li>
+  </ul>
+  <p>These are Meta's own claims. The independent results below show a more mixed picture on token use.</p>
+
+  <h2 id="prices">Two ways to pay</h2>
+  <div class="overflow-x-auto"><table>
+    <thead><tr><th>Per 1M tokens</th><th>Standard</th><th>Contributor</th></tr></thead>
+    <tbody>
+      <tr><td>Input</td><td>$1.25</td><td>$0.10</td></tr>
+      <tr><td>Cached input</td><td>$0.15</td><td>$0.002</td></tr>
+      <tr><td>Output</td><td>$4.25</td><td>$0.20</td></tr>
+      <tr><td>Requests per minute</td><td>3,000</td><td>100</td></tr>
+      <tr><td>Tokens per minute</td><td>4,000,000</td><td>3,000,000</td></tr>
+    </tbody>
+  </table></div>
+  <p>Web search grounding costs $2.50 per 1,000 queries on either tier, on top of token costs. The Contributor tier is available for Muse Spark 1.3 and 1.2.</p>
+
+  <h2 id="contributor">The Contributor trade</h2>
+  <p>Meta describes the Contributor tier as heavily discounted pricing "in exchange for permission to use your prompts and completions to train future Meta models". Input is 12.5 times cheaper, output about 21 times cheaper, and cached input 75 times cheaper than the standard tier.</p>
+  <p>The price is your data. That rules the tier out for customer content, confidential documents, source code you do not want in a training set, and anything covered by a data-processing agreement. It suits public data, synthetic data, open-source work and evaluations on public benchmarks.</p>
+  <p>The limit also matters. At 100 requests per minute, the Contributor tier tops out at about 4.3 million requests in a 30-day month, and much less if your traffic arrives in bursts.</p>
+
+  <h2 id="example">A worked example</h2>
+  <p>An application sends 100,000 requests a month, each with 2,000 input tokens and 500 output tokens:</p>
+  <div class="overflow-x-auto"><table>
+    <thead><tr><th>Tier</th><th>Input (200M tokens)</th><th>Output (50M tokens)</th><th>Monthly total</th></tr></thead>
+    <tbody>
+      <tr><td>Standard</td><td>$250.00</td><td>$212.50</td><td><strong>$462.50</strong></td></tr>
+      <tr><td>Contributor</td><td>$20.00</td><td>$10.00</td><td><strong>$30.00</strong></td></tr>
+    </tbody>
+  </table></div>
+  <p>The same workload on Claude Opus 5, at $5 input and $25 output, costs $2,250 a month. Paste a real prompt into the <a href="/">token calculator</a> to replace these round numbers with your own.</p>
+
+  <h2 id="scores">Independent scores</h2>
+  <p>On version 4.3.2 of the Artificial Analysis Intelligence Index, Muse Spark 1.3 at maximum effort scores 48 and ranks 13th of 200 models. Claude Opus 5 at maximum effort scores 51 and ranks seventh.</p>
+  <div class="overflow-x-auto"><table>
+    <thead><tr><th>Artificial Analysis, v4.3.2</th><th>Muse Spark 1.3 (max)</th><th>Claude Opus 5 (max)</th></tr></thead>
+    <tbody>
+      <tr><td>Intelligence Index</td><td>48</td><td>51</td></tr>
+      <tr><td>Cost per index task</td><td>$1.60</td><td>$5.86</td></tr>
+      <tr><td>Output tokens to run the index</td><td>170M</td><td>140M</td></tr>
+      <tr><td>Output speed</td><td>about 241 tokens/s</td><td>about 61 tokens/s</td></tr>
+      <tr><td>Time to first token</td><td>about 22 s</td><td>about 54 s</td></tr>
+    </tbody>
+  </table></div>
+  <p>The median model used 92 million output tokens to run the index, so both are verbose. When Artificial Analysis first tested Muse Spark 1.3 on 2 September, on an earlier version of the index, it scored the xhigh setting level with GPT-5.6 Sol, Grok 4.6 and Claude Opus 5 at its high setting. Scores from different index versions cannot be compared directly.</p>
+
+  <h2 id="task">Cost per task, not per token</h2>
+  <p>Per token, Muse Spark 1.3 is four times cheaper than Claude Opus 5 on input and about six times cheaper on output. Per index task it is about 3.7 times cheaper, because it writes more tokens to reach its answers. The cost per completed task is the number to budget with; the per-token price only tells you where to start.</p>
+  <p>For the side-by-side numbers on your own prompt, see <a href="/muse-spark-1-3-vs-claude-opus-5-cost/">Muse Spark 1.3 vs Claude Opus 5</a> and <a href="/muse-spark-1-3-vs-deepseek-v4-1-flash-cost/">Muse Spark 1.3 vs DeepSeek V4.1 Flash</a>.</p>
+
+  <h2 id="open">Open weights</h2>
+  <p>Muse Spark 1.3 is available only as a hosted API. Meta's release post lists "the Muse Spark open weights release" on its roadmap, without a date or licence. Until then, self-hosting is not an option.</p>
+
+  <div class="source-ledger"><h2>Evidence ledger</h2><p><strong>Reviewed:</strong> 21 September 2026 · Meta's pricing page remains authoritative.</p><ul>
+    <li><a href="https://research.meta.ai/blog/introducing-muse-spark-1-3">Meta: Introducing Muse Spark 1.3</a></li>
+    <li><a href="https://dev.meta.ai/docs/pricing-rate-limits">Meta Model API pricing and rate limits</a></li>
+    <li><a href="https://artificialanalysis.ai/models/muse-spark-1-3">Artificial Analysis: Muse Spark 1.3</a> and <a href="https://artificialanalysis.ai/models/claude-opus-5">Claude Opus 5</a></li>
+    <li><a href="https://artificialanalysis.ai/articles/muse-spark-1-3">Artificial Analysis launch analysis, 2 September 2026</a></li>
+  </ul></div>
+</KnowledgeLayout>
