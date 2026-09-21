@@ -1,0 +1,77 @@
+---
+import KnowledgeLayout from '../../layouts/KnowledgeLayout.astro';
+const toc=[{id:'what',label:'What Jev is'},{id:'billing',label:'How Jev bills'},{id:'tokens',label:'Where the tokens go'},{id:'costs',label:'Cost per 1,000 decisions'},{id:'claims',label:'What the launch claims say'},{id:'limits',label:'Where Jev is weak'},{id:'when',label:'When to use it'}];
+// Cost of 1,000 decisions. Assumptions are printed under the table: 1,500 input tokens per
+// decision, a 20-token direct answer, and 400 reasoning tokens for reasoning models.
+const rows=[
+  {model:'Jev 1.13 (TypeSafe)',mode:'Decision model, output free',input:'$0.063',output:'$0.000',total:'$0.063',multiple:'1×',share:'0%'},
+  {model:'GPT-5.6 Luna',mode:'Direct answer',input:'$0.300',output:'$0.024',total:'$0.324',multiple:'5×',share:'7%'},
+  {model:'Claude Haiku 4.5',mode:'Direct answer',input:'$1.500',output:'$0.100',total:'$1.600',multiple:'25×',share:'6%'},
+  {model:'Claude Sonnet 5',mode:'400 thinking tokens',input:'$3.000',output:'$4.200',total:'$7.200',multiple:'114×',share:'58%'},
+  {model:'GPT-5.6 Terra',mode:'400 reasoning tokens',input:'$3.000',output:'$5.040',total:'$8.040',multiple:'128×',share:'63%'},
+  {model:'Claude Opus 5',mode:'400 thinking tokens',input:'$7.500',output:'$10.500',total:'$18.000',multiple:'286×',share:'58%'},
+  {model:'GPT-6 Astra',mode:'400 reasoning tokens',input:'$15.000',output:'$21.000',total:'$36.000',multiple:'571×',share:'58%'},
+];
+---
+<KnowledgeLayout title="Jev vs Reasoning LLMs: What a Decision Model Costs" description="TypeSafe's Jev bills $0.042 per million input tokens and nothing for output. See how a decision model changes token cost against Claude and OpenAI models." heading="Jev and the cost of a decision: a decision model against reasoning LLMs" eyebrow="Model analysis · New release" datePublished="2026-09-21" dateModified="2026-09-21" section="LLM API cost" keywords={['Jev','TypeSafe AI','decision model','System One model','LLM classification cost','reasoning tokens']} {toc}>
+  <p class="knowledge-lead">Jev 1.13 from TypeSafe AI is not a chat model. It reads text and returns a typed decision, such as a choice, a score or a yes or no, with a calibrated probability. It bills $0.042 per million input tokens and nothing for output. For routing and classification, that changes where the cost of a request comes from.</p>
+  <div class="technical-callout"><span>Where the cost comes from</span><code>C<sub>LLM</sub> = T<sub>in</sub>P<sub>in</sub> + (T<sub>answer</sub> + T<sub>reasoning</sub>)P<sub>out</sub> &nbsp;·&nbsp; C<sub>Jev</sub> = T<sub>in</sub>P<sub>in</sub></code></div>
+
+  <h2 id="what">What Jev is</h2>
+  <p>TypeSafe AI, a San Francisco company, launched Jev on 15 September 2026 together with a $40 million seed round led by DCVC. Its chief executive, Diogo Almeida, is a former OpenAI researcher who worked on reinforcement learning from human feedback, InstructGPT and ChatGPT.</p>
+  <p>TypeSafe calls Jev a "System One" model. It answers in a single pass instead of generating a reply one token at a time, and the shape of its answer is defined in advance. You ask a question such as "which team should handle this ticket?" and get back one of the options you listed, with a probability for each. The current model ID is <code>jev-1.13.0</code>; the aliases <code>jev-latest</code> and <code>jev-preview</code> point to it.</p>
+  <p>Access is still limited. The launch post describes early access with developers being brought off a waitlist, while TypeSafe's model documentation lists 1.13 as the stable release.</p>
+
+  <h2 id="billing">How Jev bills</h2>
+  <ul>
+    <li><strong>Input:</strong> $0.042 per million tokens, or $42 per billion.</li>
+    <li><strong>Output:</strong> free. There is no cached-input price and no long-context tier.</li>
+    <li><strong>Limits:</strong> 64,000 tokens per request, and 32,000 tokens for the state plus the longest single question.</li>
+    <li><strong>Input types:</strong> text only, as a string, a JSON object or an array of text values. English gives the best accuracy.</li>
+    <li><strong>Rate limits:</strong> 250,000 tokens per second and 1,200 requests per minute, which TypeSafe says are adjusting while demand is high.</li>
+  </ul>
+
+  <h2 id="tokens">Where the tokens go</h2>
+  <p>An LLM used as a classifier is billed three ways. It pays for the prompt, for the answer, and, if it is a reasoning model, for the reasoning it does before answering. Reasoning tokens bill as output, and output costs four to six times the input rate on the Claude and OpenAI models below.</p>
+  <p>Jev removes the last two parts. There is no answer text to pay for and no visible reasoning. What remains is input, so the cost of a Jev decision is set almost entirely by the size of the prompt. That makes prompt discipline doubly useful: TypeSafe's own documentation says accuracy falls as unrelated text is added to the input.</p>
+  <p>TypeSafe does not document its tokenizer in the pages we reviewed, so a Jev token count cannot be reproduced exactly. The cost figures below use the same token count for every model to keep the comparison fair.</p>
+
+  <h2 id="costs">Cost per 1,000 decisions</h2>
+  <p>Take a routing task: each decision sends 1,500 input tokens of instructions and ticket text, and needs a one-word answer. These are list prices from each provider.</p>
+  <div class="overflow-x-auto"><table>
+    <thead><tr><th>Model</th><th>How it answers</th><th>Input</th><th>Output</th><th>Total</th><th>vs Jev</th><th>Output share</th></tr></thead>
+    <tbody>{rows.map((row)=><tr><td>{row.model}</td><td>{row.mode}</td><td>{row.input}</td><td>{row.output}</td><td><strong>{row.total}</strong></td><td>{row.multiple}</td><td>{row.share}</td></tr>)}</tbody>
+  </table></div>
+  <p class="text-sm">Assumptions: 1,000 decisions, 1,500 input tokens each, a 20-token direct answer, and 400 extra reasoning tokens for the reasoning models. Real reasoning length varies with task difficulty and effort setting.</p>
+  <p>Two things stand out. Against the cheapest direct-answer model, GPT-5.6 Luna, Jev is about five times cheaper, and nearly all of that comes from the input price. Against reasoning models, most of the gap is output: around 60 percent of each reasoning call is output and reasoning tokens that Jev never produces.</p>
+  <p>Prompt caching narrows the input side for LLMs, because a repeated instruction block bills at the cached rate. It does nothing for output or reasoning tokens, which is where the reasoning models spend most of their money.</p>
+
+  <h2 id="claims">What the launch claims say</h2>
+  <p>TypeSafe reports that on its own workflow evaluations Jev was 193.6 times faster and 444.6 times cheaper than GPT-6 Astra and Claude Fable 5.1, with latency of 70 to 500 milliseconds against 3 to 329 seconds for frontier LLMs. SiliconANGLE reported a cost of $0.39 per 1,000 workflows for Jev, against $3.31 for GPT-5.6 Luna and $19.49 for Claude Haiku 4.5.</p>
+  <p>Read those numbers with their method in mind. TypeSafe graded accuracy against the average answer of GPT-6 Astra and Claude Fable 5.1, so the test measures agreement with those models rather than correctness against known answers. SiliconANGLE noted that the figures have not been independently verified. The claim that Jev "cannot hallucinate" means its output always matches the declared type; a correctly typed answer can still be wrong.</p>
+
+  <h2 id="limits">Where Jev is weak</h2>
+  <p>TypeSafe's own model documentation is unusually direct about the weak spots of Jev 1.13:</p>
+  <ul>
+    <li><strong>Numbers:</strong> it is not a calculator, does not count reliably, and error grows with the size of what is counted.</li>
+    <li><strong>Dates:</strong> it reads dates as text, so ordering, durations and date windows are unreliable.</li>
+    <li><strong>Multi-step questions:</strong> extra levels of indirection and double negatives are answered less reliably.</li>
+    <li><strong>Irrelevant context:</strong> accuracy falls as unrelated detail is added.</li>
+    <li><strong>Literal reading:</strong> it answers the question as written, not the one you meant.</li>
+    <li><strong>Untrusted input:</strong> it does not treat data as hostile by default, so prompt injection is a risk.</li>
+    <li><strong>Text:</strong> it is not trained to generate text at all.</li>
+  </ul>
+
+  <h2 id="when">When to use it</h2>
+  <p>Jev fits decisions that a person would make in a second: routing a ticket, tagging a document, checking whether an answer follows a policy, or extracting a field into a fixed set of values. Keep an LLM for writing, for maths and dates, and for questions that need several steps of reasoning.</p>
+  <p>The two work well together. Send every request to the decision model first, and escalate only the ones with a low probability to an LLM. Jev's calibrated probabilities make that threshold easy to set, and the escalated share is the only part that pays LLM prices. The same two-stage pattern is covered in the <a href="/deepseek-v4-1-flash-vs-gpt-5-6-luna-pricing/">high-volume model comparison</a>.</p>
+  <p>To price the LLM side of that pipeline on your own prompts, paste one into the <a href="/">token calculator</a>, or compare models side by side on the <a href="/compare/">model comparison hub</a>.</p>
+
+  <div class="source-ledger"><h2>Evidence ledger</h2><p><strong>Reviewed:</strong> 21 September 2026 · Jev is newly released and its limits and prices may change. TypeSafe's documentation remains authoritative.</p><ul>
+    <li><a href="https://typesafe.ai/blog/introducing-system-one-models-and-jev">TypeSafe: Introducing System One models and Jev</a></li>
+    <li><a href="https://docs.typesafe.ai/models">TypeSafe model documentation and pricing</a></li>
+    <li><a href="https://docs.typesafe.ai/model-jaggedness/jev-1.13">TypeSafe: Jev 1.13 strengths and weaknesses</a></li>
+    <li><a href="https://siliconangle.com/2026/09/16/typesafe-ai-exits-stealth-with-40m-to-build-ai-for-use-by-software/">SiliconANGLE launch report</a></li>
+    <li><a href="https://developers.openai.com/api/docs/pricing">OpenAI API pricing</a> and <a href="https://platform.claude.com/docs/en/about-claude/pricing">Anthropic pricing</a></li>
+  </ul></div>
+</KnowledgeLayout>

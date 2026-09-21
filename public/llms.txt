@@ -4,10 +4,14 @@ TokenCalculator.dev is a free, privacy-first, browser-based LLM token calculator
 
 - [Universal calculator](https://tokencalculator.dev/)
 - [LLM Cost Lab: repositories, workloads, RAG, caching, vision, agents, embeddings, self-hosting, and model comparison](https://tokencalculator.dev/estimators/)
+- [Model comparison hub: every LLM and image model cost comparison](https://tokencalculator.dev/compare/)
 - [Methodology and accuracy labels](https://tokencalculator.dev/methodology/)
 - [Technical documentation](https://tokencalculator.dev/docs/)
 - [Privacy architecture for confidential LLM inputs](https://tokencalculator.dev/docs/privacy-architecture/)
 - [Token engineering blog](https://tokencalculator.dev/blog/)
+- [Jev vs reasoning LLMs: what a decision model costs per 1,000 decisions](https://tokencalculator.dev/blog/jev-decision-model-token-cost/)
+- [DeepSeek V4.1 Flash pricing: peak and off-peak rates, and what changed](https://tokencalculator.dev/blog/deepseek-v4-1-flash-peak-off-peak-pricing/)
+- [Muse Spark 1.3 pricing: Standard vs Contributor tier](https://tokencalculator.dev/blog/muse-spark-1-3-pricing-contributor-tier/)
 - [Private LLM token counting for enterprise prompts, files, and code](https://tokencalculator.dev/blog/private-llm-token-counting-enterprise/)
 - [Calculate tokens in PDFs, DOCX, code, and images](https://tokencalculator.dev/blog/calculate-pdf-docx-code-image-tokens/)
 - [Image token calculation across OpenAI, Claude, and Gemini](https://tokencalculator.dev/blog/image-token-calculation-openai-claude-gemini/)
@@ -25,18 +29,31 @@ TokenCalculator.dev is a free, privacy-first, browser-based LLM token calculator
 
 ## Model cost comparisons
 
+Every comparison lists both models' current rates and prices the same prompt on both. DeepSeek rates are off-peak; DeepSeek charges double from 01:00 to 04:00 and 06:00 to 10:00 UTC on weekdays.
+
 - [GPT-6 Astra vs Claude Fable 5.1 cost](https://tokencalculator.dev/gpt-6-astra-vs-claude-fable-5-1-cost/)
-- [GPT-5.6 Sol vs Claude Opus 4.8 cost](https://tokencalculator.dev/gpt-5-6-sol-vs-claude-opus-4-8-cost/)
+- [Muse Spark 1.3 vs Claude Opus 5 cost](https://tokencalculator.dev/muse-spark-1-3-vs-claude-opus-5-cost/)
+- [DeepSeek V4.1 Flash vs DeepSeek V4 Pro cost](https://tokencalculator.dev/deepseek-v4-1-flash-vs-deepseek-v4-pro-cost/)
+- [Muse Spark 1.3 vs DeepSeek V4.1 Flash cost](https://tokencalculator.dev/muse-spark-1-3-vs-deepseek-v4-1-flash-cost/)
+- [DeepSeek V4.1 Flash vs Qwen3.8 Flash pricing](https://tokencalculator.dev/deepseek-v4-1-flash-vs-qwen3-8-flash-pricing/)
 - [GPT-5.6 Terra vs Claude Sonnet 5 pricing](https://tokencalculator.dev/gpt-5-6-terra-vs-claude-sonnet-5-pricing/)
+- [DeepSeek V4.1 Flash vs GPT-5.6 Luna pricing](https://tokencalculator.dev/deepseek-v4-1-flash-vs-gpt-5-6-luna-pricing/)
+- [Gemini 3.5 Flash-Lite vs GPT-5.6 Luna cost](https://tokencalculator.dev/gemini-3-5-flash-lite-vs-gpt-5-6-luna-cost/)
 - [DeepSeek V4 Pro vs GPT-5.6 Sol cost](https://tokencalculator.dev/deepseek-v4-pro-vs-gpt-5-6-sol-cost/)
-- [DeepSeek V4 Flash vs GPT-5.6 Luna pricing](https://tokencalculator.dev/deepseek-v4-flash-vs-gpt-5-6-luna-pricing/)
-- [Gemini 3.1 Flash-Lite vs GPT-5.6 Luna cost](https://tokencalculator.dev/gemini-3-1-flash-lite-vs-gpt-5-6-luna-cost/)
 - [Kimi K3 vs Claude Fable 5.1 cost](https://tokencalculator.dev/kimi-k3-vs-claude-fable-5-1-cost/)
 - [Qwen3.8 Max vs GPT-5.6 Sol cost](https://tokencalculator.dev/qwen3-8-max-vs-gpt-5-6-sol-cost/)
 - [GLM-5.3 vs DeepSeek V4 Pro pricing](https://tokencalculator.dev/glm-5-3-vs-deepseek-v4-pro-pricing/)
-- [Claude vs GPT token cost](https://tokencalculator.dev/claude-vs-gpt4o-token-cost/)
-- [DeepSeek vs OpenAI reasoning model cost](https://tokencalculator.dev/deepseek-r1-vs-openai-o1-cost-calculator/)
-- [Gemini Flash vs GPT mini pricing](https://tokencalculator.dev/gemini-flash-vs-gpt-4o-mini-pricing/)
+- [Claude vs GPT token cost (successors to GPT-4o)](https://tokencalculator.dev/claude-vs-gpt4o-token-cost/)
+- [DeepSeek vs OpenAI reasoning model cost (successors to R1 and o1)](https://tokencalculator.dev/deepseek-r1-vs-openai-o1-cost-calculator/)
+- [Gemini Flash vs GPT mini pricing (successors to GPT-4o mini)](https://tokencalculator.dev/gemini-flash-vs-gpt-4o-mini-pricing/)
+
+## Image generation pricing
+
+Image APIs bill per image or per image token. Prices are checked against each provider's pricing page and dated.
+
+- [Image generation API pricing: cost per image for GPT Image 2.5, Nano Banana, Grok Imagine, Seedream 5.0 and MAI-Image-2.6](https://tokencalculator.dev/image-generation-api-pricing/)
+- [GPT Image 2.5 vs Nano Banana 2 cost per image](https://tokencalculator.dev/gpt-image-2-5-vs-nano-banana-2-cost/)
+- [GPT Image 2.5 vs Grok Imagine Image 2.0 cost per image](https://tokencalculator.dev/gpt-image-2-5-vs-grok-imagine-image-2-cost/)
 
 ## Cost guides
 
@@ -48,6 +65,7 @@ TokenCalculator.dev is a free, privacy-first, browser-based LLM token calculator
 - [Text and code tokenization](https://tokencalculator.dev/docs/text-and-code/)
 - [File and document tokens](https://tokencalculator.dev/docs/files/)
 - [Image tokens](https://tokencalculator.dev/docs/images/)
+- [How image generation APIs bill: per image vs per token](https://tokencalculator.dev/docs/image-generation-cost/)
 - [n8n node](https://tokencalculator.dev/docs/n8n/)
 - [Activepieces piece](https://tokencalculator.dev/docs/activepieces/)
 
@@ -113,7 +131,7 @@ The site does not claim access to proprietary Claude, Gemini, or DeepSeek produc
 <!-- generated-pricing:start -->
 ## Model pricing snapshot
 
-Rates below are USD per one million tokens, regenerated from https://models.dev/api.json and verified 2026-09-09. The browser refreshes them from the same source at runtime. Long-context tiers and provider terms can still change a final bill.
+Rates below are USD per one million tokens, regenerated from https://models.dev/api.json and verified 2026-09-21. The browser refreshes them from the same source at runtime. Long-context tiers and provider terms can still change a final bill.
 
 | Model | Provider | Input | Cached input | Output | Context |
 | --- | --- | ---: | ---: | ---: | ---: |
@@ -131,8 +149,8 @@ Rates below are USD per one million tokens, regenerated from https://models.dev/
 | Gemini 3.5 Flash Lite | Google | $0.30 | $0.03 | $2.50 | 1,048,576 |
 | Gemini 3.1 Flash Lite | Google | $0.25 | $0.03 | $1.50 | 1,048,576 |
 | Gemini 2.5 Pro | Google | $1.25 | $0.13 | $10.00 | 1,048,576 |
-| DeepSeek V4 Pro | DeepSeek | $0.43 | $0.003625 | $0.87 | 1,000,000 |
-| DeepSeek V4 Flash | DeepSeek | $0.14 | $0.0028 | $0.28 | 1,000,000 |
+| DeepSeek V4.1 Flash | DeepSeek | $0.15 | $0.003 | $0.60 | 1,000,000 |
+| DeepSeek V4 Pro | DeepSeek | $0.66 | $0.02 | $1.98 | 1,000,000 |
 | Qwen3.8 Flash | Qwen | $0.15 | $0.02 | $0.47 | 1,000,000 |
 | Qwen3.8 Max | Qwen | $2.00 | $0.25 | $6.00 | 1,000,000 |
 | Qwen3.7 Plus | Qwen | $0.50 | $0.05 | $3.00 | 1,000,000 |
@@ -144,16 +162,20 @@ Rates below are USD per one million tokens, regenerated from https://models.dev/
 | Grok 4.6 | xAI Grok | $2.00 | $0.50 | $6.00 | 500,000 |
 | Grok 4.5 | xAI Grok | $2.00 | $0.30 | $6.00 | 500,000 |
 | Grok 4.3 | xAI Grok | $1.25 | $0.20 | $2.50 | 1,000,000 |
-| GLM-5.3-Flash | Z.ai GLM | $0.07 | $0.01 | $0.25 | 1,000,000 |
+| GLM-5.3-FlashX | Z.ai GLM | $0.37 | $0.07 | $1.25 | 1,000,000 |
+| GLM-5.3-Flash | Z.ai GLM | $0.15 | $0.03 | $0.50 | 1,000,000 |
 | GLM-5.3 | Z.ai GLM | $1.40 | $0.26 | $4.40 | 1,000,000 |
 | GLM-5.2 | Z.ai GLM | $1.40 | $0.26 | $4.40 | 1,000,000 |
 | GLM-5.1 | Z.ai GLM | $1.40 | $0.26 | $4.40 | 200,000 |
-| GLM-5-Turbo | Z.ai GLM | $1.20 | $0.24 | $4.00 | 200,000 |
 | Muse Spark 1.3 | Meta | $1.25 | $0.15 | $4.25 | 1,048,576 |
 | Muse Spark 1.2 | Meta | $1.25 | $0.15 | $4.25 | 1,048,576 |
 | Muse Spark 1.1 | Meta | $1.25 | $0.15 | $4.25 | 1,048,576 |
 
 Models with a long-context tier: GPT-5.6 Luna, GPT-5.6 Sol, GPT-5.6 Terra, Gemini 2.5 Pro. Above the tier threshold the higher rate applies to the whole request.
+
+DeepSeek: Rates shown are DeepSeek's off-peak prices. From 01:00 to 04:00 and 06:00 to 10:00 UTC, Monday to Friday (except Chinese public holidays), DeepSeek charges double.
+
+DeepSeek V4 Pro: models.dev disagreed with the provider, so this rate is taken from the official pricing page (https://api-docs.deepseek.com/quick_start/pricing), checked 2026-09-21.
 <!-- generated-pricing:end -->
 
 Always confirm a production estimate against the model's official pricing link shown in the calculator.

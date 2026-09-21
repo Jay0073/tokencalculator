@@ -1,0 +1,85 @@
+---
+import KnowledgeLayout from '../../layouts/KnowledgeLayout.astro';
+const toc=[{id:'changed',label:'What changed'},{id:'prices',label:'Prices'},{id:'peak',label:'When peak hours are'},{id:'blended',label:'What you really pay'},{id:'benchmarks',label:'Where Flash wins'},{id:'verbosity',label:'Verbosity'},{id:'catalogue',label:'How this site shows the price'},{id:'advice',label:'How to pay less'}];
+---
+<KnowledgeLayout title="DeepSeek V4.1 Flash Pricing: Peak Hours and What Changed" description="DeepSeek V4.1 Flash costs $0.15 per million input tokens off-peak and $0.30 at peak. What replaced V4 Flash, why V4 Pro stayed, and how peak hours raise a bill." heading="DeepSeek V4.1 Flash: the price, the peak hours, and what changed" eyebrow="Model analysis · Pricing change" datePublished="2026-09-21" dateModified="2026-09-21" section="LLM API cost" keywords={['DeepSeek V4.1 Flash','DeepSeek pricing','DeepSeek peak hours','DeepSeek off-peak','deepseek-flash','DeepSeek V4 Pro']} {toc}>
+  <p class="knowledge-lead">On 10 September 2026 DeepSeek released V4.1 Flash, retired V4 Flash, and moved every model to two prices: one for peak hours, and one half as high for the rest of the week. Off-peak, V4.1 Flash costs $0.15 per million input tokens and $0.60 per million output tokens.</p>
+
+  <h2 id="changed">What changed</h2>
+  <ul>
+    <li><strong>New model:</strong> DeepSeek V4.1 Flash, API ID <code>deepseek-flash</code>. Weights are open under the MIT licence: 552 billion parameters in total, with 8 billion active for reading the prompt and 16 billion for writing the answer.</li>
+    <li><strong>Context:</strong> one million tokens, with up to 384,000 output tokens. It is DeepSeek's first model with native image understanding, and it has a reasoning-effort setting from 1 to 100.</li>
+    <li><strong>V4 Flash retired:</strong> the names <code>deepseek-v4-flash</code> and <code>deepseek-v4-flash-vision-exp</code> now route to V4.1 Flash, at V4.1 Flash prices.</li>
+    <li><strong>V4 Pro kept:</strong> DeepSeek first planned to route V4 Pro requests to V4.1 Flash from 14 September, then decided to keep serving V4 Pro "in response to user demand". A V4.1 Pro is announced, without a date.</li>
+  </ul>
+
+  <h2 id="prices">Prices</h2>
+  <div class="overflow-x-auto"><table>
+    <thead><tr><th>Model, per 1M tokens</th><th>Input</th><th>Cached input</th><th>Output</th></tr></thead>
+    <tbody>
+      <tr><td>V4.1 Flash, off-peak</td><td>$0.15</td><td>$0.003</td><td>$0.60</td></tr>
+      <tr><td>V4.1 Flash, peak</td><td>$0.30</td><td>$0.006</td><td>$1.20</td></tr>
+      <tr><td>V4 Pro, off-peak</td><td>$0.66</td><td>$0.022</td><td>$1.98</td></tr>
+      <tr><td>V4 Pro, peak</td><td>$1.32</td><td>$0.044</td><td>$3.96</td></tr>
+    </tbody>
+  </table></div>
+  <p>Off-peak, V4.1 Flash is about four times cheaper than V4 Pro on input, three times cheaper on output and seven times cheaper on cached input.</p>
+
+  <h2 id="peak">When peak hours are</h2>
+  <p>Peak hours are 01:00 to 04:00 and 06:00 to 10:00 UTC, Monday to Friday, except Chinese public holidays. Everything else, including whole weekends, is off-peak. The windows line up with the Chinese working day:</p>
+  <ul>
+    <li><strong>Beijing (UTC+8):</strong> 09:00 to 12:00 and 14:00 to 18:00, a normal office day.</li>
+    <li><strong>Central Europe in summer (UTC+2):</strong> 03:00 to 06:00 and 08:00 to 12:00, so European mornings are peak.</li>
+    <li><strong>US East Coast in summer (UTC−4):</strong> 21:00 to midnight and 02:00 to 06:00, so the US working day is entirely off-peak.</li>
+  </ul>
+
+  <h2 id="blended">What you really pay</h2>
+  <p>Peak hours cover 35 of the 168 hours in a week, about 21 percent. What you pay depends on when your traffic arrives:</p>
+  <div class="overflow-x-auto"><table>
+    <thead><tr><th>Traffic pattern</th><th>Share at peak rate</th><th>Cost vs off-peak price</th></tr></thead>
+    <tbody>
+      <tr><td>US business hours only</td><td>0%</td><td>1.0×</td></tr>
+      <tr><td>Steady, around the clock</td><td>21%</td><td>about 1.2×</td></tr>
+      <tr><td>Chinese business hours only</td><td>100%</td><td>2.0×</td></tr>
+    </tbody>
+  </table></div>
+  <p>Batch work that can wait should be scheduled outside the peak windows. For a job that runs at a fixed time every day, moving it by a few hours halves its DeepSeek bill.</p>
+
+  <h2 id="benchmarks">Where Flash wins, and where Pro still does</h2>
+  <p>DeepSeek's model card, run at maximum reasoning effort, puts V4.1 Flash ahead of V4 Pro on coding and agent tests, and behind it on knowledge-heavy ones:</p>
+  <div class="overflow-x-auto"><table>
+    <thead><tr><th>Benchmark</th><th>V4.1 Flash</th><th>V4 Pro</th><th>Claude Opus 5</th><th>GPT-5.6 Sol</th></tr></thead>
+    <tbody>
+      <tr><td>DeepSWE v1.1</td><td><strong>74.2</strong></td><td>62.7</td><td>74.0</td><td>73.0</td></tr>
+      <tr><td>Terminal-Bench 2.1</td><td><strong>90.6</strong></td><td>87.9</td><td>89.1</td><td>88.8</td></tr>
+      <tr><td>Codeforces rating</td><td><strong>3471</strong></td><td>3348</td><td>—</td><td>—</td></tr>
+      <tr><td>GPQA Diamond</td><td>90.9</td><td>92.4</td><td>93.4</td><td><strong>94.1</strong></td></tr>
+      <tr><td>Humanity's Last Exam</td><td>36.8</td><td>42.7</td><td><strong>56.3</strong></td><td>44.5</td></tr>
+    </tbody>
+  </table></div>
+  <p>These are DeepSeek's numbers, not an independent test. Independently, Artificial Analysis scores V4.1 Flash at 39 on its Intelligence Index, with output at about 239 tokens per second and 0.93 seconds to the first token.</p>
+
+  <h2 id="verbosity">Verbosity eats part of the saving</h2>
+  <p>V4.1 Flash writes a lot. Artificial Analysis recorded 250 million output tokens for it to run its Intelligence Index, against a median of 140 million for comparable models. It put the cost at $0.27 per index task, priced at DeepSeek's peak rates.</p>
+  <p>A cheap rate multiplied by long answers is still cheap here, but by less than the price list suggests. Measure the output your real prompts produce, and cap the reasoning effort where the task allows it.</p>
+
+  <h2 id="catalogue">How this site shows the price</h2>
+  <p>TokenCalculator.dev takes its rates from the public models.dev catalogue. For DeepSeek V4 Pro that catalogue still lists $0.435 input and $0.87 output, while DeepSeek's own pricing page lists $0.66 and $1.98 off-peak. We now show DeepSeek's official off-peak rate for V4 Pro, link the source on every page that uses it, and our sync warns us when the catalogue changes.</p>
+  <p>Every DeepSeek price on this site is the off-peak rate, and every DeepSeek page says so.</p>
+
+  <h2 id="advice">How to pay less</h2>
+  <ol>
+    <li><strong>Schedule around peak hours.</strong> Anything that can run at night in China costs half.</li>
+    <li><strong>Reuse prefixes.</strong> Cached input costs $0.003 per million off-peak, two percent of the uncached rate.</li>
+    <li><strong>Limit reasoning effort.</strong> The 1 to 100 setting trades cost for accuracy; most routing and extraction tasks need little of it.</li>
+    <li><strong>Keep V4 Pro for knowledge work.</strong> On expert question answering it still scores higher than V4.1 Flash.</li>
+  </ol>
+  <p>Compare V4.1 Flash on your own prompts: <a href="/deepseek-v4-1-flash-vs-deepseek-v4-pro-cost/">V4.1 Flash vs V4 Pro</a>, <a href="/deepseek-v4-1-flash-vs-qwen3-8-flash-pricing/">V4.1 Flash vs Qwen3.8 Flash</a>, <a href="/deepseek-v4-1-flash-vs-gpt-5-6-luna-pricing/">V4.1 Flash vs GPT-5.6 Luna</a>, or count tokens with the <a href="/deepseek-token-counter/">DeepSeek token counter</a>.</p>
+
+  <div class="source-ledger"><h2>Evidence ledger</h2><p><strong>Reviewed:</strong> 21 September 2026 · DeepSeek's pricing page remains authoritative.</p><ul>
+    <li><a href="https://api-docs.deepseek.com/quick_start/pricing">DeepSeek models and pricing</a></li>
+    <li><a href="https://api-docs.deepseek.com/news/news260910/">DeepSeek V4.1 Flash release note</a> and <a href="https://api-docs.deepseek.com/updates/">API updates</a></li>
+    <li><a href="https://huggingface.co/deepseek-ai/DeepSeek-V4.1-Flash">DeepSeek-V4.1-Flash model card</a></li>
+    <li><a href="https://artificialanalysis.ai/models/deepseek-v4-1-flash">Artificial Analysis: DeepSeek V4.1 Flash</a></li>
+  </ul></div>
+</KnowledgeLayout>

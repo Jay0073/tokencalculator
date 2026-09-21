@@ -40,6 +40,9 @@ button,select { cursor:pointer; }
 .nav-provider { display:flex; align-items:center; gap:.45rem; min-height:42px; padding:.55rem .75rem; border-radius:.6rem; color:var(--muted); font-size:.875rem; font-weight:600; text-decoration:none; }
 .nav-provider:hover { color:var(--text); background:var(--panel-2); }
 .nav-provider[aria-current="page"] { color:var(--text); background:var(--panel-2); }
+/* From 1024px to 1279px the desktop header is tight. Dropping the small link icons keeps
+   it inside the screen now that the bar carries a fifth item (Compare). */
+@media (min-width:1024px) and (max-width:1279px) { .nav-provider svg { display:none; } .nav-provider { padding-inline:.6rem; } }
 .nav-api { color:var(--accent); }
 .nav-api>span { display:grid; place-items:center; min-width:2rem; height:1.45rem; border-radius:.38rem; background:var(--accent-soft); }
 .privacy-pill { border-color:color-mix(in srgb,var(--success) 42%,var(--line)); background:color-mix(in srgb,var(--success) 16%,var(--panel)); color:color-mix(in srgb,var(--success) 82%,var(--text)); }
@@ -246,6 +249,11 @@ button,select { cursor:pointer; }
 .knowledge-index--docs .knowledge-card:nth-child(6) { grid-column:span 4; min-height:18rem; }
 .knowledge-index--docs .knowledge-card:nth-child(7) { grid-column:span 3; min-height:22rem; }
 @media (max-width:700px) { .workflow-rail { display:grid; overflow:visible; } .workflow-arrow { min-height:1.8rem; transform:rotate(90deg); justify-self:center; } .workflow-stop { width:100%; min-height:auto; } .related-docs__grid { grid-template-columns:1fr; } .related-docs__grid a { min-height:11rem; } .knowledge-index--docs .knowledge-card:nth-child(n) { grid-column:1/-1; min-height:19rem; } }
+/* Data tables inside articles and docs. Without these rules adjacent cells ran together. */
+.knowledge-prose table { width:100%; margin:1.25rem 0 1.5rem; border-collapse:collapse; font-size:.92rem; }
+.knowledge-prose th, .knowledge-prose td { padding:.6rem 1.1rem .6rem 0; border-top:1px solid var(--line); text-align:left; vertical-align:top; }
+.knowledge-prose thead th { border-top:0; color:var(--muted); font:600 .68rem var(--font-mono); letter-spacing:.06em; text-transform:uppercase; white-space:nowrap; }
+.knowledge-prose td:last-child, .knowledge-prose th:last-child { padding-right:0; }
 .source-ledger { margin-top:4rem; padding:1.5rem; border:1px solid var(--line); border-radius:1rem; background:var(--panel); }
 .source-ledger h2 { margin-top:0; font-size:1.2rem; }
 .source-ledger p,.source-ledger ul { font-size:.88rem; }

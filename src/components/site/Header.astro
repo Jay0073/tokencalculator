@@ -82,6 +82,7 @@ const localeDestination=(item:Locale)=>localizedPath(hasLocalizedEquivalent?curr
           </div>
         </div>
       </details>
+      <a class="nav-provider" href="/compare/" aria-current={currentPath==='/compare/'?'page':undefined}><UiIcon name="compare" size={17}/>{nav.compare}</a>
       <a class="nav-provider" href="/integrations/" aria-current={currentPath==='/integrations/'?'page':undefined}><UiIcon name="plug" size={17}/>{nav.integrations}</a>
       <a class="nav-provider nav-api" href="/developers/api/" aria-current={currentPath==='/developers/api/'?'page':undefined}>
         <UiIcon name="api" size={19}/>
@@ -132,6 +133,10 @@ const localeDestination=(item:Locale)=>localizedPath(hasLocalizedEquivalent?curr
           <a class="mobile-menu-item" href="/estimators/" aria-current={currentPath==='/estimators/'?'page':undefined}>
             <span class="mobile-menu-icon"><UiIcon name="cost"/></span>
             <span><strong>{nav.costLab}</strong><small>{nav.costLabDetail}</small></span>
+          </a>
+          <a class="mobile-menu-item" href="/compare/" aria-current={currentPath==='/compare/'?'page':undefined}>
+            <span class="mobile-menu-icon"><UiIcon name="compare"/></span>
+            <span><strong>{nav.compareModels}</strong><small>{nav.compareModelsDetail}</small></span>
           </a>
 
           <p class="mobile-menu-label">{nav.providerCalculators}</p>

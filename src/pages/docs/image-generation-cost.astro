@@ -1,0 +1,72 @@
+---
+import KnowledgeLayout from '../../layouts/KnowledgeLayout.astro';
+import { IMAGE_MODELS, IMAGE_PRICES_CHECKED, imageUsd } from '../../data/image-models';
+const toc=[{id:'models',label:'Two billing models'},{id:'per-token',label:'Per-token billing'},{id:'per-image',label:'Per-image billing'},{id:'inputs',label:'Input and edit costs'},{id:'batch',label:'Batch discounts'},{id:'missed',label:'Costs that are easy to miss'},{id:'estimate',label:'Estimate a monthly bill'}];
+const OPENAI_TOKENS=[['low',196],['medium',439],['high',1756],['xhigh',3122],['max',7024]] as const;
+const GOOGLE_TOKENS=[['0.5K (512×512)',747],['1K (1024×1024)',1120],['2K (2048×2048)',1680],['4K (4096×4096)',2520]] as const;
+const perImage=IMAGE_MODELS.filter((model)=>model.billing.startsWith('Flat'));
+---
+<KnowledgeLayout title="How Image Generation APIs Bill: Per Image vs Per Token" description="How OpenAI, Google, xAI, ByteDance and Microsoft bill image generation: per-image prices, per-token formulas, input images, batch discounts and hidden costs." heading="How image generation APIs bill" eyebrow="Docs · Image generation cost" datePublished="2026-09-21" dateModified="2026-09-21" section="Documentation" type="TechArticle" keywords={['image generation API pricing','cost per image','image output tokens','GPT Image 2.5 pricing','Nano Banana pricing']} {toc}>
+  <p class="knowledge-lead">Image generation APIs use one of two billing models. Some charge a flat price per image. Others charge per output token and turn each image into a token count. The same 1024×1024 image can cost from under one cent to about 21 cents, depending on the model and the quality setting you choose.</p>
+  <div class="technical-callout"><span>Cost of one generated image</span><code>C = T<sub>image-out</sub>P<sub>image-out</sub> + T<sub>text-in</sub>P<sub>text-in</sub> + T<sub>image-in</sub>P<sub>image-in</sub></code></div>
+
+  <h2 id="models">Two billing models</h2>
+  <p><strong>Per-token billing</strong> is used by OpenAI, Google and Microsoft. The provider converts the output image into a number of tokens and charges its image output rate on them. The price per image then depends on the size and quality, because both change the token count.</p>
+  <p><strong>Per-image billing</strong> is used by xAI and ByteDance. You pay a fixed price for each image, sometimes with a higher price above a pixel limit. It is simpler to budget, but it gives you fewer ways to trade quality for cost.</p>
+  <p>Text prompts are billed on top in both models, at text input rates. A 100-token prompt at $5 per million adds $0.0005 to each image, so for most workloads the prompt is a rounding error next to the image itself.</p>
+
+  <h2 id="per-token">Per-token billing</h2>
+  <h3>OpenAI GPT Image 2.5</h3>
+  <p>Both GPT Image 2.5 variants, Flare and Sunburst, bill image output at $30 per million tokens. The quality setting changes the token count far more than the size does. These are the output tokens OpenAI's image cost calculator gives for a 1024×1024 image:</p>
+  <div class="overflow-x-auto"><table>
+    <thead><tr><th>Quality</th><th>Output tokens</th><th>Cost per image</th></tr></thead>
+    <tbody>{OPENAI_TOKENS.map(([quality,tokens])=><tr><td>{quality}</td><td>{tokens.toLocaleString('en-US')}</td><td>{imageUsd(Math.round(tokens*30/1e6*1e4)/1e4)}</td></tr>)}</tbody>
+  </table></div>
+  <p>Moving from medium to high quadruples the cost of the same image. Choose the quality per use case: a thumbnail or a draft rarely needs more than medium.</p>
+  <h3>Google Nano Banana</h3>
+  <p>Google publishes a fixed token count for each resolution. Nano Banana 2 (<code>gemini-3.1-flash-image</code>) bills those tokens at $60 per million:</p>
+  <div class="overflow-x-auto"><table>
+    <thead><tr><th>Resolution</th><th>Output tokens</th><th>Cost per image</th></tr></thead>
+    <tbody>{GOOGLE_TOKENS.map(([size,tokens])=><tr><td>{size}</td><td>{tokens.toLocaleString('en-US')}</td><td>{imageUsd(Math.round(tokens*60/1e6*1e3)/1e3)}</td></tr>)}</tbody>
+  </table></div>
+  <p>Nano Banana Pro (<code>gemini-3-pro-image</code>) doubles the rate to $120 per million: $0.134 for a 1K or 2K image and $0.24 at 4K. Nano Banana 2 Lite halves it to $30 per million and makes only 1K images, at $0.0336 each.</p>
+  <h3>Microsoft MAI-Image-2.6</h3>
+  <p>Microsoft also bills per token, but it does not publish how many tokens one image uses. The cost per image therefore cannot be calculated from official figures. Third-party trackers report about $0.039 per image for MAI-Image-2.6 and $0.0195 for MAI-Image-2.6-Flash. Treat both as estimates until Microsoft publishes a token count.</p>
+
+  <h2 id="per-image">Per-image billing</h2>
+  <ul>{perImage.map((model)=><li><strong>{model.name}</strong> ({model.lab}): {model.prices.map((price)=>`${imageUsd(price.usd)} (${price.label})`).join(', ')}.</li>)}</ul>
+  <p>With a flat price, quality settings do not change the bill. Size can, where the provider sets a pixel limit: Seedream 5.0 Pro doubles from $0.045 to $0.09 above 2.61 megapixels.</p>
+
+  <h2 id="inputs">Input and edit costs</h2>
+  <p>Editing sends one or more images in as well as one out. Each provider prices those input images differently:</p>
+  <ul>
+    <li><strong>OpenAI:</strong> $8 per 1M image input tokens for GPT Image 2.5. OpenAI does not publish a fixed token count per input image, so read the usage field of each response.</li>
+    <li><strong>Google:</strong> input images are billed at the input rate, which makes them a fraction of a cent each: about $0.0011 per image on Nano Banana Pro.</li>
+    <li><strong>ByteDance:</strong> on Seedream 5.0 Pro the first reference image is free and each extra one costs $0.003.</li>
+    <li><strong>xAI and Microsoft:</strong> editing is supported. Check each provider's pricing page for input-image charges before you cost an editing pipeline.</li>
+  </ul>
+
+  <h2 id="batch">Batch discounts</h2>
+  <p>Google halves image prices through its Batch API: a 1K Nano Banana 2 image drops from $0.067 to $0.034. OpenAI does not offer batch for GPT Image 2.5. xAI accepts image requests in its Batch API but bills them at the standard rate. We found no batch discount for Seedream 5.0 Pro or the MAI models.</p>
+  <p>If your images do not have to be ready within seconds, such as catalogue images or overnight asset generation, batch pricing is the largest single saving available.</p>
+
+  <h2 id="missed">Costs that are easy to miss</h2>
+  <ul>
+    <li><strong>Retries.</strong> Rejected or unusable images still cost money unless the provider says otherwise. BytePlus does not bill failed Seedream images; most providers bill every image returned.</li>
+    <li><strong>Quality defaults.</strong> A client library that sends a high default quality can multiply a per-token bill by four without any change to your code.</li>
+    <li><strong>Several images per request.</strong> Asking for four variations is four images, not one.</li>
+    <li><strong>Rate limits.</strong> MAI-Image-2.6 allows 2 to 12 requests per minute in preview. A low limit does not change the price, but it can force a second provider into the architecture.</li>
+  </ul>
+
+  <h2 id="estimate">Estimate a monthly bill</h2>
+  <p>Multiply the images you generate each month by the price per image at the size and quality you will really use. Add your retry rate and any edits. For example, 20,000 images a month at 1K costs about $1,340 on Nano Banana 2, $680 through its batch API, and $1,054 on GPT Image 2.5 at high quality.</p>
+  <p>The <a href="/image-generation-api-pricing/">image generation API pricing page</a> does this calculation for every model at once. For text and vision input tokens, use the <a href="/">token calculator</a> and the <a href="/docs/images/">image token documentation</a>.</p>
+
+  <div class="source-ledger"><h2>Evidence ledger</h2><p><strong>Reviewed:</strong> {new Intl.DateTimeFormat('en-GB',{day:'numeric',month:'long',year:'numeric'}).format(new Date(`${IMAGE_PRICES_CHECKED}T00:00:00Z`))} · Image prices change often. Provider pricing pages remain authoritative.</p><ul>
+    <li><a href="https://developers.openai.com/api/docs/pricing">OpenAI API pricing</a> and <a href="https://developers.openai.com/api/docs/guides/image-generation">image generation guide</a></li>
+    <li><a href="https://ai.google.dev/gemini-api/docs/pricing">Gemini API pricing</a></li>
+    <li><a href="https://docs.x.ai/developers/pricing">xAI API pricing</a></li>
+    <li><a href="https://docs.byteplus.com/en/docs/ModelArk/1099320">BytePlus ModelArk pricing</a></li>
+    <li><a href="https://learn.microsoft.com/en-us/azure/foundry/foundry-models/how-to/use-foundry-models-mai-image">Microsoft Foundry: MAI image models</a></li>
+  </ul></div>
+</KnowledgeLayout>

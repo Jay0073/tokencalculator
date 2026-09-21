@@ -1,0 +1,44 @@
+---
+import ImagePair from '../components/seo/ImagePair.astro';
+---
+<ImagePair
+  slug="gpt-image-2-5-vs-grok-imagine-image-2-cost"
+  leftId="gpt-image-2.5"
+  rightId="grok-imagine-image-2"
+  title="GPT Image 2.5 vs Grok Imagine Image 2.0 Cost"
+  description="Grok Imagine Image 2.0 costs a flat $0.04 per image. GPT Image 2.5 costs from $0.006 to $0.71 depending on size and quality. Compare real monthly cost."
+  crumb="GPT Image 2.5 vs Grok Imagine Image 2.0"
+  heading="GPT Image 2.5 vs Grok Imagine Image 2.0 cost."
+  intro="A per-token model with a wide quality range against a flat price per image. Which one is cheaper depends almost entirely on the quality you need from GPT Image 2.5."
+  decision="If medium quality is enough, GPT Image 2.5 costs about a third of Grok Imagine Image 2.0 per 1K image. If you need high quality or above, Grok Imagine Image 2.0 is cheaper per image and easier to budget. Test both on your own prompts first, because the two rank far apart on preference votes."
+  analysis={[
+    {
+      heading: 'A flat price against a quality dial',
+      body: [
+        'xAI lists Grok Imagine Image 2.0 at $0.04 per image. The price does not change with the prompt, which makes a monthly budget a single multiplication.',
+        'GPT Image 2.5 bills image output at $30 per million tokens, and the quality setting changes the token count. A 1024×1024 image costs about $0.0059 at low, $0.013 at medium, $0.053 at high and $0.21 at max quality.',
+      ],
+    },
+    {
+      heading: 'Where the break-even sits',
+      body: [
+        'At 1K, Grok Imagine Image 2.0 costs about three times GPT Image 2.5 at medium quality, and about 24 percent less than GPT Image 2.5 at high quality.',
+        'So the decision is really about which GPT Image 2.5 quality tier your use case needs. Drafts, thumbnails and internal assets usually do not need high. Customer-facing hero images often do.',
+        'Neither side offers a batch discount: xAI accepts images in its Batch API but bills them at the standard rate, and OpenAI has no batch pricing for GPT Image 2.5.',
+      ],
+    },
+    {
+      heading: 'Rankings put them far apart',
+      body: [
+        'On the Arena text-to-image leaderboard updated on 7 September 2026, GPT Image 2.5 Sunburst ranked first (1421) and Flare second (1399). Grok Imagine Image 2.0, at its low setting, ranked fifth (1315). All three scores are marked preliminary.',
+        'A preference gap of that size is visible on general prompts. Whether it matters for your images is a question only a side-by-side test on your own prompts can answer.',
+      ],
+    },
+  ]}
+  faq={[
+    { question: 'Is Grok Imagine Image 2.0 cheaper than GPT Image 2.5?', answer: 'It depends on the GPT Image 2.5 quality tier. Grok Imagine Image 2.0 costs $0.04 per image. GPT Image 2.5 costs about $0.013 per 1K image at medium quality, which is cheaper, and $0.053 at high quality, which is more expensive.' },
+    { question: 'How much does Grok Imagine Image 2.0 cost?', answer: 'xAI lists grok-imagine-image-2.0 at $0.04 per image. Batch requests are accepted but billed at the same rate.' },
+    { question: 'Which ranks higher on image quality?', answer: 'GPT Image 2.5. On the Arena text-to-image leaderboard of 7 September 2026, its two variants ranked first and second, and Grok Imagine Image 2.0 ranked fifth. All three scores were marked preliminary.' },
+    { question: 'Which is easier to budget?', answer: 'Grok Imagine Image 2.0, because every image costs the same. GPT Image 2.5 costs can change by a factor of four or more if a client library sends a higher quality setting by default.' },
+  ]}
+/>
