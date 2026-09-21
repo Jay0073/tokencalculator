@@ -17,7 +17,7 @@ const STUFFED_TOKENS = 200_000; // A medium document set pasted into the prompt.
 const RETRIEVED_TOKENS = 4_000; // Five retrieved chunks plus the question.
 const OUTPUT_TOKENS = 800;
 
-const compared = ['gpt-6-astra', 'claude-fable-5-1', 'gpt-5.6-terra', 'claude-sonnet-5', 'gemini-3.8-flash', 'deepseek-v4-flash']
+const compared = ['gpt-6-astra', 'claude-fable-5-1', 'gpt-5.6-terra', 'claude-sonnet-5', 'gemini-3.8-flash', 'deepseek-flash']
   .map((id) => MODELS.find((model) => model.id === id))
   .filter((model): model is NonNullable<typeof model> => Boolean(model))
   .map((model) => {

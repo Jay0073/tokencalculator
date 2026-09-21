@@ -23,7 +23,7 @@ const WRITE_MULTIPLIER = 1.25;
 
 const rows = MODELS
   .filter((model) => model.cachedInputPerMillion !== undefined && model.cachedInputPerMillion < model.inputPerMillion)
-  .filter((model) => ['gpt-6-astra', 'claude-fable-5-1', 'gpt-5.6-terra', 'claude-sonnet-5', 'gemini-3.8-flash', 'qwen3.8-max', 'deepseek-v4-flash'].includes(model.id))
+  .filter((model) => ['gpt-6-astra', 'claude-fable-5-1', 'gpt-5.6-terra', 'claude-sonnet-5', 'gemini-3.8-flash', 'qwen3.8-max', 'deepseek-flash'].includes(model.id))
   .map((model) => {
     const inRate = model.inputPerMillion / 1_000_000;
     const cacheRate = model.cachedInputPerMillion! / 1_000_000;

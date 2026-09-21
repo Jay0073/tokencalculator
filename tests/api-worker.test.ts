@@ -73,7 +73,7 @@ describe('developer API worker', () => {
       ['gpt-4o', 'gpt-5.6-terra'],
       ['claude-3-5-sonnet', 'claude-sonnet-5'],
       ['gemini-1.5-pro', 'gemini-2.5-pro'],
-      ['deepseek-chat', 'deepseek-v4-flash'],
+      ['deepseek-chat', 'deepseek-flash'],
     ] as const) {
       const response = await post('/api/v1/count', { model: alias, input: { text: 'hello' } });
       expect(response.status, `alias ${alias}`).toBe(200);

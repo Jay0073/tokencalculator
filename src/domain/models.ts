@@ -52,6 +52,12 @@ export interface ModelConfig {
   pricingTiers?: PricingTier[];
   vision?: VisionStrategy;
   pricingUrl: string;
+  /**
+   * Set only when models.dev disagreed with the provider and the rates were corrected
+   * from this official page (see "corrections" in scripts/model-policy.json). The
+   * browser's live refresh must not overwrite a corrected model with the upstream rate.
+   */
+  rateSource?: string;
   /** Upstream launch date, used to sort and to surface how current a model is. */
   releaseDate?: string;
   verifiedAt: string;
