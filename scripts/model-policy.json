@@ -1,7 +1,9 @@
 {
   "$comment": "Selection policy for scripts/sync-models.mjs. Facts come from models.dev; this file only decides WHICH models to publish and how to label them. Never hand-edit prices here.",
   "source": "https://models.dev/api.json",
-  "maxModelsPerProvider": 5,
+  "maxModelsPerProvider": 7,
+  "$maxAgeDaysComment": "A model that is not pinned must have been released within this many days. Without it, raising maxModelsPerProvider to fit new releases also pulled long-retired models back in, because spare slots are filled by whatever exists. Pinned models are published at any age.",
+  "maxAgeDays": 180,
   "defaultModel": "gpt-5.6-terra",
   "$pinnedComment": "Always publish these if upstream still lists them, regardless of release date. They carry real search demand, are the cheap tier people compare against, or are used by a comparison page in src/data/comparisons.ts, so newest-first alone would wrongly drop them. tests/model-catalogue.test.ts fails if a comparison page names a model that is not published.",
   "pinned": [
@@ -25,48 +27,26 @@
     "kimi-k3",
     "grok-4.6",
     "glm-5.3",
-    "muse-spark-1.3"
+    "muse-spark-1.3",
+    "claude-sonnet-5-5",
+    "claude-opus-5-5",
+    "gpt-6.1-sol",
+    "gpt-6-sol",
+    "gpt-6-luna"
   ],
-  "$overridesComment": "Facts upstream does not model. Long-context tiers are published by the provider but absent from models.dev, so they are kept by hand and merged onto the generated entry. Descriptions are editorial. Nothing here may restate a base rate.",
+  "$overridesComment": "Facts upstream does not model. Descriptions are editorial. Long-context tiers now come from models.dev where it publishes them; keep a tier here only for models where upstream has none (currently Gemini 2.5 Pro), and the sync warns if both exist. Nothing here may restate a base rate.",
   "overrides": {
     "gpt-6-astra": {
       "description": "Latest frontier reasoning"
     },
     "gpt-5.6-sol": {
-      "description": "Frontier reasoning",
-      "pricingTiers": [
-        {
-          "aboveInputTokens": 272000,
-          "inputPerMillion": 8,
-          "cachedInputPerMillion": 0.8,
-          "outputPerMillion": 30,
-          "label": "Long-context rate above 272K input tokens"
-        }
-      ]
+      "description": "Previous frontier reasoning"
     },
     "gpt-5.6-terra": {
-      "description": "Balanced production model",
-      "pricingTiers": [
-        {
-          "aboveInputTokens": 272000,
-          "inputPerMillion": 4,
-          "cachedInputPerMillion": 0.4,
-          "outputPerMillion": 18,
-          "label": "Long-context rate above 272K input tokens"
-        }
-      ]
+      "description": "Balanced production model"
     },
     "gpt-5.6-luna": {
-      "description": "High-volume workloads",
-      "pricingTiers": [
-        {
-          "aboveInputTokens": 272000,
-          "inputPerMillion": 0.4,
-          "cachedInputPerMillion": 0.04,
-          "outputPerMillion": 1.8,
-          "label": "Long-context rate above 272K input tokens"
-        }
-      ]
+      "description": "High-volume workloads"
     },
     "claude-fable-5-1": {
       "description": "Latest frontier Claude"
@@ -142,7 +122,8 @@
     },
     "claude-haiku-4-5": {
       "name": "Claude Haiku 4.5",
-      "description": "Fast, efficient Claude"
+      "description": "Fast, efficient Claude",
+      "tokenizer": "claude-estimate"
     },
     "gemini-2.5-pro": {
       "description": "Long-context reasoning",
@@ -161,6 +142,24 @@
     },
     "claude-opus-4-8": {
       "description": "Previous Opus generation"
+    },
+    "gpt-6.1-sol": {
+      "description": "Latest frontier reasoning"
+    },
+    "gpt-6-sol": {
+      "description": "Frontier reasoning"
+    },
+    "gpt-6-luna": {
+      "description": "High-volume workloads"
+    },
+    "claude-opus-5-5": {
+      "description": "Latest Opus generation"
+    },
+    "claude-sonnet-5-5": {
+      "description": "Latest balanced Claude"
+    },
+    "grok-4.7": {
+      "description": "xAI flagship"
     }
   },
   "$correctionsComment": "Rare, documented exceptions to the single-source rule, for when models.dev disagrees with the provider's own pricing page. Each entry names the official source, the date it was checked, and the models.dev values it replaces. The sync warns when models.dev starts to agree (remove the entry) or changes again (re-check the source). The browser refresh skips corrected models.",
@@ -188,8 +187,8 @@
       "vision": "openai-tiles",
       "pricingUrl": "https://developers.openai.com/api/docs/models/compare",
       "include": [
-        "^gpt-6-",
-        "^gpt-5\\.6-"
+        "^gpt-6",
+        "^gpt-5.6-"
       ],
       "exclude": [
         "-pro$",
@@ -204,7 +203,7 @@
     "anthropic": {
       "label": "Anthropic",
       "short": "ANT",
-      "tokenizer": "claude-estimate",
+      "tokenizer": "claude-47-estimate",
       "accuracy": "estimated",
       "vision": "claude-patches",
       "pricingUrl": "https://platform.claude.com/docs/en/about-claude/pricing",
@@ -213,8 +212,10 @@
       ],
       "exclude": [
         "-\\d{8}$",
-        "-latest$"
-      ]
+        "-latest$",
+        "mythos"
+      ],
+      "$tokenizerComment": "Claude 4.7 and later use a tokenizer that produces ~30% more tokens for the same text (platform.claude.com/docs/en/about-claude/pricing). Models released before Claude Opus 4.7, such as Haiku 4.5, override this back to claude-estimate."
     },
     "google": {
       "label": "Google",
@@ -235,8 +236,10 @@
         "translate",
         "omni",
         "tts",
-        "native-audio"
-      ]
+        "native-audio",
+        "^gemini-3.5-flash$"
+      ],
+      "$comment": "gemini-3.5-flash is no longer on ai.google.dev/gemini-api/docs/pricing (checked 2026-10-02); 3.5 Flash-Lite still is."
     },
     "deepseek": {
       "label": "DeepSeek",
@@ -270,7 +273,8 @@
         "thinking",
         "vl",
         "coder",
-        "next$"
+        "next$",
+        "preview"
       ]
     },
     "moonshotai": {
@@ -320,8 +324,11 @@
         "-x$",
         "v$",
         "vision",
-        "^glm-\\dv"
-      ]
+        "^glm-\\dv",
+        "^glm-5$",
+        "^glm-5-turbo$"
+      ],
+      "$comment": "GLM-5 and GLM-5-Turbo are gone from docs.z.ai/guides/overview/pricing (checked 2026-10-02); 5.1 and 5.2 are still listed."
     },
     "meta": {
       "label": "Meta",
@@ -337,5 +344,87 @@
         "contributor$"
       ]
     }
+  },
+  "$serviceTiersComment": "Providers sell the same model at several speeds and several prices. Each multiplier applies to every token category and was read from the provider pricing page on 2026-10-02. Only tiers confirmed on an official page are listed here.",
+  "serviceTiers": {
+    "openai": [
+      {
+        "id": "batch",
+        "label": "Batch",
+        "multiplier": 0.5,
+        "note": "Asynchronous processing. Half the standard price on every model."
+      },
+      {
+        "id": "flex",
+        "label": "Flex",
+        "multiplier": 0.5,
+        "note": "Slower responses, billed at batch rates."
+      },
+      {
+        "id": "fast",
+        "label": "Fast",
+        "multiplier": 2,
+        "note": "Priority capacity at twice the standard price."
+      },
+      {
+        "id": "ultrafast",
+        "label": "Ultrafast",
+        "multiplier": 6,
+        "appliesTo": [
+          "gpt-6-astra"
+        ],
+        "note": "GPT-6 Astra only, and only below the long-context threshold."
+      }
+    ],
+    "anthropic": [
+      {
+        "id": "batch",
+        "label": "Batch",
+        "multiplier": 0.5,
+        "note": "Asynchronous processing. Stacks with the cache multipliers."
+      },
+      {
+        "id": "fast",
+        "label": "Fast mode",
+        "multiplier": 2,
+        "appliesTo": [
+          "claude-opus-5-5",
+          "claude-opus-5",
+          "claude-opus-4-8"
+        ],
+        "note": "Research preview, Opus models only, on the first-party API."
+      },
+      {
+        "id": "us",
+        "label": "US data residency",
+        "multiplier": 1.1,
+        "note": "inference_geo set to us, on Claude 4.6 and later. Applies to every token category."
+      }
+    ],
+    "google": [
+      {
+        "id": "batch",
+        "label": "Batch",
+        "multiplier": 0.5,
+        "note": "Asynchronous processing."
+      },
+      {
+        "id": "priority",
+        "label": "Priority",
+        "multiplier": 1.8,
+        "appliesTo": [
+          "gemini-3.8-flash"
+        ],
+        "note": "Confirmed for Gemini 3.8 Flash on the pricing page."
+      }
+    ],
+    "deepseek": [
+      {
+        "id": "peak",
+        "label": "Peak hours",
+        "multiplier": 2,
+        "note": "01:00 to 04:00 and 06:00 to 10:00 UTC, Monday to Friday. Catalogue rates are the off-peak ones."
+      }
+    ]
   }
 }

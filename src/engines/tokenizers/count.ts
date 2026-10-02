@@ -3,6 +3,29 @@ import o200kBase from 'js-tiktoken/ranks/o200k_base';
 import type { ModelConfig, TokenInspectionPiece, TokenizerStrategy } from '../../domain/models';
 
 const byteLength = (text: string) => new TextEncoder().encode(text).length;
+
+/**
+ * UTF-8 bytes per token, by tokenizer family. Must match BYTES_PER_TOKEN in
+ * packages/tokencalculator-core; tests/model-catalogue.test.ts fails if the two drift.
+ * This file previously carried its own shorter list, which counted Qwen, Kimi and GLM
+ * text at 4 bytes per token while the package used 3.7.
+ */
+export const BYTES_PER_TOKEN: Readonly<Record<TokenizerStrategy, number>> = {
+  o200k_base: 4,
+  cl100k_base: 4,
+  'claude-estimate': 3.75,
+  // Anthropic documents that Claude 4.7 and later produce ~30% more tokens for the same
+  // text, so the same bytes divide into more tokens: 3.75 / 1.30.
+  'claude-47-estimate': 2.88,
+  'gemini-estimate': 4,
+  'deepseek-estimate': 3.85,
+  // CJK-heavy vocabularies pack fewer UTF-8 bytes into a token on Latin text.
+  'qwen-estimate': 3.7,
+  'kimi-estimate': 3.7,
+  'glm-estimate': 3.7,
+  'grok-estimate': 4,
+  'llama-estimate': 4,
+};
 const encodings = new Map<TokenizerStrategy, Tiktoken>();
 
 function getTokenizer(strategy: TokenizerStrategy) {
@@ -23,7 +46,7 @@ export function countText(text: string, model: ModelConfig): { tokens: number; m
   }
 
   const bytes = byteLength(text);
-  const factor = model.tokenizer === 'claude-estimate' ? 3.75 : model.tokenizer === 'deepseek-estimate' ? 3.85 : 4;
+  const factor = BYTES_PER_TOKEN[model.tokenizer] ?? 4;
   return { tokens: Math.max(1, Math.ceil(bytes / factor)), method: `Provider-Calibrated UTF-8 Projection · ${factor.toFixed(2)} bytes/token` };
 }
 

@@ -1,0 +1,57 @@
+---
+import KnowledgeLayout from '../../layouts/KnowledgeLayout.astro';
+const toc=[{id:'what',label:'What rises in January'},{id:'who',label:'Who is affected'},{id:'other',label:'Prices moving the other way'},{id:'plan',label:'What to do before January'}];
+// A 10M input / 2M output month on Gemini 3.8 Flash, priced before and after the change.
+const INPUT_M = 10, OUTPUT_M = 2;
+const before = INPUT_M * 0.75 + OUTPUT_M * 3.75;
+const after = INPUT_M * 1.5 + OUTPUT_M * 7.5;
+const usd = (value: number) => `$${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+---
+<KnowledgeLayout title="Every Scheduled 2027 LLM API Price Increase" description="Three Gemini Flash models and both Gemini TTS models double on 1 January 2027, while Anthropic cancelled a planned rise. The full list, with what it costs you." heading="Every scheduled 2027 API price increase, in one table" eyebrow="Pricing change · Forward look" datePublished="2026-10-02" dateModified="2026-10-02" section="LLM API cost" keywords={['Gemini price increase 2027','LLM API price rise','Gemini 3.8 Flash pricing','API pricing changes']} {toc}>
+  <p class="knowledge-lead">Model prices usually fall. Three of Google's Gemini Flash models and both of its text-to-speech models are scheduled to double on 1 January 2027, and the increase is printed on Google's own pricing page today. If your budget assumes the current rate, it is half of what you will pay from January.</p>
+
+  <h2 id="what">What rises on 1 January 2027</h2>
+  <div class="overflow-x-auto"><table>
+    <thead><tr><th>Model</th><th>Now, per 1M tokens</th><th>From 1 January 2027</th></tr></thead>
+    <tbody>
+      <tr><td>Gemini 3.8 Flash</td><td>$0.75 in / $3.75 out</td><td>$1.50 in / $7.50 out</td></tr>
+      <tr><td>Gemini 3.7 Flash</td><td>$0.75 in / $3.75 out</td><td>$1.50 in / $7.50 out</td></tr>
+      <tr><td>Gemini 3.6 Flash</td><td>$0.75 in / $3.75 out</td><td>$1.50 in / $7.50 out</td></tr>
+      <tr><td>Context caching, all three</td><td>$0.075</td><td>$0.15</td></tr>
+      <tr><td>Cache storage, all three</td><td>$0.50 per 1M tokens per hour</td><td>$1.00</td></tr>
+      <tr><td>Gemini 3.8 Flash TTS</td><td>$0.50 text in / $9.00 audio out</td><td>Doubles</td></tr>
+      <tr><td>Gemini 3.8 Flash-Lite TTS</td><td>$0.50 text in / $6.00 audio out</td><td>Doubles</td></tr>
+    </tbody>
+  </table></div>
+  <p>Batch processing stays at half the standard price, so batch users see the same doubling from a lower base. The Flash-Lite text models, Gemini 3.5 Flash-Lite and 3.1 Flash-Lite, are not on the list and keep their current prices.</p>
+
+  <h2 id="who">Who is affected, and by how much</h2>
+  <p>A service that sends 10 million input tokens and 2 million output tokens a month on Gemini 3.8 Flash pays {usd(before)} today. The same month costs {usd(after)} from January.</p>
+  <p>The models affected are Google's mid-tier Flash line, which is where most production traffic sits. Three alternatives cost less than the 2027 Flash price today: Gemini 3.5 Flash-Lite at $0.30 and $2.50, GPT-6 Luna at $0.10 and $0.50, and DeepSeek V4.1 Flash at $0.15 and $0.60 off-peak. Whether any of them does your job is a separate question, and a measurable one.</p>
+  <p>Watch for "introductory" and "limited-time" wording elsewhere. It is becoming common, and it means today's number has an expiry date that your budget probably does not.</p>
+
+  <h2 id="other">Prices moving the other way</h2>
+  <ul>
+    <li><strong>Anthropic cancelled an increase.</strong> Claude Sonnet 5's launch price of $2 and $10 per million was announced as introductory, with a rise to $3 and $15 scheduled for 1 September 2026. Anthropic's pricing page now states the increase will not happen and $2 / $10 is the standard price.</li>
+    <li><strong>Anthropic cut the Opus tier.</strong> Claude Opus 5.5 lists $4 and $20 against $5 and $25 for Opus 5, with cache reads down from a tenth of the input price to a twentieth.</li>
+    <li><strong>OpenAI halved two tiers.</strong> GPT-6 Sol costs $2 and $10 where GPT-5.6 Sol cost $4 and $20. GPT-6 Luna costs $0.10 and $0.50 where GPT-5.6 Luna cost $0.20 and $1.20.</li>
+    <li><strong>DeepSeek split its prices by time of day.</strong> Since 10 September its rates double between 01:00 and 04:00 and between 06:00 and 10:00 UTC on weekdays.</li>
+  </ul>
+  <p>The overall direction is still downward at the top of the market and upward in Google's mid tier. That makes a single "what does AI cost" number useless, and a per-workload measurement necessary.</p>
+
+  <h2 id="plan">What to do before January</h2>
+  <ol>
+    <li><strong>Re-price any Gemini Flash workload at the 2027 rate.</strong> If it still works at $1.50 and $7.50, nothing to do.</li>
+    <li><strong>Test one tier down.</strong> Gemini 3.5 Flash-Lite costs less than half the 2027 Flash price and keeps the same image and document handling.</li>
+    <li><strong>Test one lab across.</strong> GPT-6 Luna and DeepSeek V4.1 Flash are both below the current Flash price, let alone the 2027 one.</li>
+    <li><strong>Check for other expiry dates.</strong> Any price described as introductory or limited-time should carry a reminder in your own notes.</li>
+  </ol>
+  <p>Price your own prompt on all four with the <a href="/">token calculator</a>, or start from the <a href="/compare/">comparison hub</a>.</p>
+
+  <div class="source-ledger"><h2>Evidence ledger</h2><p><strong>Reviewed:</strong> 2 October 2026 · Provider pricing pages remain authoritative and change without notice.</p><ul>
+    <li><a href="https://ai.google.dev/gemini-api/docs/pricing">Gemini API pricing</a>, which lists both the current and the 2027 rates</li>
+    <li><a href="https://platform.claude.com/docs/en/about-claude/pricing">Anthropic pricing</a>, including the cancelled Sonnet 5 increase</li>
+    <li><a href="https://developers.openai.com/api/docs/pricing">OpenAI API pricing</a></li>
+    <li><a href="https://api-docs.deepseek.com/quick_start/pricing">DeepSeek models and pricing</a></li>
+  </ul></div>
+</KnowledgeLayout>
