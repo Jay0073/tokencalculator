@@ -6,6 +6,16 @@ import UseCaseReviews from './UseCaseReviews.astro';
 import { FEATURED_REVIEWS } from '../../data/reviews';
 import { rate } from '../../lib/format';
 
+// Where each model sits on the catalogue's cost scale. Log scaled, because the rates run
+// from $0.03 to $75 per million and a linear scale would crowd almost everything left.
+const blended = (model: { inputPerMillion: number; outputPerMillion: number }) => (model.inputPerMillion + model.outputPerMillion) / 2;
+const allRates = MODELS.map(blended).filter((value) => value > 0);
+const lowestRate = Math.log10(Math.min(...allRates));
+const highestRate = Math.log10(Math.max(...allRates));
+const costPosition = (model: { inputPerMillion: number; outputPerMillion: number }) =>
+  Math.min(1, Math.max(0, (Math.log10(blended(model)) - lowestRate) / (highestRate - lowestRate)));
+const costStep = (model: { inputPerMillion: number; outputPerMillion: number }) => Math.min(5, Math.max(1, Math.ceil(costPosition(model) * 5)));
+
 interface Props { provider?:ProviderId }
 const { provider }=Astro.props;
 const providerModels=provider ? MODELS.filter((model)=>model.provider===provider) : [];
@@ -50,15 +60,17 @@ const providerCopy:Record<ProviderId,{method:string;difference:string;image:stri
     <section class="shell mt-20 relative z-10" aria-labelledby="pricing-title">
       <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-7"><div><span class="eyebrow">LLM API pricing</span><h2 id="pricing-title" class="section-title mt-3">Token prices for every supported model</h2></div><p class="mono text-xs muted m-0">Rates verified {reviewed}</p></div>
       <p class="muted max-w-3xl mt-0 mb-6">Cost per 1,000,000 tokens in USD, for input and output separately. Cached input is the discounted rate providers charge when a prompt prefix is reused. Paste a real prompt into the calculator above to turn these rates into a cost for your own workload.</p>
-      <div class="table-shell overflow-x-auto"><table class="seo-table"><thead><tr><th>Model</th><th>Provider</th><th>Context window</th><th>Input / 1M</th><th>Cached input / 1M</th><th>Output / 1M</th></tr></thead><tbody>
-        {providerOrder.flatMap((providerId)=>MODELS.filter((model)=>model.provider===providerId).map((model)=>(
-          <tr>
-            <td><strong>{model.name}</strong></td>
-            <td>{PROVIDERS[model.provider].name}</td>
-            <td data-live-context={model.id}>{model.contextWindow.toLocaleString()}</td>
-            <td data-live-input={model.id}>{rate(model.inputPerMillion)}</td>
-            <td>{rate(model.cachedInputPerMillion)}</td>
-            <td data-live-output={model.id}>{rate(model.outputPerMillion)}</td>
+      <div class="table-shell overflow-x-auto"><table class="seo-table price-table">
+        <thead><tr><th>Model</th><th>Cost scale</th><th class="num">Context window</th><th class="num">Input / 1M</th><th class="num">Cached input / 1M</th><th class="num">Output / 1M</th></tr></thead>
+        <tbody>
+        {providerOrder.flatMap((providerId)=>MODELS.filter((model)=>model.provider===providerId).map((model,index)=>(
+          <tr class={index===0?'group-start':undefined}>
+            <td><strong>{model.name}</strong>{index===0 && <span class="group-name">{PROVIDERS[model.provider].name}</span>}</td>
+            <td><span class="scale" aria-hidden="true" style={`--reading:${Math.round(costPosition(model)*100)}%;--tone:var(--cost-${costStep(model)})`}><i></i><b></b></span></td>
+            <td class="num figure" data-live-context={model.id}>{model.contextWindow.toLocaleString()}</td>
+            <td class="num figure" data-live-input={model.id}>{rate(model.inputPerMillion)}</td>
+            <td class="num figure muted">{rate(model.cachedInputPerMillion)}</td>
+            <td class="num figure" data-live-output={model.id}>{rate(model.outputPerMillion)}</td>
           </tr>
         )))}
       </tbody></table></div>

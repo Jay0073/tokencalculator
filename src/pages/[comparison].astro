@@ -23,14 +23,32 @@ const showCacheWrite = [left, right].some((model) => model.cacheWritePerMillion 
 const canonical = `/${page.slug}/`;
 const breadcrumbs = [{ label: 'Token calculator', href: '/' }, { label: page.crumb }];
 // Exact published rate, never rounded, with at least two decimals ($0.60, not $0.6).
-const money = (value: number | undefined) => value === undefined ? '—' : `$${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 6 })}`;
+import { rate as money } from '../lib/format';
+import HeroStats from '../components/seo/HeroStats.astro';
+
+// How far apart the two models are on each rate. "1.0x" means they match.
+const gap = (a: number | undefined, b: number | undefined) => {
+  if (!a || !b) return '—';
+  const ratio = Math.max(a, b) / Math.min(a, b);
+  return ratio < 1.005 ? 'same' : `${ratio.toLocaleString('en-US', { maximumFractionDigits: ratio < 10 ? 1 : 0 })}\u00d7`;
+};
 ---
 <BaseLayout title={page.title} description={page.description} {canonical} faq={page.faq} {breadcrumbs} application>
   <Breadcrumbs items={breadcrumbs} />
-  <section class="shell max-w-4xl pt-12 sm:pt-16 pb-8 relative z-10">
-    <span class="eyebrow">{page.eyebrow}</span>
-    <h1 class="m-0 mt-4 text-[clamp(2.25rem,5vw,3.75rem)] leading-[1.02] tracking-[-.055em] max-w-4xl">{page.heading}</h1>
-    <p class="muted text-[16px] sm:text-[17px] mt-4 mb-0 max-w-3xl">{page.intro}</p>
+  <section class="shell pt-12 sm:pt-16 pb-8 relative z-10">
+    <div class="hero-split">
+      <div>
+        <span class="eyebrow">{page.eyebrow}</span>
+        <h1 class="m-0 mt-4 text-[clamp(2.25rem,5vw,3.75rem)] leading-[1.02] tracking-[-.055em]">{page.heading}</h1>
+        <p class="muted text-[16px] sm:text-[17px] mt-4 mb-0">{page.intro}</p>
+      </div>
+      <HeroStats items={[
+        { value: gap(left.inputPerMillion, right.inputPerMillion), label: 'Input gap' },
+        { value: gap(left.outputPerMillion, right.outputPerMillion), label: 'Output gap' },
+        { value: gap(left.cachedInputPerMillion, right.cachedInputPerMillion), label: 'Cached gap' },
+        { value: [left, right].map((model) => model.verifiedAt).sort().at(-1) ?? '', label: 'Rates verified', small: true },
+      ]}/>
+    </div>
   </section>
 
   <section class="shell relative z-10 mb-8">
@@ -38,9 +56,9 @@ const money = (value: number | undefined) => value === undefined ? '—' : `$${v
       <p class="text-sm text-[var(--warn)] m-0 mb-5"><strong>Current-model note:</strong> {page.legacyTerms}</p>
       <div class="overflow-x-auto">
         <table class="w-full min-w-[620px] text-left text-sm">
-          <thead><tr class="muted"><th class="pb-3">Current model</th><th class="pb-3">Input / 1M</th><th class="pb-3">Cached / 1M</th>{showCacheWrite && <th class="pb-3">Cache write / 1M</th>}<th class="pb-3">Output / 1M</th><th class="pb-3">Context</th></tr></thead>
+          <thead><tr class="muted"><th class="pb-3">Current model</th><th class="pb-3 num">Input / 1M</th><th class="pb-3 num">Cached / 1M</th>{showCacheWrite && <th class="pb-3 num">Cache write / 1M</th>}<th class="pb-3 num">Output / 1M</th><th class="pb-3 num">Context</th></tr></thead>
           <tbody>
-            {[left, right].map((model) => <tr class="border-t hairline"><th class="py-4 pr-5"><span class="block">{model.name}</span><a class="text-xs text-[var(--accent)] font-normal" href={model.pricingUrl} target="_blank" rel="noreferrer">Official pricing ↗</a></th><td data-live-input={model.id}>{money(model.inputPerMillion)}</td><td>{money(model.cachedInputPerMillion)}</td>{showCacheWrite && <td>{money(model.cacheWritePerMillion)}</td>}<td data-live-output={model.id}>{money(model.outputPerMillion)}</td><td data-live-context={model.id}>{model.contextWindow.toLocaleString()}</td></tr>)}
+            {[left, right].map((model) => <tr class="border-t hairline"><th class="py-4 pr-5"><span class="block">{model.name}</span><a class="text-xs text-[var(--accent)] font-normal" href={model.pricingUrl} target="_blank" rel="noreferrer">Official pricing ↗</a></th><td class="num figure" data-live-input={model.id}>{money(model.inputPerMillion)}</td><td class="num figure muted">{money(model.cachedInputPerMillion)}</td>{showCacheWrite && <td class="num figure muted">{money(model.cacheWritePerMillion)}</td>}<td class="num figure" data-live-output={model.id}>{money(model.outputPerMillion)}</td><td class="num figure" data-live-context={model.id}>{model.contextWindow.toLocaleString()}</td></tr>)}
           </tbody>
         </table>
       </div>

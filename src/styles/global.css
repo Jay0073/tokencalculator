@@ -12,26 +12,23 @@
 
 :root {
   color-scheme: light;
-  --bg:#f6f7f9; --panel:#ffffff; --panel-2:#f0f2f5; --panel-raised:#ffffff;
-  --line:#dfe3e8; --line-strong:#c6ccd4; --text:#15181d; --muted:#626a75; --faint:#949ca7;
+  --bg:#f3f2f0; --panel:#ffffff; --panel-2:#eceae6; --panel-raised:#ffffff;
+  --line:#e0ddd7; --line-strong:#c7c3bb; --text:#121211; --muted:#57554f; --faint:#8a877f;
+  --surface-hover:#faf9f6;
   --accent:#066f91; --accent-hover:#055d79; --accent-soft:#e5f4f8; --accent-soft-strong:#70bdd2;
-  --success:#16845b; --warn:#b76a13; --danger:#c63c3c; --mark-bg:#f0f2f5;
+  --success:#16845b; --warn:#b76a13; --danger:#c63c3c; --mark-bg:#eceae6;
   --shadow:0 12px 34px rgba(20,28,38,.07),0 1px 3px rgba(20,28,38,.06);
-  /* Elevation for things you can click. A static box never gets this. */
-  --lift:0 1px 2px rgba(20,28,38,.06),0 4px 12px rgba(20,28,38,.05);
-  --lift-hover:0 2px 6px rgba(20,28,38,.08),0 14px 30px rgba(20,28,38,.10);
   /* Cost magnitude, cheapest to dearest. One hue, so it reads as a scale, and amber
      rather than teal, so it never competes with the colour that means "clickable". */
   --cost-1:#e8d9bd; --cost-2:#dcb26d; --cost-3:#c8902f; --cost-4:#a26a11; --cost-5:#71460a;
 }
 :root:not(.light) {
   color-scheme:dark;
-  --bg:#0d0f12; --panel:#14171b; --panel-2:#1b1f24; --panel-raised:#171a1f;
-  --line:#292e35; --line-strong:#3b424c; --text:#f1f3f5; --muted:#9ba3ad; --faint:#68717d;
+  --bg:#0a0a0b; --panel:#121213; --panel-2:#18181a; --panel-raised:#151517;
+  --line:#232325; --line-strong:#35353a; --text:#f0efed; --muted:#9a9892; --faint:#6a6862;
+  --surface-hover:#1a1a1c;
   --accent:#45b8d8; --accent-hover:#69c8e1; --accent-soft:#12343e; --accent-soft-strong:#247c94;
-  --success:#43b581; --warn:#e4a34f; --danger:#ef6464; --mark-bg:#1b1f24; --shadow:0 16px 50px rgba(0,0,0,.28);
-  --lift:0 1px 2px rgba(0,0,0,.4),0 4px 14px rgba(0,0,0,.25);
-  --lift-hover:0 2px 8px rgba(0,0,0,.45),0 16px 34px rgba(0,0,0,.35);
+  --success:#43b581; --warn:#e4a34f; --danger:#ef6464; --mark-bg:#18181a; --shadow:0 16px 50px rgba(0,0,0,.28);
   --cost-1:#3a2d16; --cost-2:#6b501f; --cost-3:#a8762a; --cost-4:#d9a04a; --cost-5:#f0c074;
 }
 * { box-sizing:border-box; }
@@ -89,6 +86,12 @@ button,select { cursor:pointer; }
 .muted { color:var(--muted); }
 .mono { font-family:var(--font-mono); }
 .panel { background:var(--panel); border:1px solid var(--line); }
+/* A panel that is itself a link or a button is a door, and now says so: the surface
+   steps up and the hairline brightens on hover, and there is always a focus ring. This
+   one rule covers the 721 clickable panels without touching their markup. */
+a.panel,button.panel,label.panel,summary.panel { transition:background .16s ease,border-color .16s ease; }
+a.panel:hover,button.panel:hover,label.panel:hover,summary.panel:hover { background:var(--surface-hover); border-color:var(--line-strong); }
+a.panel:focus-visible,button.panel:focus-visible,label.panel:focus-visible,summary.panel:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
 .composer-shadow { box-shadow:var(--shadow); }
 .primary-button { background:var(--text); color:var(--bg); transition:background .15s ease; }
 .primary-button:hover { background:color-mix(in srgb,var(--text) 88%,var(--accent)); }
@@ -192,21 +195,28 @@ button,select { cursor:pointer; }
    an accent edge, and moves on hover. A surface you cannot act on is flat and tinted, and
    never borrows any of those signals. Before this, a clickable card and a static box were
    the same white panel with the same border on 30 of 67 pages. */
-.surface-action { position:relative; isolation:isolate; overflow:hidden; background:var(--panel-raised); border:1px solid var(--line); box-shadow:var(--lift); transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease; }
-.surface-action::before { content:''; position:absolute; inset:0 auto 0 0; width:3px; background:var(--line-strong); transition:background .18s ease,width .18s ease; }
-.surface-action:hover { transform:translateY(-2px); border-color:var(--accent-soft-strong); box-shadow:var(--lift-hover); }
-.surface-action:hover::before,.surface-action:focus-visible::before { background:var(--accent); width:4px; }
+.surface-action { position:relative; background:var(--panel); border:1px solid var(--line); transition:background .16s ease,border-color .16s ease; }
+.surface-action:hover { background:var(--surface-hover); border-color:var(--line-strong); }
 .surface-action:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
-.surface-static { background:var(--panel-2); border:1px solid transparent; box-shadow:none; }
+.surface-static { background:var(--panel-2); border:1px solid transparent; }
 .action-row { display:flex; align-items:center; gap:.4rem; margin-top:auto; padding-top:1rem; color:var(--accent); font-size:.875rem; font-weight:650; }
+.action-row::after { content:''; flex:1; height:1px; background:var(--line); }
 .action-row span { display:inline-block; transition:transform .18s ease; }
 .surface-action:hover .action-row span,.surface-action:focus-visible .action-row span { transform:translateX(4px); }
 
 /* Numbers are the product, so they get their own type treatment: tabular figures that
    line up column-wise, at full ink strength rather than muted. */
 .figure { font-family:var(--font-mono); font-variant-numeric:tabular-nums; color:var(--text); }
-.cost-bar { height:3px; border-radius:2px; background:color-mix(in srgb,var(--text) 14%,transparent); overflow:hidden; }
-.cost-bar i { display:block; height:100%; border-radius:2px; }
+/* A ruler, not a progress bar. Ticks mark the quarters of the range, a bar reads from
+   the left, and a needle marks the exact reading. Used wherever a number has a range,
+   which is what this site is for. --reading is 0-100, --tone the colour of the bar. */
+.scale { position:relative; display:block; height:12px; --tick:color-mix(in srgb,var(--text) 26%,transparent); }
+.scale::before { content:''; position:absolute; left:0; right:0; bottom:0; height:4px;
+  background:linear-gradient(to right,var(--tick) 0 1px,transparent 1px) left bottom/25% 100% repeat-x,
+             linear-gradient(to right,transparent calc(100% - 1px),var(--tick) calc(100% - 1px)) left bottom/100% 100% no-repeat; }
+.scale::after { content:''; position:absolute; left:0; right:0; bottom:4px; height:1px; background:color-mix(in srgb,var(--text) 10%,transparent); }
+.scale i { position:absolute; left:0; bottom:4px; width:var(--reading,0%); height:3px; background:var(--tone,var(--accent)); }
+.scale b { position:absolute; bottom:1px; left:var(--reading,0%); width:1px; height:10px; background:var(--text); transform:translateX(-.5px); }
 @media (prefers-reduced-motion:reduce) { .surface-action,.surface-action::before,.action-row span { transition:none; } .surface-action:hover { transform:none; } }
 
 /* Tap targets. Footer and breadcrumb links were text-height only, 16-20px on a phone,
@@ -254,7 +264,7 @@ button,select { cursor:pointer; }
 .knowledge-prose a { color:var(--accent); }
 .knowledge-prose strong { color:var(--text); }
 .knowledge-prose li { margin:.55rem 0; padding-left:.25rem; }
-.knowledge-prose code { border:1px solid var(--line); border-radius:.3rem; background:var(--panel-2); padding:.1rem .3rem; color:var(--text); font:500 .86em var(--font-mono); }
+.knowledge-prose code { border:1px solid var(--line); border-radius:.3rem; background:var(--panel-2); padding:.1rem .3rem; color:var(--text); font:500 .86em var(--font-mono); overflow-wrap:anywhere; }
 .knowledge-lead { color:var(--text); font-size:1.18rem; line-height:1.7; }
 .technical-callout { display:grid; grid-template-columns:minmax(0,1fr); gap:.85rem; margin:2rem 0; padding:1.35rem; border:1px solid var(--line); border-radius:.7rem; background:var(--panel); }
 /* The code line is sized to its content, so without a zero minimum the grid track
@@ -289,6 +299,27 @@ button,select { cursor:pointer; }
 .related-docs__grid small { color:var(--muted); font-size:.72rem; line-height:1.5; }
 .related-docs__grid i { margin-top:auto; padding-top:1rem; color:var(--accent); font:600 .65rem var(--font-mono); font-style:normal; }
 @media (max-width:700px) { .workflow-rail { display:grid; overflow:visible; } .workflow-arrow { min-height:1.8rem; transform:rotate(90deg); justify-self:center; } .workflow-stop { width:100%; min-height:auto; } .related-docs__grid { grid-template-columns:1fr; } .related-docs__grid a { min-height:11rem; } }
+/* The 43-row price table. Numbers right-aligned so digits line up by place value, which
+   is the single change that makes a long table scannable; one hairline per row and no
+   grid; the provider named once per group; and a header that survives the scroll. */
+/* A heading column with its readings beside it, instead of an empty right half. */
+.hero-split { display:grid; gap:2rem; align-items:end; }
+@media (min-width:1024px) { .hero-split { grid-template-columns:minmax(0,1.55fr) minmax(0,1fr); gap:3rem; } }
+
+code { overflow-wrap:anywhere; }
+
+.view-results:disabled { background:transparent; border-color:transparent; box-shadow:none; color:var(--faint); cursor:default; padding-inline:0; }
+
+.price-table { font-size:.875rem; }
+th.num,td.num { text-align:right; white-space:nowrap; }
+.price-table thead th { position:sticky; top:0; z-index:2; background:var(--bg); }
+.price-table tbody td { padding-block:.5rem; }
+.price-table tbody tr.group-start td { border-top:1px solid var(--line-strong); padding-top:1.1rem; }
+.price-table .group-name { display:block; margin-top:.15rem; color:var(--faint); font:600 .6rem var(--font-mono); letter-spacing:.09em; text-transform:uppercase; }
+.price-table .scale { width:110px; }
+.price-table td.muted { color:var(--muted); }
+.price-table tbody tr:hover td { background:var(--surface-hover); }
+
 /* Data tables inside articles and docs. Without these rules adjacent cells ran together. */
 .knowledge-prose table { width:100%; margin:1.25rem 0 1.5rem; border-collapse:collapse; font-size:.92rem; }
 .knowledge-prose th, .knowledge-prose td { padding:.6rem 1.1rem .6rem 0; border-top:1px solid var(--line); text-align:left; vertical-align:top; }
