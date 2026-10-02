@@ -15,7 +15,7 @@ const localeDestination=(item:Locale)=>localizedPath(hasLocalizedEquivalent?curr
 ---
 <header class="site-header relative z-20">
   <div class="shell header-shell h-[80px] grid grid-cols-[1fr_auto] lg:grid-cols-[1fr_auto_1fr] items-center gap-2 sm:gap-5">
-    <a href={localizedPath('/',locale)} class="flex items-center gap-3.5 no-underline w-max" aria-label="TokenCalculator.dev home">
+    <a href={localizedPath('/',locale)} class="brand-link flex items-center gap-3.5 no-underline w-max" aria-label="TokenCalculator.dev home">
       <BrandMark size={36}/>
       <span class="font-semibold tracking-[-.04em] text-[17px] sm:text-[18px]">TokenCalculator<span class="text-[var(--accent)]">.dev</span></span>
     </a>
@@ -182,6 +182,34 @@ const localeDestination=(item:Locale)=>localizedPath(hasLocalizedEquivalent?curr
   languageMenu?.querySelectorAll('[data-locale-name]').forEach((link) => {
     link.addEventListener('click', () => localStorage.setItem('preferred-locale', link.getAttribute('data-locale-name') ?? ''));
   });
+  // A pointer that can hover opens these menus by hovering, which is what people expect
+  // of a navigation bar. Touch and keyboard keep the click behaviour, because hover does
+  // not exist there. Closing is delayed so a diagonal move into the panel does not lose
+  // it, and the CSS bridge covers the gap under the trigger.
+  const canHover = window.matchMedia('(hover: hover) and (pointer: fine)');
+  headerMenus.forEach((menu) => {
+    if (!(menu instanceof HTMLDetailsElement) || !menu.classList.contains('mega-menu')) return;
+    let closeTimer;
+    const openMenu = () => {
+      clearTimeout(closeTimer);
+      headerMenus.forEach((other) => { if (other !== menu && other instanceof HTMLDetailsElement) other.open = false; });
+      if (languageMenu instanceof HTMLDetailsElement) languageMenu.open = false;
+      menu.open = true;
+    };
+    const closeSoon = () => {
+      clearTimeout(closeTimer);
+      closeTimer = setTimeout(() => { menu.open = false; }, 180);
+    };
+    menu.addEventListener('pointerenter', (event) => { if (canHover.matches && event.pointerType === 'mouse') openMenu(); });
+    menu.addEventListener('pointerleave', (event) => { if (canHover.matches && event.pointerType === 'mouse') closeSoon(); });
+    // Following a link should leave the menu closed behind you.
+    menu.addEventListener('click', (event) => { if (event.target instanceof Element && event.target.closest('a')) menu.open = false; });
+    // Tabbing out of the menu closes it, so the keyboard order stays predictable.
+    menu.addEventListener('focusout', (event) => {
+      if (!menu.contains(event.relatedTarget)) menu.open = false;
+    });
+  });
+
   document.addEventListener('click', (event) => {
     if (languageMenu instanceof HTMLDetailsElement && !languageMenu.contains(event.target)) languageMenu.open = false;
     headerMenus.forEach((menu) => {

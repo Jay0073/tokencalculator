@@ -1,0 +1,135 @@
+---
+import KnowledgeLayout from '../../layouts/KnowledgeLayout.astro';
+import FAQ from '../../components/seo/FAQ.astro';
+import FlowDiagram from '../../components/seo/FlowDiagram.astro';
+import { countImage } from '../../engines/vision/count';
+import { getModel } from '../../data/models';
+const toc=[{id:'what',label:'What a dot is'},{id:'capable',label:'Why it is more capable'},{id:'where',label:'Where the tokens come from'},{id:'chat',label:'Agent against chat'},{id:'numbers',label:'The arithmetic'},{id:'published',label:'What is published'},{id:'faq',label:'Questions'}];
+
+// Every figure is either a published rate from the catalogue or computed here from one,
+// so the article cannot drift away from the pricing data.
+const astra=getModel('gpt-6-astra');
+const SCREENSHOT={width:1920,height:1080};
+const screenshot=countImage(SCREENSHOT,astra).tokens;
+const CHAT_IN=1_000, CHAT_OUT=500;              // the site's own "short chat turn" scenario
+const TASK_OUT=27_000;                          // Artificial Analysis, per Intelligence Index task
+const chatCost=(CHAT_IN/1e6)*astra.inputPerMillion+(CHAT_OUT/1e6)*astra.outputPerMillion;
+const taskOutputCost=(TASK_OUT/1e6)*astra.outputPerMillion;
+const screenshotCost=(screenshot/1e6)*astra.inputPerMillion;
+const usd=(value:number)=>`$${value.toFixed(value<0.01?4:2)}`;
+const faq=[
+  {question:'What is OpenAI Dots?',answer:'Dots are always-on agents inside ChatGPT. A dot keeps a name, a job and memory that builds over time, runs on its own cloud computer with a browser, and keeps working after you close the tab. It is a product, not an API or a model id.'},
+  {question:'What model powers Dots?',answer:'GPT-6 Astra. There is no separate Dots model and no Dots API. A developer who wants the same engine calls gpt-6-astra, at $10 per million input tokens and $50 per million output tokens.'},
+  {question:'Is there a Dots API?',answer:'No. Dots is a ChatGPT product. The underlying model, GPT-6 Astra, is available through the normal API, but the agent, its memory and its hosted computer are not.'},
+  {question:'Why would an agent use more tokens than a chat?',answer:'Three reasons that have nothing to do with being smarter. It wakes up on a schedule instead of waiting for you, so it runs when nobody asked. It re-sends its accumulated memory as input on every run. And work on a hosted computer produces screenshots, which are billed as image tokens.'},
+  {question:'How many tokens is one screenshot?',answer:`A 1920x1080 screenshot is ${screenshot.toLocaleString()} tokens on GPT-6 Astra, using OpenAI's published 32x32 patch formula. That is more than twice a typical 1,000-token chat prompt.`},
+];
+const faqSchema={'@context':'https://schema.org','@type':'FAQPage',mainEntity:faq.map((item)=>({'@type':'Question',name:item.question,acceptedAnswer:{'@type':'Answer',text:item.answer}}))};
+---
+<KnowledgeLayout title="OpenAI Dots: What an Always-On Agent Changes" description="Dots are GPT-6 Astra agents that keep working after you close the tab. What they can do, how they differ from a chat model, and why the token footprint changes." heading="OpenAI Dots: what an always-on agent changes" eyebrow="Agent products · Technical explainer" datePublished="2026-10-02" dateModified="2026-10-02" section="AI agents" keywords={['OpenAI Dots','always-on agents','Dots pricing','GPT-6 Astra','agent token usage']} {toc}>
+  <p class="knowledge-lead">On 29 September 2026, at DevDay, OpenAI put an agent inside ChatGPT that keeps working after you close the tab. The capability jump is real. The part that surprises people arrives later, on the bill: a chat model runs when you press enter, and a dot runs when it decides to.</p>
+
+  <h2 id="what">What a dot is</h2>
+  <p>A dot is a named, persistent agent. It holds a goal over time, carries context between conversations, and brings finished work back for review. Five things define it:</p>
+  <ul>
+    <li><strong>It has its own computer.</strong> Each dot runs on an isolated cloud machine with a browser, so the work continues when your laptop is shut.</li>
+    <li><strong>It has memory that compounds.</strong> A dot is not a fresh session each time. What it learned yesterday is still there today.</li>
+    <li><strong>It reaches your tools.</strong> More than 4,000 apps connect through the plugin ecosystem.</li>
+    <li><strong>It lives where you work.</strong> ChatGPT on desktop, web and mobile, plus Slack and Teams.</li>
+    <li><strong>It asks before acting.</strong> Dots follow ChatGPT's permission model, and you can set rules for when a dot may act alone and when it must stop and ask.</li>
+  </ul>
+  <p>One dot is included with eligible paid plans: Pro and Business Premium, with Enterprise workspaces able to enable it on approval. OpenAI publishes no price for additional dots.</p>
+
+  <h2 id="capable">Why it is more capable than a chat window</h2>
+  <p>A chat model is a very good function: text in, text out, one turn at a time. Everything else in a chat product—files, memory, tools—is scaffolding around that function. A dot moves three of those from scaffolding into the product itself.</p>
+  <ol>
+    <li><strong>Time.</strong> A chat model has no concept of later. A dot does: it can check something tomorrow morning and tell you what changed.</li>
+    <li><strong>A computer.</strong> Reasoning about a website is weaker than opening it. A hosted browser lets a dot read the page, click through it and come back with the answer instead of a guess.</li>
+    <li><strong>Accountability.</strong> Named agents with their own permissions mean work can be delegated to a specific dot with a specific scope, rather than to one assistant that sees everything.</li>
+  </ol>
+  <p>That is the intelligence story, and it is genuinely new. The cost story follows directly from it.</p>
+
+  <h2 id="where">Where the tokens come from</h2>
+  <FlowDiagram
+    title="How one dot generates token usage"
+    desc="Three surfaces feed one dot. The dot holds memory, drives a hosted computer that returns screenshots, and reasons before answering. All three of those become tokens charged against GPT-6 Astra, and a dashed scheduled wake-up loop re-enters the dot with no human message at all."
+    caption="One human message is one arrow into the meter. A dot adds three more, and the dashed loop starts them without anyone pressing enter."
+    viewBox="0 0 840 300">
+    <g class="box">
+      <rect x="8" y="36" width="118" height="38" rx="8"/><text x="67" y="60">ChatGPT</text>
+      <rect x="8" y="88" width="118" height="38" rx="8"/><text x="67" y="112">Slack</text>
+      <rect x="8" y="140" width="118" height="38" rx="8"/><text x="67" y="164">Teams</text>
+    </g>
+    <path class="arrow" d="M126 55 H190"/>
+    <path class="arrow" d="M126 107 H190"/>
+    <path class="arrow" d="M126 159 H190"/>
+    <g class="box primary">
+      <rect x="192" y="74" width="172" height="84" rx="10"/>
+      <text x="278" y="108">Your dot</text><text x="278" y="130" class="small">identity + memory</text>
+    </g>
+    <path class="arrow loop" d="M232 74 C 220 16, 338 16, 326 74"/>
+    <text x="278" y="10" class="label mid">scheduled wake-up · nobody pressed enter</text>
+    <g class="box">
+      <rect x="192" y="196" width="172" height="76" rx="10"/>
+      <text x="278" y="226">Hosted computer</text><text x="278" y="248" class="small">browser + 4,000 apps</text>
+    </g>
+    <path class="arrow" d="M278 158 V196"/>
+    <g class="box ghost">
+      <rect x="406" y="36" width="188" height="40" rx="8"/><text x="500" y="61" class="small">memory re-sent · input</text>
+      <rect x="406" y="124" width="188" height="40" rx="8"/><text x="500" y="149" class="small">screenshots · image</text>
+      <rect x="406" y="212" width="188" height="40" rx="8"/><text x="500" y="237" class="small">reasoning · output</text>
+    </g>
+    <path class="arrow accent" d="M364 100 C 390 100, 386 56, 406 56"/>
+    <path class="arrow accent" d="M364 234 C 388 234, 386 144, 406 144"/>
+    <path class="arrow accent" d="M364 132 C 390 132, 386 232, 406 232"/>
+    <g class="box meter">
+      <rect x="636" y="80" width="196" height="128" rx="10"/>
+      <text x="734" y="112">GPT-6 Astra</text>
+      <text x="734" y="140" class="small">input $10 / 1M</text>
+      <text x="734" y="162" class="small">cached input $1 / 1M</text>
+      <text x="734" y="184" class="small">output $50 / 1M</text>
+    </g>
+    <path class="arrow" d="M594 56 C 616 56, 614 110, 636 110"/>
+    <path class="arrow" d="M594 144 H636"/>
+    <path class="arrow" d="M594 232 C 616 232, 614 180, 636 180"/>
+  </FlowDiagram>
+
+  <h2 id="chat">An agent is not a chat, in four ways</h2>
+  <ol>
+    <li><strong>It runs without you.</strong> Scheduled and proactive work happens on the dot's clock. Nobody presses enter, and nobody sees the cost until the invoice.</li>
+    <li><strong>Memory is input.</strong> Persistent context is not free storage. It is re-sent as input tokens on every run, and it grows over the life of the dot. Caching reduces the rate—OpenAI charges {usd(astra.cachedInputPerMillion!)} per million for cached input against {usd(astra.inputPerMillion)}—but it does not remove the volume.</li>
+    <li><strong>Screens are images.</strong> Computer use means screenshots. A 1920 × 1080 screenshot is <strong>{screenshot.toLocaleString()} input tokens</strong> on GPT-6 Astra under OpenAI's published patch formula. Twenty screenshots in one session is {(screenshot*20).toLocaleString()} tokens, before the dot writes a word.</li>
+    <li><strong>Thinking is billed as output.</strong> Reasoning tokens are output tokens, at {usd(astra.outputPerMillion)} per million. A long deliberation costs the same as a long answer.</li>
+  </ol>
+
+  <h2 id="numbers">The arithmetic, in chat turns</h2>
+  <p>A short chat turn is about {CHAT_IN.toLocaleString()} input and {CHAT_OUT} output tokens. On GPT-6 Astra that is {usd(chatCost)}.</p>
+  <p>For agent work there is a published measurement to anchor on. Artificial Analysis, reported by VentureBeat, measured GPT-6 Astra Max at roughly <strong>{TASK_OUT.toLocaleString()} output tokens per task</strong> on its Intelligence Index—the lowest of the frontier agents it measured, and still {Math.round(TASK_OUT/CHAT_OUT)} times the output of one chat turn. At the published rate, that output alone is {usd(taskOutputCost)}.</p>
+  <div class="overflow-x-auto"><table>
+    <thead><tr><th>Unit of work</th><th>Tokens</th><th>On GPT-6 Astra</th></tr></thead>
+    <tbody>
+      <tr><td>One short chat turn</td><td>{CHAT_IN.toLocaleString()} in + {CHAT_OUT} out</td><td>{usd(chatCost)}</td></tr>
+      <tr><td>One screenshot of a 1080p screen</td><td>{screenshot.toLocaleString()} in</td><td>{usd(screenshotCost)}</td></tr>
+      <tr><td>One measured agent task, output only</td><td>{TASK_OUT.toLocaleString()} out</td><td>{usd(taskOutputCost)}</td></tr>
+      <tr><td>The same task, once an hour for a working day</td><td>{(TASK_OUT*8).toLocaleString()} out</td><td>{usd(taskOutputCost*8)}</td></tr>
+    </tbody>
+  </table></div>
+  <p>The last row is the point of this article. Nothing in it assumes the agent is wasteful. It assumes only that the agent does what it was built to do: run on a schedule. Eight runs of one task is {Math.round(TASK_OUT*8/CHAT_OUT)} chat turns of output, produced by one agent, on one job, in one day.</p>
+  <p>This is why a per-seat subscription is the natural way to sell an agent and an awkward way to budget for one. The subscription is fixed; the work behind it is not.</p>
+
+  <h2 id="published">What OpenAI publishes, and what it does not</h2>
+  <p><strong>Published:</strong> the GPT-6 Astra API rates used throughout this page ({usd(astra.inputPerMillion)} input, {usd(astra.cachedInputPerMillion!)} cached input and {usd(astra.outputPerMillion)} output per million, doubling above 272K input tokens); that one dot is included with eligible paid plans; that proactive background research is read-only, so a dot cannot send messages or change app content on its own.</p>
+  <p><strong>Not published:</strong> any token allowance attached to a dot, the price of additional dots, and how much of a plan's usage a dot consumes. Until those appear, the honest answer to "what does a dot cost per month" is the plan price, and the honest answer to "what does the work cost" is the API arithmetic above.</p>
+
+  <FAQ items={faq} compact title="Questions people ask" id="faq" />
+
+  <p>Price your own agent loop with the <a href="/">token calculator</a>, read the same analysis for <a href="/blog/grok-bot-agent-cost/">Grok Bot</a> and <a href="/blog/meta-muse-token-cost/">Meta Muse</a>, or compare all three in <a href="/dots-vs-grok-bot-vs-muse/">Dots vs Grok Bot vs Muse</a>.</p>
+
+  <div class="source-ledger"><h2>Evidence ledger</h2><p><strong>Reviewed:</strong> 2 October 2026 · Product details come from OpenAI's launch and contemporaneous reporting; rates come from the live catalogue.</p><ul>
+    <li><a href="https://openai.com/index/introducing-dots/">OpenAI, Introducing Dots</a> (29 September 2026)</li>
+    <li><a href="https://developers.openai.com/api/docs/pricing">OpenAI API pricing</a>, for every rate on this page</li>
+    <li><a href="https://developers.openai.com/api/docs/guides/images-vision">OpenAI images and vision guide</a>, for the screenshot patch formula</li>
+    <li>Artificial Analysis Intelligence Index, output tokens per task, as reported by VentureBeat</li>
+  </ul></div>
+  <script is:inline type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
+</KnowledgeLayout>

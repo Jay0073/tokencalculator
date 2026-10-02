@@ -1,0 +1,188 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumbs from '../components/seo/Breadcrumbs.astro';
+import FAQ from '../components/seo/FAQ.astro';
+import FlowDiagram from '../components/seo/FlowDiagram.astro';
+import ProviderLinks from '../components/seo/ProviderLinks.astro';
+import { countImage } from '../engines/vision/count';
+import { getModel } from '../data/models';
+import { rate } from '../lib/format';
+
+const breadcrumbs = [{ label: 'Token calculator', href: '/' }, { label: 'Compare', href: '/compare/' }, { label: 'Dots vs Grok Bot vs Muse' }];
+const canonical = '/dots-vs-grok-bot-vs-muse/';
+
+// Every rate comes from the catalogue, so this page cannot drift away from the pricing data.
+const astra = getModel('gpt-6-astra');
+const grok = getModel('grok-4.7');
+const spark = getModel('muse-spark-1.3');
+const grokTier = grok.pricingTiers![0];
+const screenshot = countImage({ width: 1920, height: 1080 }, astra).tokens;
+
+// One short chat turn, the same scenario used across this site.
+const CHAT_IN = 1_000, CHAT_OUT = 500;
+// Output tokens per task on the Artificial Analysis Intelligence Index, reported by VentureBeat.
+const TASK = { astra: 27_000, grok47: 81_000, grok46: 36_000 };
+const MUSE_WEEK = 500_000_000;
+const CHAT_TURN = CHAT_IN + CHAT_OUT;
+
+const usd = (value: number) => `$${value.toFixed(value < 0.01 ? 4 : 2)}`;
+const chatCost = (model: typeof astra) => (CHAT_IN / 1e6) * model.inputPerMillion + (CHAT_OUT / 1e6) * model.outputPerMillion;
+const taskCost = (model: typeof astra, tokens: number) => (tokens / 1e6) * model.outputPerMillion;
+
+const AGENTS = [
+  {
+    name: 'OpenAI Dots',
+    what: 'Always-on agents inside ChatGPT, each with a name, memory and its own cloud computer.',
+    engine: 'GPT-6 Astra',
+    runs: 'ChatGPT on web, desktop and mobile, plus Slack and Teams',
+    pay: 'One dot included with eligible paid plans. No published per-dot or per-token price.',
+    api: 'No Dots API. The model is on the API as gpt-6-astra.',
+    href: '/blog/openai-dots-agent-cost/',
+  },
+  {
+    name: 'Grok Bot',
+    what: 'Named Bots that share one cloud computer, each with its own screen, driving apps like a person.',
+    engine: 'Not disclosed by xAI',
+    runs: 'macOS, Windows, Linux, iOS and Android',
+    pay: 'Included with paid Cursor plans and Cursor Teams. Usage resets weekly; the allowance is not published.',
+    api: 'No Grok Bot API. The Grok models are on the API.',
+    href: '/blog/grok-bot-agent-cost/',
+  },
+  {
+    name: 'Meta Muse',
+    what: 'A personal agent in a dedicated secure VM with your data, watched by a separate permission agent.',
+    engine: 'Muse Spark',
+    runs: 'iOS, Android, muse.ai and WhatsApp',
+    pay: 'Metered in Muse tokens: 500M a week on Power ($20/mo), 3B on Max ($100/mo).',
+    api: 'No Muse agent API. Muse Spark models are on the Meta Model API.',
+    href: '/blog/meta-muse-token-cost/',
+  },
+];
+
+const faq = [
+  { question: 'What is the difference between Dots, Grok Bot and Muse?', answer: 'All three are agent products rather than models. Dots live inside ChatGPT and run on GPT-6 Astra. Grok Bot gives each Bot a screen on one shared cloud computer per account. Muse is a personal agent in its own secure VM, and is the only one of the three that meters itself publicly in tokens. None of them has a public API.' },
+  { question: 'Which agent is cheapest?', answer: 'The question cannot be answered from published prices, because none of the three publishes a price for agent work itself. Dots and Grok Bot come with a subscription and no published allowance; Muse publishes a weekly token allowance but not what a Muse token counts. What can be compared is the API cost of the underlying models.' },
+  { question: 'Why do agents use so many more tokens than a chat?', answer: 'Because the work happens without you. An agent runs on a schedule, re-sends its accumulated memory as input on every run, turns screens into image tokens when it uses a computer, and bills its reasoning as output. One measured agent task produces about 27,000 output tokens on GPT-6 Astra and about 81,000 on Grok 4.7 at its highest reasoning setting, against roughly 500 for a chat answer.' },
+  { question: 'Can I use these agents through an API?', answer: 'No. Dots, Grok Bot and the Muse agent are all products, not model ids. The models behind them are available through normal APIs: gpt-6-astra, the Grok models, and Muse Spark.' },
+  { question: 'How should I budget for an agent?', answer: 'Price the underlying model against the work, not the subscription. Measure one task end to end, including reasoning output and any screenshots, then multiply by how often the schedule fires. The schedule, not the model, is what makes agent spending different from chat spending.' },
+];
+---
+<BaseLayout
+  title="Dots vs Grok Bot vs Muse: AI Agents Compared"
+  description="OpenAI Dots, xAI Grok Bot and Meta Muse compared: what each agent can do, how it runs, what each company publishes, and why agent work costs more than chat."
+  {canonical}
+  {breadcrumbs}
+  {faq}
+>
+  <Breadcrumbs items={breadcrumbs} />
+  <main class="shell pt-12 relative z-10">
+    <header class="knowledge-header">
+      <span class="eyebrow">Agent products · Comparison</span>
+      <h1>Dots vs Grok Bot vs Muse</h1>
+      <p class="knowledge-deck">Three agent products launched within seven weeks of each other. None of them is a model, none has a public API, and all three change what a request costs. Here is what each company actually publishes.</p>
+      <div class="knowledge-byline"><span>TokenCalculator.dev Engineering</span><span>Reviewed October 2, 2026</span><span>Comparison</span></div>
+    </header>
+
+    <div class="prose-content knowledge-prose">
+      <h2 id="side-by-side">Side by side</h2>
+      <div class="overflow-x-auto"><table>
+        <thead><tr><th>&nbsp;</th>{AGENTS.map((agent) => <th>{agent.name}</th>)}</tr></thead>
+        <tbody>
+          <tr><td><strong>What it is</strong></td>{AGENTS.map((agent) => <td>{agent.what}</td>)}</tr>
+          <tr><td><strong>What powers it</strong></td>{AGENTS.map((agent) => <td>{agent.engine}</td>)}</tr>
+          <tr><td><strong>Where it runs</strong></td>{AGENTS.map((agent) => <td>{agent.runs}</td>)}</tr>
+          <tr><td><strong>How you pay</strong></td>{AGENTS.map((agent) => <td>{agent.pay}</td>)}</tr>
+          <tr><td><strong>Developer access</strong></td>{AGENTS.map((agent) => <td>{agent.api}</td>)}</tr>
+          <tr><td><strong>Full analysis</strong></td>{AGENTS.map((agent) => <td><a href={agent.href}>Read the explainer</a></td>)}</tr>
+        </tbody>
+      </table></div>
+      <p>The shared fact is the important one. All three are sold as products with a subscription, and none of them publishes what the agent work costs. That is a deliberate shift away from the per-token transparency the same companies offer developers.</p>
+
+      <h2 id="not-a-chat">Why an agent is not a chat model</h2>
+      <p>The capability jump is easy to describe: these products can hold a goal over time, operate software, and come back with finished work instead of advice. The cost jump follows from the same four properties.</p>
+      <FlowDiagram
+        title="Four reasons agent work costs more than chat work"
+        desc="A chat turn is one request and one response. An agent adds a schedule that fires without a human message, memory that is re-sent as input on every run, screenshots that enter the prompt as image tokens, and reasoning that is billed as output."
+        caption="None of these four assumes a wasteful agent. They are what makes it an agent."
+        viewBox="0 0 840 250">
+        <g class="box"><rect x="8" y="90" width="150" height="66" rx="10"/><text x="83" y="118">A chat turn</text><text x="83" y="140" class="small">1 in · 1 out</text></g>
+        <path class="arrow" d="M158 123 H214"/>
+        <g class="box primary"><rect x="214" y="80" width="166" height="86" rx="10"/><text x="297" y="112">An agent run</text><text x="297" y="134" class="small">same model</text></g>
+        <g class="box ghost">
+          <rect x="432" y="12" width="200" height="40" rx="8"/><text x="532" y="37" class="small">schedule · no human</text>
+          <rect x="432" y="68" width="200" height="40" rx="8"/><text x="532" y="93" class="small">memory · re-sent input</text>
+          <rect x="432" y="124" width="200" height="40" rx="8"/><text x="532" y="149" class="small">screenshots · image</text>
+          <rect x="432" y="180" width="200" height="40" rx="8"/><text x="532" y="205" class="small">reasoning · output</text>
+        </g>
+        <path class="arrow accent" d="M380 104 C 408 104, 404 32, 432 32"/>
+        <path class="arrow accent" d="M380 116 C 408 116, 404 88, 432 88"/>
+        <path class="arrow accent" d="M380 130 C 408 130, 404 144, 432 144"/>
+        <path class="arrow accent" d="M380 142 C 408 142, 404 200, 432 200"/>
+        <g class="box meter"><rect x="680" y="82" width="152" height="82" rx="10"/><text x="756" y="112">One bill</text><text x="756" y="138" class="small">four sources</text></g>
+        <path class="arrow" d="M632 32 C 656 32, 654 104, 680 104"/>
+        <path class="arrow" d="M632 88 C 656 88, 656 112, 680 112"/>
+        <path class="arrow" d="M632 144 C 656 144, 656 128, 680 128"/>
+        <path class="arrow" d="M632 200 C 656 200, 654 140, 680 140"/>
+      </FlowDiagram>
+      <ol>
+        <li><strong>The schedule.</strong> A chat model waits. An agent wakes up. Work that runs hourly runs whether or not it was needed that hour.</li>
+        <li><strong>Memory is input.</strong> Persistent context is re-sent on every run and grows over the agent's life. Caching lowers the rate, not the volume.</li>
+        <li><strong>Screens are images.</strong> Computer use turns a screen into tokens. A 1920 × 1080 screenshot is <strong>{screenshot.toLocaleString()} input tokens</strong> on GPT-6 Astra, under OpenAI's published patch formula — more than twice a typical chat prompt.</li>
+        <li><strong>Thinking is output.</strong> Reasoning tokens bill at the output rate, which on every model here is the most expensive rate on the card.</li>
+      </ol>
+
+      <h2 id="scale">The size of the difference</h2>
+      <p>Artificial Analysis measures output tokens per task on its Intelligence Index, and the figures it reported give the only public like-for-like scale for agent work. Priced at each model's published output rate:</p>
+      <div class="overflow-x-auto"><table>
+        <thead><tr><th>Unit of work</th><th>Output tokens</th><th>Cost of that output</th><th>In chat answers</th></tr></thead>
+        <tbody>
+          <tr><td>One chat turn on GPT-6 Astra</td><td>{CHAT_OUT}</td><td>{usd(chatCost(astra))}</td><td>1</td></tr>
+          <tr><td>One task, GPT-6 Astra Max</td><td>{TASK.astra.toLocaleString()}</td><td>{usd(taskCost(astra, TASK.astra))}</td><td>{Math.round(TASK.astra / CHAT_OUT)}×</td></tr>
+          <tr><td>One task, Grok 4.6 High</td><td>{TASK.grok46.toLocaleString()}</td><td>{usd(taskCost(grok, TASK.grok46))}</td><td>{Math.round(TASK.grok46 / CHAT_OUT)}×</td></tr>
+          <tr><td>One task, Grok 4.7 xHigh</td><td>{TASK.grok47.toLocaleString()}</td><td>{usd(taskCost(grok, TASK.grok47))}</td><td>{Math.round(TASK.grok47 / CHAT_OUT)}×</td></tr>
+        </tbody>
+      </table></div>
+      <p>The spread inside one vendor is as wide as the spread between vendors. Grok 4.7 at its highest reasoning setting produced about {(TASK.grok47 / TASK.grok46).toFixed(1)} times the output of Grok 4.6 on the same benchmark, at the same price per token. A reasoning dial is a cost dial.</p>
+      <p>Grok adds a second step that agents hit and chats do not: above {grokTier.aboveInputTokens.toLocaleString()} input tokens, every Grok 4.7 rate doubles, from {usd(grok.inputPerMillion)} and {usd(grok.outputPerMillion)} per million to {usd(grokTier.inputPerMillion)} and {usd(grokTier.outputPerMillion)}. A long agent session carrying screenshots forward crosses that line; a chat turn never does.</p>
+      <p>And Meta's number says the same thing from the other direction. {(MUSE_WEEK / 1e6).toLocaleString()} million Muse tokens a week is roughly {Math.round(MUSE_WEEK / CHAT_TURN).toLocaleString()} chat exchanges a week, or about {Math.round(MUSE_WEEK / CHAT_TURN / (7 * 24)).toLocaleString()} an hour, every hour. Nobody chats that much. An allowance that size is only explicable as background work.</p>
+
+      <h2 id="models">What the underlying models cost</h2>
+      <p>This part is published, and it is where a real comparison is possible. Standard API rates per million tokens:</p>
+      <div class="overflow-x-auto"><table>
+        <thead><tr><th>Model</th><th>Input</th><th>Cached input</th><th>Output</th><th>One chat turn</th></tr></thead>
+        <tbody>
+          {[astra, grok, spark].map((model) => (
+            <tr>
+              <td><strong>{model.name}</strong></td>
+              <td>{rate(model.inputPerMillion)}</td>
+              <td>{rate(model.cachedInputPerMillion)}</td>
+              <td>{rate(model.outputPerMillion)}</td>
+              <td>{usd(chatCost(model))}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table></div>
+      <p>Muse Spark 1.3 is the cheapest of the three by a wide margin, and Meta sells it cheaper still — $0.10 input and $0.20 output per million — on a contributor tier where your prompts and completions may train future models. GPT-6 Astra is the most expensive output on the list at {rate(astra.outputPerMillion)} per million, which matters more for agents than for chat, because agents produce most of their tokens on the output side.</p>
+
+      <h2 id="choose">How to decide</h2>
+      <ul>
+        <li><strong>Judge the product on capability, not on token price.</strong> None of the three publishes one. Ask instead what it can reach: Dots has 4,000+ app connectors, Grok Bot has a real computer with your logins already on it, Muse has your phone and WhatsApp.</li>
+        <li><strong>Judge the cost on the model, with your own task.</strong> Measure one real task end to end, including reasoning output and screenshots, then multiply by the schedule. The schedule is the variable that makes agent spending unlike chat spending.</li>
+        <li><strong>Watch the step changes.</strong> Grok's 200K cliff and OpenAI's 272K long-context tier both double rates mid-session, and both are reached by agents far more often than by people typing.</li>
+        <li><strong>Read the data terms before the price.</strong> Meta's contributor discount is a priced trade on training data. A shared agent computer means a credential given to one Bot is reachable by all of them.</li>
+      </ul>
+
+      <FAQ items={faq} compact title="Questions people ask" id="faq" />
+
+      <p>Measure a real workload in the <a href="/">token calculator</a>, see every model's rates on the <a href="/compare/">comparison hub</a>, or read the full explainers for <a href="/blog/openai-dots-agent-cost/">Dots</a>, <a href="/blog/grok-bot-agent-cost/">Grok Bot</a> and <a href="/blog/meta-muse-token-cost/">Muse</a>.</p>
+
+      <div class="source-ledger"><h2>Evidence ledger</h2><p><strong>Reviewed:</strong> 2 October 2026 · Product facts come from each company's own pages; every rate comes from the live model catalogue.</p><ul>
+        <li><a href="https://openai.com/index/introducing-dots/">OpenAI, Introducing Dots</a> · <a href="https://developers.openai.com/api/docs/pricing">OpenAI API pricing</a></li>
+        <li><a href="https://docs.x.ai/grok-bot/overview">xAI, Grok Bot overview</a> · <a href="https://docs.x.ai/developers/pricing">xAI API pricing</a></li>
+        <li><a href="https://about.fb.com/news/2026/09/introducing-muse-personal-ai-agent/">Meta, Introducing Muse</a> · <a href="https://www.meta.com/help/subscriptions/1021145227643680/">Meta subscriptions help</a></li>
+        <li>Artificial Analysis Intelligence Index, output tokens per task, as reported by VentureBeat</li>
+      </ul></div>
+    </div>
+    <ProviderLinks />
+  </main>
+</BaseLayout>

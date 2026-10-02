@@ -4,18 +4,45 @@ import Breadcrumbs from '../components/seo/Breadcrumbs.astro';
 import { COMPARISONS, COMPARISON_GROUPS, COST_GUIDES } from '../data/comparisons';
 import { IMAGE_PAGES } from '../data/image-models';
 import { blogPosts } from '../data/knowledge';
-import { getModel } from '../data/models';
+import { MODELS, getModel } from '../data/models';
+import HeroStats from '../components/seo/HeroStats.astro';
+import { PROVIDERS } from '../data/providers';
 
 // One hub for every comparison page. Before this, comparisons were reachable only from
 // the cards near the bottom of the landing page, so neither visitors nor crawlers had
 // one place that listed them all.
 const breadcrumbs = [{ label: 'Token calculator', href: '/' }, { label: 'Compare models' }];
 // Exact published rate, never rounded, with at least two decimals ($0.20, not $0.2).
-const money = (value: number | undefined) => value === undefined ? '—' : `$${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 6 })}`;
+import { rate as money } from '../lib/format';
+import { fillSpans } from '../data/card-layout';
 const sections = COMPARISON_GROUPS
-  .map((group) => ({ ...group, pages: COMPARISONS.filter((page) => page.group === group.id) }))
+  .map((group) => {
+    const pages = COMPARISONS.filter((page) => page.group === group.id);
+    return { ...group, pages, spans: fillSpans(pages.length, 2) };
+  })
   .filter((section) => section.pages.length > 0);
 const latest = blogPosts.slice(0, 3);
+
+// Blended rate per million, used only to place a model on the cost scale.
+const blended = (model: { inputPerMillion: number; outputPerMillion: number }) => (model.inputPerMillion + model.outputPerMillion) / 2;
+const rates = MODELS.map(blended).filter((value) => value > 0);
+const lowest = Math.log10(Math.min(...rates));
+const highest = Math.log10(Math.max(...rates));
+/** Where a model sits on the cost scale: 0 for the cheapest in the catalogue, 1 for the dearest. */
+const costPosition = (model: { inputPerMillion: number; outputPerMillion: number }) =>
+  Math.min(1, Math.max(0, (Math.log10(blended(model)) - lowest) / (highest - lowest)));
+const costStep = (model: { inputPerMillion: number; outputPerMillion: number }) => Math.min(5, Math.max(1, Math.ceil(costPosition(model) * 5)));
+const imageSpans = fillSpans(IMAGE_PAGES.length, 2);
+const latestSpans = fillSpans(latest.length, 3);
+const guideSpans = fillSpans(COST_GUIDES.length, 2);
+// Readings for the hero, all counted from the catalogue rather than written by hand.
+const verified = MODELS.map((model) => model.verifiedAt).sort().at(-1) ?? '';
+const heroStats = [
+  { value: String(COMPARISONS.length + IMAGE_PAGES.length), label: 'Comparisons' },
+  { value: String(MODELS.length), label: 'Models priced' },
+  { value: String(new Set(MODELS.map((model) => model.provider)).size), label: 'Providers' },
+  { value: verified, label: 'Rates verified', small: true },
+];
 
 // A machine-readable list of every page this hub links to, so search engines and AI
 // answer engines can see the whole comparison set in one place.
@@ -46,31 +73,40 @@ const collection = {
 >
   <script is:inline type="application/ld+json" set:html={JSON.stringify(collection)} />
   <Breadcrumbs items={breadcrumbs} />
-  <section class="shell max-w-4xl pt-12 sm:pt-16 pb-4 relative z-10">
-    <span class="eyebrow">Model comparisons</span>
-    <h1 class="m-0 mt-4 text-[clamp(2.25rem,5vw,3.75rem)] leading-[1.02] tracking-[-.055em]">Compare LLM API cost, model against model.</h1>
-    <p class="muted text-[16px] sm:text-[17px] mt-4 mb-0 max-w-3xl">Each comparison prices the same prompt on two models at their current rates. Paste your own prompt on any page to see what it costs on both. Card rates are input and output prices per 1 million tokens.</p>
+  <section class="shell pt-12 sm:pt-16 pb-4 relative z-10">
+    <div class="hero-split">
+      <div>
+        <span class="eyebrow">Model comparisons</span>
+        <h1 class="m-0 mt-4 text-[clamp(2.25rem,5vw,3.75rem)] leading-[1.02] tracking-[-.055em]">Compare LLM API cost, model against model.</h1>
+        <p class="muted text-[16px] sm:text-[17px] mt-4 mb-0">Each comparison prices the same prompt on two models at their current rates. Paste your own prompt on any page to see what it costs on both. Card rates are input and output prices per 1 million tokens.</p>
+      </div>
+      <HeroStats items={heroStats} />
+    </div>
   </section>
 
   {sections.map((section) => (
     <section class="shell mt-12 relative z-10" aria-labelledby={`group-${section.id}`}>
-      <span class="eyebrow">{section.eyebrow}</span>
+      <span class="section-rule"><span class="eyebrow">{section.eyebrow}</span><i></i><span class="section-count figure">{section.pages.length} pairs</span></span>
       <h2 id={`group-${section.id}`} class="section-title mt-3 mb-2">{section.title}</h2>
       <p class="muted mt-0 mb-6 max-w-3xl">{section.detail}</p>
       <ul class="grid md:grid-cols-2 gap-3 list-none p-0 m-0">
-        {section.pages.map((page) => {
+        {section.pages.map((page, index) => {
           const pair = [getModel(page.leftId), getModel(page.rightId)];
           return (
-            <li>
-              <a href={`/${page.slug}/`} class="compare-card panel group">
+            <li class={section.spans[index] === 2 ? 'md:col-span-2 is-wide' : undefined}>
+              <a href={`/${page.slug}/`} class="compare-card surface-action group">
                 <strong class="block text-[17px] leading-snug">{page.card.title}</strong>
                 <span class="block text-sm muted mt-1">{page.card.detail}</span>
                 <span class="compare-rates">
                   {pair.map((model) => (
-                    <span><span class="muted">{model.name}</span><span class="mono">{money(model.inputPerMillion)} / {money(model.outputPerMillion)}</span></span>
+                    <span class="rate-row">
+                      <span class="rate-name">{model.name}</span>
+                      <span class="figure rate-figure">{money(model.inputPerMillion)}<i>/</i>{money(model.outputPerMillion)}</span>
+                      <span class="scale" aria-hidden="true" style={`--reading:${Math.round(costPosition(model) * 100)}%;--tone:var(--cost-${costStep(model)})`}><i></i><b></b></span>
+                    </span>
                   ))}
                 </span>
-                <span class="compare-open">Open comparison <span aria-hidden="true">→</span></span>
+                <span class="action-row">Open comparison <span aria-hidden="true">→</span></span>
               </a>
             </li>
           );
@@ -84,12 +120,12 @@ const collection = {
     <h2 id="group-images" class="section-title mt-3 mb-2">Image models, priced per image</h2>
     <p class="muted mt-0 mb-6 max-w-3xl">Image APIs bill per image or per image token, so these pages price generated images rather than text. <a class="text-[var(--accent)]" href="/docs/image-generation-cost/">How image generation APIs bill →</a></p>
     <ul class="grid md:grid-cols-2 gap-3 list-none p-0 m-0">
-      {IMAGE_PAGES.map((page) => (
-        <li>
-          <a href={page.href} class="compare-card panel group">
+      {IMAGE_PAGES.map((page, index) => (
+        <li class={imageSpans[index] === 2 ? 'md:col-span-2' : undefined}>
+          <a href={page.href} class="compare-card surface-action group">
             <strong class="block text-[17px] leading-snug">{page.title}</strong>
             <span class="block text-sm muted mt-1">{page.detail}</span>
-            <span class="compare-open">Open comparison <span aria-hidden="true">→</span></span>
+            <span class="action-row">Open comparison <span aria-hidden="true">→</span></span>
           </a>
         </li>
       ))}
@@ -100,12 +136,12 @@ const collection = {
     <span class="eyebrow">Latest model analysis</span>
     <h2 id="group-analysis" class="section-title mt-3 mb-6">What changed this month</h2>
     <ul class="grid md:grid-cols-3 gap-3 list-none p-0 m-0">
-      {latest.map((post) => (
-        <li>
-          <a href={post.href} class="compare-card panel group">
+      {latest.map((post, index) => (
+        <li class={latestSpans[index] === 2 ? 'md:col-span-2' : undefined}>
+          <a href={post.href} class="compare-card surface-action group">
             <span class="eyebrow">{post.label}</span>
             <strong class="block text-[16px] leading-snug mt-2">{post.title}</strong>
-            <span class="compare-open">Read the analysis <span aria-hidden="true">→</span></span>
+            <span class="action-row">Read the analysis <span aria-hidden="true">→</span></span>
           </a>
         </li>
       ))}
@@ -116,12 +152,12 @@ const collection = {
     <span class="eyebrow">Cost guides</span>
     <h2 id="group-guides" class="section-title mt-3 mb-6">Compare approaches, not just models</h2>
     <ul class="grid md:grid-cols-2 gap-3 list-none p-0 m-0">
-      {COST_GUIDES.map((guide) => (
-        <li>
-          <a href={guide.href} class="compare-card panel group">
+      {COST_GUIDES.map((guide, index) => (
+        <li class={guideSpans[index] === 2 ? 'md:col-span-2' : undefined}>
+          <a href={guide.href} class="compare-card surface-action group">
             <strong class="block text-[17px] leading-snug">{guide.title}</strong>
             <span class="block text-sm muted mt-1">{guide.detail}</span>
-            <span class="compare-open">Read the guide <span aria-hidden="true">→</span></span>
+            <span class="action-row">Read the guide <span aria-hidden="true">→</span></span>
           </a>
         </li>
       ))}
@@ -130,12 +166,17 @@ const collection = {
 </BaseLayout>
 
 <style>
-  .compare-card { display: flex; flex-direction: column; height: 100%; padding: 1.25rem; border-radius: .75rem; text-decoration: none; transition: border-color .2s ease, transform .2s ease; }
-  .compare-card:hover { border-color: var(--line-strong); transform: translateY(-2px); }
-  .compare-rates { display: grid; gap: .3rem; margin-top: 1rem; padding-top: .85rem; border-top: 1px solid var(--line); font-size: .8125rem; }
-  .compare-rates > span { display: flex; justify-content: space-between; gap: 1rem; }
-  .compare-open { margin-top: auto; padding-top: 1rem; color: var(--accent); font-size: .875rem; font-weight: 600; }
-  .compare-open span { display: inline-block; transition: transform .2s ease; }
-  .compare-card:hover .compare-open span, .compare-card:focus-visible .compare-open span { transform: translateX(4px); }
-  @media (prefers-reduced-motion: reduce) { .compare-card, .compare-open span { transition: none; } .compare-card:hover { transform: none; } }
+  .section-rule { display: flex; align-items: center; gap: 1rem; }
+  .section-rule i { flex: 1; height: 1px; background: var(--line); }
+  .section-count { color: var(--faint); font-size: .7rem; letter-spacing: .04em; }
+  .compare-card { display: flex; flex-direction: column; height: 100%; padding: 1.3rem; border-radius: .75rem; text-decoration: none; }
+  .compare-rates { display: grid; gap: .6rem; margin-top: 1rem; padding-top: .9rem; border-top: 1px solid var(--line); }
+  /* The meter sits directly under its own number, at a fixed width, so the two models in
+     a card are comparable at a glance and the bar never reads as an underline. */
+  .rate-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 1rem; row-gap: .25rem; align-items: center; }
+  .rate-name { grid-column: 1; grid-row: 1 / span 2; font-size: .8125rem; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .rate-figure { grid-column: 2; font-size: .9375rem; letter-spacing: -.01em; text-align: right; }
+  .rate-figure i { padding: 0 .28rem; color: var(--faint); font-style: normal; }
+  .rate-row .scale { grid-column: 2; width: 116px; justify-self: end; }
+  @media (min-width: 768px) { .is-wide .compare-rates { grid-template-columns: 1fr 1fr; column-gap: 2.5rem; } }
 </style>

@@ -9,6 +9,9 @@ TokenCalculator.dev is a free, privacy-first, browser-based LLM token calculator
 - [Technical documentation](https://tokencalculator.dev/docs/)
 - [Privacy architecture for confidential LLM inputs](https://tokencalculator.dev/docs/privacy-architecture/)
 - [Token engineering blog](https://tokencalculator.dev/blog/)
+- [OpenAI Dots: what an always-on agent changes](https://tokencalculator.dev/blog/openai-dots-agent-cost/)
+- [Grok Bot: one computer, many screens](https://tokencalculator.dev/blog/grok-bot-agent-cost/)
+- [Meta Muse: the agent that meters itself in tokens](https://tokencalculator.dev/blog/meta-muse-token-cost/)
 - [Every scheduled 2027 API price increase, in one table](https://tokencalculator.dev/blog/2027-api-price-increases/)
 - [Claude Sonnet 4.5 retires on 30 November: what the migration really costs](https://tokencalculator.dev/blog/claude-sonnet-4-5-retirement-cost/)
 - [Jev vs reasoning LLMs: what a decision model costs per 1,000 decisions](https://tokencalculator.dev/blog/jev-decision-model-token-cost/)
@@ -65,6 +68,7 @@ Image APIs bill per image or per image token. Prices are checked against each pr
 - [The same model at five prices: batch, flex, fast, ultrafast and peak-hour tiers](https://tokencalculator.dev/llm-api-price-tiers/)
 - [Prompt caching cost: cached vs uncached on a 20-turn agent loop](https://tokencalculator.dev/prompt-caching-cost/)
 - [Long context vs RAG cost per query](https://tokencalculator.dev/long-context-vs-rag-cost/)
+- [Dots vs Grok Bot vs Muse: AI agents compared](https://tokencalculator.dev/dots-vs-grok-bot-vs-muse/)
 
 ## Documentation
 
@@ -117,7 +121,8 @@ OpenAI raw text uses exact local BPE tokenization. Claude, Gemini, and DeepSeek 
 
 - Text documents: TXT, Markdown, CSV, JSON, common source-code formats, HTML, XML, YAML, TOML, SQL, and shell scripts.
 - Rich documents: readable PDF and DOCX text is extracted locally. Scanned PDFs require OCR and are not supported.
-- Images: PNG, JPEG, WebP, and GIF dimensions are read locally. OpenAI, Claude, and Gemini visual tokens use documented provider formulas; unsupported models are reported as unavailable.
+- Images: PNG, JPEG, WebP, and GIF dimensions are read locally. OpenAI counts 32x32 patches, Claude counts 28x28 patches in two tiers, and Gemini 3 spends a fixed per-image budget; models without a published formula are reported as unavailable.
+- Audio, video, and PDF pages: duration and page count are read locally. Gemini rates are applied (25 tokens a second of audio, 70 a video frame at 1 FPS plus sound, 560 a PDF page). Models that do not accept the input, or whose vendor publishes no rate, are named rather than estimated.
 - Combined workloads: pasted text, extracted file text, and supported image tokens are added into the same model result and cost projection.
 - File limit: 12 MB per file.
 - Privacy: processing is browser-only. No prompt, file contents, or image pixels are sent to TokenCalculator.dev for calculation.

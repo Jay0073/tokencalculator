@@ -1,4 +1,6 @@
 ---
+import HeroStats from './seo/HeroStats.astro';
+import { MODELS } from '../data/models';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Calculator from './calculator/Calculator.astro';
 import FAQ from './seo/FAQ.astro';
@@ -38,9 +40,13 @@ const breadcrumbs=provider ? [{label:'Token calculator',href:'/'},{label:pageLab
   </section>
   <Calculator {provider} {locale}/>
   {!provider && locale === 'en' && (
-    <aside class="shell workflow-proof" aria-label="Common TokenCalculator workflows">
-      <span class="mono">BUILT FOR REAL INPUT PAYLOADS</span>
-      <p>Document ingestion · multimodal request planning · code and data cost comparison</p>
+    <aside class="shell mt-8 relative z-10" aria-label="What this calculator covers">
+      <HeroStats items={[
+        { value: String(MODELS.length), label: 'Models priced' },
+        { value: String(new Set(MODELS.map((model) => model.provider)).size), label: 'Providers' },
+        { value: '0 bytes', label: 'Content uploaded' },
+        { value: MODELS.map((model) => model.verifiedAt).sort().at(-1) ?? '', label: 'Rates verified', small: true },
+      ]}/>
     </aside>
   )}
   <section class="shell mt-24 grid md:grid-cols-2 gap-10 md:gap-20 relative z-10">

@@ -1,0 +1,30 @@
+---
+/**
+ * The readings that describe a page, set beside its heading.
+ *
+ * Every page on this site was a left-aligned text column with an empty right half. This
+ * fills that space with information rather than decoration: the figures are real, they
+ * come from the catalogue, and they tell a visitor what the page covers before they
+ * read a word. Flat surface and hairlines, because it is a readout, not a button.
+ */
+interface Props { items: { value: string; label: string; small?: boolean }[] }
+const { items } = Astro.props;
+---
+<dl class="hero-stats">
+  {items.map((item) => (
+    <div>
+      <dt>{item.label}</dt>
+      <dd class:list={['figure', item.small && 'is-small']}>{item.value}</dd>
+    </div>
+  ))}
+</dl>
+
+<style>
+  .hero-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; margin: 0; background: var(--line); border: 1px solid var(--line); border-radius: .6rem; overflow: hidden; }
+  .hero-stats > div { display: flex; flex-direction: column-reverse; gap: .3rem; padding: .85rem 1rem; background: var(--bg); }
+  .hero-stats dt { color: var(--faint); font: 600 .6rem var(--font-mono); letter-spacing: .09em; text-transform: uppercase; }
+  .hero-stats dd { margin: 0; font-size: 1.5rem; line-height: 1; letter-spacing: -.03em; white-space: nowrap; }
+  /* A date is longer than a count, so it reads at label scale rather than wrapping. */
+  .hero-stats dd.is-small { font-size: .95rem; letter-spacing: 0; }
+  @media (min-width: 1024px) { .hero-stats { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+</style>
