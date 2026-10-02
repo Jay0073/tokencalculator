@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { MODELS, MODEL_ALIASES, BYTES_PER_TOKEN as CORE_BYTES, getModel, resolveModelId } from '../packages/tokencalculator-core/src/index';
 import { BYTES_PER_TOKEN as SITE_BYTES } from '../src/engines/tokenizers/count';
+import { countImage } from '../src/engines/vision/count';
+import { countImageTokens } from '../packages/tokencalculator-core/src/index';
 import { MODELS as SITE_MODELS } from '../src/data/models';
 import { MODELS as PIECE_MODELS } from '../packages/activepieces-tokencalculator/src/lib/calculator';
 import { PROVIDERS } from '../src/data/providers';
@@ -109,6 +111,22 @@ describe('generated model catalogue', () => {
     expect(tokenizerOf('claude-haiku-4-5'), 'Haiku 4.5 predates Claude Opus 4.7').toBe('claude-estimate');
     for (const id of ['claude-opus-4-8', 'claude-sonnet-5', 'claude-opus-5', 'claude-fable-5-1', 'claude-opus-5-5', 'claude-sonnet-5-5']) {
       expect(tokenizerOf(id), id).toBe('claude-47-estimate');
+    }
+  });
+
+  it('counts images identically on the site and in the npm package', () => {
+    // The two copies of the vision formulas are easy to drift apart, and a silent
+    // disagreement would make the API and the page report different numbers.
+    const sizes = [[200, 200], [384, 384], [1024, 1024], [1920, 1080], [2048, 2048], [4000, 2000]] as const;
+    for (const model of SITE_MODELS.filter((entry) => entry.vision)) {
+      for (const [width, height] of sizes) {
+        for (const detail of ['high', 'low'] as const) {
+          const site = countImage({ width, height, detail }, model);
+          const pkg = countImageTokens(width, height, model.id, detail);
+          expect(pkg.tokens, `${model.id} ${width}x${height} ${detail}`).toBe(site.tokens);
+          expect(pkg.accuracy, `${model.id} ${width}x${height} ${detail}`).toBe(site.accuracy);
+        }
+      }
     }
   });
 

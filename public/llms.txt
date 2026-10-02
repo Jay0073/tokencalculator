@@ -71,6 +71,7 @@ Image APIs bill per image or per image token. Prices are checked against each pr
 - [Text and code tokenization](https://tokencalculator.dev/docs/text-and-code/)
 - [File and document tokens](https://tokencalculator.dev/docs/files/)
 - [Image tokens](https://tokencalculator.dev/docs/images/)
+- [Audio, video and PDF page tokens](https://tokencalculator.dev/docs/audio-video-pdf-tokens/)
 - [How image generation APIs bill: per image vs per token](https://tokencalculator.dev/docs/image-generation-cost/)
 - [n8n node](https://tokencalculator.dev/docs/n8n/)
 - [Activepieces piece](https://tokencalculator.dev/docs/activepieces/)

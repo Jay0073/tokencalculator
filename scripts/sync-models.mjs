@@ -38,6 +38,7 @@ const matches = (id, patterns) => patterns.some((pattern) => new RegExp(pattern)
 
 /** Things a person must act on, printed at the end of every run. */
 const warnings = [];
+const COUNTABLE_MODALITIES = new Set(['text', 'image', 'audio', 'video', 'pdf']);
 const RATE_KEYS = ['inputPerMillion', 'cachedInputPerMillion', 'outputPerMillion'];
 
 /** Mirrors BYTES_PER_TOKEN in the core package, for the flatter Activepieces shape. */
@@ -100,6 +101,9 @@ function selectModels(providerId, config, catalog) {
       // Only claim image support when the upstream feed says the model accepts images
       // AND this provider family has a documented image-token formula.
       vision: config.vision && (model.modalities?.input ?? []).includes('image') ? config.vision : undefined,
+      // What the model accepts at all. The media engine needs this to tell "this model
+      // cannot take audio" apart from "this provider publishes no rate for audio".
+      inputModalities: (model.modalities?.input ?? []).filter((kind) => COUNTABLE_MODALITIES.has(kind)),
       pricingUrl: config.pricingUrl,
       releaseDate: model.release_date ?? '',
       verifiedAt: new Date().toISOString().slice(0, 10),
@@ -130,6 +134,8 @@ function selectModels(providerId, config, catalog) {
     const override = policy.overrides?.[model.id];
     if (!override) continue;
     for (const [key, value] of Object.entries(override)) {
+      // Keys starting with $ are notes for the next reader, not model fields.
+      if (key.startsWith('$')) continue;
       // Guard the invariant: an override may never restate a base rate. Those must
       // stay owned by the upstream feed, or the drift problem comes straight back.
       if (['inputPerMillion', 'outputPerMillion', 'cachedInputPerMillion', 'cacheWritePerMillion', 'contextWindow'].includes(key)) {
@@ -185,6 +191,7 @@ function serialize(model, { accuracyKey = 'textAccuracy', defaultId } = {}) {
     `outputPerMillion:${model.outputPerMillion}`,
     ...(model.pricingTiers ? [`pricingTiers:${JSON.stringify(model.pricingTiers).replace(/"([a-zA-Z]+)":/g, '$1:').replace(/"/g, "'")}`] : []),
     ...(model.vision ? [`vision:'${model.vision}'`] : []),
+    ...(model.inputModalities?.length ? [`inputModalities:[${model.inputModalities.map((kind) => `'${kind}'`).join(',')}]`] : []),
     `pricingUrl:'${model.pricingUrl}'`,
     ...(model.rateSource ? [`rateSource:'${model.rateSource}'`] : []),
     `releaseDate:'${model.releaseDate}'`,
@@ -276,7 +283,7 @@ function main(catalog) {
   // Activepieces piece: same catalogue, flatter shape.
   const apPath = path.join(root, 'packages/activepieces-tokencalculator/src/lib/calculator.ts');
   const apSource = readFileSync(apPath, 'utf8');
-  const visionFamily = { 'openai-tiles': 'openai', 'claude-patches': 'claude', 'gemini-tiles': 'gemini' };
+  const visionFamily = { 'openai-tiles': 'openai', 'openai-patches': 'openai', 'claude-patches': 'claude', 'gemini-tiles': 'gemini', 'gemini-budget': 'gemini' };
   const apBody = selected.map((model) => {
     const fields = [
       `id: '${model.id}'`,

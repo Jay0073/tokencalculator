@@ -18,6 +18,38 @@ const fetchWorker = (path: string, init: RequestInit = {}) => worker.fetch(
 );
 
 describe('developer API worker', () => {
+  it('counts audio, video, and PDF pages where the provider publishes a rate', async () => {
+    const response = await post('/api/v1/count', {
+      model: 'gemini-3.8-flash',
+      input: { text: 'Summarise the call.', media: [{ kind: 'audio', seconds: 60 }, { kind: 'video', seconds: 10 }, { kind: 'pdf', pages: 2 }] },
+      options: { include: ['usage', 'breakdown'] },
+    });
+    const body = await response.json() as any;
+    expect(response.status).toBe(200);
+    // 60s audio at 25/s, 10s video at 70 a frame plus 25 a second of sound, 2 pages at 560.
+    expect(body.usage.media_tokens).toBe(1500 + 950 + 1120);
+    expect(body.usage.text_tokens).toBeGreaterThan(0);
+    expect(body.breakdown.map((item: any) => item.type)).toEqual(['text', 'audio', 'video', 'pdf']);
+  });
+
+  it('reports the reason instead of a number when no rate is published', async () => {
+    const response = await post('/api/v1/count', {
+      model: 'gpt-6-astra',
+      input: { text: 'Summarise the call.', media: [{ kind: 'audio', seconds: 60 }] },
+      options: { include: ['usage', 'breakdown'] },
+    });
+    const body = await response.json() as any;
+    expect(response.status).toBe(200);
+    expect(body.usage.media_tokens).toBe(0);
+    expect(body.breakdown[1].method).toContain('does not accept audio');
+  });
+
+  it('rejects a media item without a usable measurement', async () => {
+    const response = await post('/api/v1/count', { model: 'gemini-3.8-flash', input: { media: [{ kind: 'audio' }] } });
+    expect(response.status).toBe(400);
+    expect((await response.json() as any).detail).toContain('seconds');
+  });
+
   it('counts mixed text, extracted files, and image inputs', async () => {
     const response = await post('/api/v1/count', {
       model: 'gpt-5.6-terra',

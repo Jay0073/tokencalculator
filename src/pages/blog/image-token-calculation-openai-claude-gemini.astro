@@ -1,18 +1,72 @@
 ---
 import KnowledgeLayout from '../../layouts/KnowledgeLayout.astro';
-const toc=[{id:'why',label:'Why counts differ'},{id:'openai',label:'OpenAI'},{id:'claude',label:'Claude'},{id:'gemini',label:'Gemini'},{id:'workflow',label:'Comparison workflow'}];
+import { countImage } from '../../engines/vision/count';
+import { getModel } from '../../data/models';
+const toc=[{id:'why',label:'Why counts differ'},{id:'same',label:'One image, six models'},{id:'openai',label:'OpenAI'},{id:'claude',label:'Claude'},{id:'gemini',label:'Gemini'},{id:'workflow',label:'Comparison workflow'}];
+// Every number below comes from the same engine the calculator uses, so the article
+// cannot drift away from the code.
+const IMAGE={width:1920,height:1080};
+const ROWS=['gpt-6-astra','claude-sonnet-5-5','claude-haiku-4-5','gemini-3.8-flash','gemini-2.5-pro'].map((id)=>{
+  const model=getModel(id);
+  const counted=countImage(IMAGE,model);
+  return {model,tokens:counted.tokens,method:counted.method,cost:(counted.tokens/1_000_000)*model.inputPerMillion};
+});
+const cheapest=ROWS.reduce((low,row)=>row.cost<low.cost?row:low,ROWS[0]);
+const dearest=ROWS.reduce((high,row)=>row.cost>high.cost?row:high,ROWS[0]);
+const usd=(value:number)=>`$${value.toFixed(5)}`;
 ---
-<KnowledgeLayout title="Image Token Calculation: OpenAI vs Claude vs Gemini" description="A source-linked explanation of image token calculation across OpenAI, Anthropic Claude, and Google Gemini, including detail, resizing, tiles, patches, and API verification." heading="Image token calculation across OpenAI, Claude, and Gemini" eyebrow="Provider analysis · Engineering guide" datePublished="2026-08-28" dateModified="2026-08-28" section="Multimodal tokenization" keywords={['image token calculator','OpenAI image tokens','Claude image tokens','Gemini image tokens']} {toc}>
-  <p class="knowledge-lead">The same JPEG can occupy different token budgets across providers—and across generations of models from one provider. The count follows the model's visual preprocessing contract, not the compressed file size.</p>
+<KnowledgeLayout title="Image Token Calculation: OpenAI vs Claude vs Gemini" description="The three live image-token formulas, with the same 1920x1080 screenshot costed on five models. OpenAI patches, Claude patch tiers, Gemini fixed budgets." heading="Image token calculation across OpenAI, Claude, and Gemini" eyebrow="Provider analysis · Engineering guide" datePublished="2026-08-28" dateModified="2026-10-02" section="Multimodal tokenization" keywords={['image token calculator','OpenAI image tokens','Claude image tokens','Gemini media_resolution']} {toc}>
+  <p class="knowledge-lead">The same screenshot costs {ROWS[0].tokens.toLocaleString()} tokens on one model and {ROWS.find((row)=>row.model.id==='gemini-3.8-flash')!.tokens.toLocaleString()} on another. The reason is not image quality. The three big providers now use three unrelated rules, and one of them ignores your image's dimensions completely.</p>
+
   <h2 id="why">Why image token counts differ</h2>
-  <p>Vision pipelines typically transform the source image before inference. Relevant variables include width and height, aspect ratio, a requested detail or media-resolution mode, maximum resize bounds, tile or patch dimensions, per-tile budgets, base tokens, and model-specific multipliers. Consequently, “one image equals N tokens” is only valid when a provider explicitly fixes the image budget for that model and mode.</p>
-  <h2 id="openai">OpenAI: detail mode and model-specific budgets</h2>
-  <p>OpenAI image inputs expose <code>low</code>, <code>high</code>, and <code>auto</code> detail. Low detail uses a fixed low-resolution budget; high detail adds detailed crops after resizing. Token multipliers and base budgets vary by model, so a formula copied from an older vision model must not silently be applied to a newer one. TokenCalculator.dev selects a formula only where the model registry supports it and labels unavailable combinations.</p>
-  <h2 id="claude">Claude: resized pixel area converted to tokens</h2>
-  <p>Anthropic documents an approximate image-token relationship based on dimensions after any required resizing: <code>tokens ≈ width × height ÷ 750</code>. Very large images may be resized before this calculation. The estimate is useful for preflight planning, while actual API usage is authoritative.</p>
-  <h2 id="gemini">Gemini: multimodal countTokens and media resolution</h2>
-  <p>Google's documentation states that all modalities are tokenized and provides a <code>countTokens</code> endpoint. Current guidance also distinguishes small-image budgets, tiling for larger images, and media-resolution controls on newer Gemini models. Because behavior is model-dependent, the API endpoint is the reconciliation standard; the browser formula is a transparent planning implementation.</p>
+  <p>Every vision pipeline transforms the image before the model sees it. What differs is what each provider charges for afterwards:</p>
+  <ul>
+    <li><strong>OpenAI charges for patches.</strong> The image is cut into 32-pixel squares and the count is capped.</li>
+    <li><strong>Anthropic charges for patches too, but with 28-pixel squares and two different caps</strong>, split by model generation.</li>
+    <li><strong>Google charges a flat budget per image.</strong> Dimensions do not enter the calculation at all on Gemini 3.</li>
+  </ul>
+  <p>Compressed file size never appears in any of the three. A 200 KB JPEG and a 2 MB PNG of the same dimensions cost the same.</p>
+
+  <h2 id="same">One image, five models</h2>
+  <p>A 1920 × 1080 screenshot—the most common thing anyone actually sends—priced at each model's standard input rate:</p>
+  <div class="overflow-x-auto"><table>
+    <thead><tr><th>Model</th><th>Image tokens</th><th>Cost per image</th><th>Rule</th></tr></thead>
+    <tbody>{ROWS.map((row)=>(
+      <tr><td><strong>{row.model.name}</strong></td><td>{row.tokens.toLocaleString()}</td><td>{usd(row.cost)}</td><td class="text-xs">{row.method}</td></tr>
+    ))}</tbody>
+  </table></div>
+  <p>{dearest.model.name} costs {(dearest.cost/cheapest.cost).toFixed(0)} times more per image than {cheapest.model.name}. Two of these models are from the same vendor and differ by a factor of {(ROWS.find((row)=>row.model.id==='claude-sonnet-5-5')!.tokens/ROWS.find((row)=>row.model.id==='claude-haiku-4-5')!.tokens).toFixed(2)} on token count alone.</p>
+
+  <h2 id="openai">OpenAI: 32-pixel patches with a cap</h2>
+  <p>The current rule has three steps. Count raw patches as <code>ceil(width / 32) × ceil(height / 32)</code>. If that is above 2,500, shrink the image to fit the budget and recount. Multiply the patch count by 1.2 and round up.</p>
+  <p>OpenAI publishes two worked examples, and both reproduce exactly: 1024 × 1024 is 1,024 patches and <strong>1,229 tokens</strong>; 2048 × 2048 shrinks to 1600 × 1600, lands on the 2,500-patch cap, and costs <strong>3,000 tokens</strong>. The cap is the important part. Past about 1.6 megapixels, a bigger image costs nothing more, so sending a 4K screenshot buys no extra detail and no extra cost.</p>
+  <p>One practical gap: OpenAI's patch table lists GPT-6 Astra and the GPT-5.6 family, but not GPT-6 Sol, GPT-6.1 Sol, or GPT-6 Luna. Those three accept images with no published budget. This site counts them with the Astra rule and labels the result an estimate, rather than presenting an unsourced number as a fact.</p>
+  <p>The older tile rule—85 tokens plus 170 per 512-pixel tile, or a flat 85 for low detail—still applies to the GPT-4o and GPT-5 generations. If you copied that formula into your own code two years ago, it is now wrong for every current model.</p>
+
+  <h2 id="claude">Claude: 28-pixel patches in two tiers</h2>
+  <p>Anthropic counts <code>ceil(width / 28) × ceil(height / 28)</code> after resizing the image to fit two limits at once: a maximum edge and a maximum token count. Claude 4.7 and later get the larger limits—2,576 pixels and 4,784 tokens—while Claude 4.6 and earlier are held to 1,568 of each.</p>
+  <p>The old approximation <code>width × height ÷ 750</code> still circulates widely. It is close for small images and wrong for large ones, because it has no cap in it. For the 1920 × 1080 screenshot above it predicts 2,765 tokens: about 3 percent off for Claude Sonnet 5.5, and 77 percent too high for Claude Haiku 4.5.</p>
+  <p>The tier split has a real consequence for migration. Moving a screenshot-heavy workload from Haiku 4.5 to Sonnet 5.5 raises the image token count by three quarters, on top of the roughly 30 percent more text tokens the newer Claude tokenizer produces. Both effects point the same way, and neither shows up on a price-per-million comparison.</p>
+
+  <h2 id="gemini">Gemini: a flat budget per image</h2>
+  <p>Gemini 3 does not look at your dimensions. Each image spends a fixed budget: 280 tokens at <code>media_resolution low</code>, 560 at medium, 1,120 at high and by default, and 2,240 at ultra-high. A thumbnail and a 4K frame cost the same.</p>
+  <p>That makes Gemini the simplest of the three to budget and the easiest to over-spend on. Four images at the default setting cost 4,480 tokens whether they are icons or photographs, so lowering <code>media_resolution</code> to <code>low</code> on image-heavy pipelines cuts the visual bill by three quarters with one parameter.</p>
+  <p>Gemini 2.x is a different scheme entirely: 258 tokens when both sides are under 384 pixels, otherwise 768-pixel tiles at 258 tokens each after fitting the image into 3072 × 3072. The two generations can differ by more than 400 tokens on the same photograph, so a Gemini 2.x estimate must not be reused for Gemini 3.</p>
+
   <h2 id="workflow">A defensible comparison workflow</h2>
-  <ol><li>Keep the exact same image and record its pixel dimensions.</li><li>Select the exact model generation and detail/media-resolution mode.</li><li>Measure locally in the <a href="/">image token calculator</a>.</li><li>Call the provider token endpoint or inspect usage metadata.</li><li>Store both values with the model ID and date; do not generalize one result to another model family.</li></ol>
-  <div class="source-ledger"><h2>Primary sources</h2><p><strong>Reviewed:</strong> 28 August 2026 · Provider behavior can change.</p><ul><li><a href="https://platform.openai.com/docs/guides/images-vision">OpenAI images and vision guide</a></li><li><a href="https://docs.anthropic.com/en/docs/build-with-claude/vision">Anthropic vision guide</a></li><li><a href="https://ai.google.dev/gemini-api/docs/tokens">Gemini token guide</a></li><li><a href="https://ai.google.dev/api/tokens">Gemini countTokens API</a></li></ul></div>
+  <ol>
+    <li>Record the exact pixel dimensions you will send, not the file size.</li>
+    <li>Name the exact model ID and the detail or <code>media_resolution</code> setting.</li>
+    <li>Measure locally in the <a href="/">image token calculator</a>.</li>
+    <li>Reconcile against the <code>usage</code> block of one real API response.</li>
+    <li>Store both numbers with the model ID and the date. Do not carry a result across model families, or across generations inside one family.</li>
+  </ol>
+  <p>The full formulas, including the published verification tables, are in the <a href="/docs/images/">vision-token documentation</a>. For the other non-text inputs, see <a href="/docs/audio-video-pdf-tokens/">audio, video, and PDF tokens</a>.</p>
+
+  <div class="source-ledger"><h2>Primary sources</h2><p><strong>Reviewed:</strong> 2 October 2026 · Image rules change with model generations, more often than prices do.</p><ul>
+    <li><a href="https://developers.openai.com/api/docs/guides/images-vision">OpenAI images and vision guide</a>, including the patch worked examples</li>
+    <li><a href="https://platform.claude.com/docs/en/build-with-claude/vision">Anthropic vision guide</a> and its published dimension table</li>
+    <li><a href="https://ai.google.dev/gemini-api/docs/media-resolution">Gemini media resolution reference</a></li>
+    <li><a href="https://ai.google.dev/gemini-api/docs/tokens">Gemini token guide</a>, for the 2.x tile rule</li>
+  </ul></div>
 </KnowledgeLayout>

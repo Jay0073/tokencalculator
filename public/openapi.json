@@ -112,7 +112,8 @@
           "text": { "type": "string", "description": "Raw prompt or other text" },
           "messages": { "type": "array", "items": { "type": "object", "required": ["content"], "properties": { "role": { "type": "string" }, "name": { "type": "string" }, "content": { "type": "string" } } } },
           "files": { "type": "array", "description": "Already-extracted document text or source code; binary files are not accepted", "items": { "type": "object", "required": ["content"], "properties": { "name": { "type": "string" }, "media_type": { "type": "string" }, "content": { "type": "string" } } } },
-          "images": { "type": "array", "items": { "type": "object", "required": ["width", "height"], "properties": { "width": { "type": "integer", "minimum": 1 }, "height": { "type": "integer", "minimum": 1 }, "detail": { "type": "string", "enum": ["low", "high"], "default": "high" } } } }
+          "images": { "type": "array", "items": { "type": "object", "required": ["width", "height"], "properties": { "width": { "type": "integer", "minimum": 1 }, "height": { "type": "integer", "minimum": 1 }, "detail": { "type": "string", "enum": ["low", "high"], "default": "high" } } } },
+          "media": { "type": "array", "description": "Audio clips, video clips, or PDFs. Counted only where the provider publishes a token rate for that input; other models return zero tokens and the reason in `method`.", "items": { "type": "object", "required": ["kind"], "properties": { "kind": { "type": "string", "enum": ["audio", "video", "pdf"] }, "seconds": { "type": "number", "minimum": 0, "description": "Duration, for audio and video" }, "pages": { "type": "integer", "minimum": 0, "description": "Page count, for PDFs" }, "detail": { "type": "string", "enum": ["low", "high"], "description": "Gemini media_resolution; omit for the provider default" }, "sound": { "type": "boolean", "default": true, "description": "Set false for a silent video, so the sound track is not billed" } } } }
         }
       },
       "MeasurementRequest": {
@@ -144,7 +145,7 @@
           "object": { "const": "token_measurement" },
           "request_id": { "type": "string" },
           "model": { "$ref": "#/components/schemas/Model" },
-          "usage": { "type": "object", "properties": { "input_tokens": { "type": "integer" }, "text_tokens": { "type": "integer" }, "image_tokens": { "type": "integer" }, "cached_input_tokens": { "type": "integer" }, "output_tokens": { "type": "integer" }, "total_tokens": { "type": "integer" } } },
+          "usage": { "type": "object", "properties": { "input_tokens": { "type": "integer" }, "text_tokens": { "type": "integer" }, "image_tokens": { "type": "integer" }, "media_tokens": { "type": "integer" }, "cached_input_tokens": { "type": "integer" }, "output_tokens": { "type": "integer" }, "total_tokens": { "type": "integer" } } },
           "breakdown": { "type": "array", "items": { "type": "object", "properties": { "type": { "type": "string" }, "name": { "type": "string" }, "role": { "type": "string" }, "tokens": { "type": "integer" }, "accuracy": { "type": "string" }, "method": { "type": "string" } } } },
           "cost": { "type": "object", "properties": { "currency": { "type": "string" }, "input": { "type": "number" }, "cached_input": { "type": "number" }, "output": { "type": "number" }, "total": { "type": "number" } } },
           "context": { "type": "object", "properties": { "window": { "type": "integer" }, "used": { "type": "integer" }, "utilization": { "type": "number" }, "over_limit": { "type": "boolean" } } },

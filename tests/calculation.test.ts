@@ -86,19 +86,62 @@ describe('live pricing overlay', () => {
 });
 
 describe('published image formulas', () => {
-  it('uses OpenAI low-detail fixed allocation', () => {
-    expect(countImage({ width: 4000, height: 2000, detail: 'low' }, getModel('gpt-5.6-terra')).tokens).toBe(85);
+  // OpenAI's own worked examples: developers.openai.com/api/docs/guides/images-vision
+  it('matches OpenAI\u2019s worked patch examples', () => {
+    expect(countImage({ width: 1024, height: 1024 }, getModel('gpt-6-astra')).tokens).toBe(1229);
+    expect(countImage({ width: 2048, height: 2048 }, getModel('gpt-6-astra')).tokens).toBe(3000);
+    expect(countImage({ width: 1024, height: 1024 }, getModel('gpt-6-astra')).accuracy).toBe('provider-formula');
   });
 
-  it('uses Gemini small-image allocation', () => {
-    expect(countImage({ width: 384, height: 384 }, getModel('gemini-3.1-flash-lite')).tokens).toBe(258);
+  it('flags OpenAI models that publish no patch budget', () => {
+    for (const id of ['gpt-6-sol', 'gpt-6.1-sol', 'gpt-6-luna']) {
+      const result = countImage({ width: 1024, height: 1024 }, getModel(id));
+      expect(result.tokens).toBe(1229);
+      expect(result.accuracy).toBe('estimated');
+      expect(result.method).toContain('budget not published');
+    }
   });
 
-  it('fits Claude visual patches within the standard tier', () => {
-    expect(countImage({ width: 8000, height: 8000 }, getModel('claude-haiku-4-5')).tokens).toBe(1521);
+  it('keeps the legacy OpenAI tile rule available', () => {
+    const legacy = { ...getModel('gpt-5.6-terra'), vision: 'openai-tiles' as const };
+    expect(countImage({ width: 4000, height: 2000, detail: 'low' }, legacy).tokens).toBe(85);
+    expect(countImage({ width: 1024, height: 1024 }, legacy).tokens).toBe(765);
   });
 
-  it('resizes Claude images while preserving their aspect ratio', () => {
-    expect(countImage({ width: 1920, height: 1080 }, getModel('claude-haiku-4-5')).tokens).toBe(1560);
+  // Anthropic publishes a table of dimensions against tokens, for both image budgets:
+  // platform.claude.com/docs/en/build-with-claude/vision
+  it('reproduces Anthropic\u2019s published table on both tiers', () => {
+    const standard = getModel('claude-haiku-4-5'); // Claude 4.6 and earlier: 1,568 tokens
+    const large = getModel('claude-sonnet-5-5'); // Claude 4.7 and later: 4,784 tokens
+    const rows: [number, number, number, number][] = [
+      // width, height, standard tier, large tier
+      [200, 200, 64, 64],
+      [1000, 1000, 1296, 1296],
+      [1092, 1092, 1521, 1521],
+      [1920, 1080, 1560, 2691],
+      [2000, 1500, 1564, 3888],
+      [3840, 2160, 1560, 4784],
+    ];
+    for (const [width, height, small, big] of rows) {
+      expect(countImage({ width, height }, standard).tokens).toBe(small);
+      expect(countImage({ width, height }, large).tokens).toBe(big);
+    }
+  });
+
+  // Gemini 3 spends a fixed budget per image, whatever its size:
+  // ai.google.dev/gemini-api/docs/media-resolution
+  it('spends Gemini 3 media_resolution budgets', () => {
+    for (const size of [[384, 384], [1024, 1024], [3840, 2160]] as const) {
+      expect(countImage({ width: size[0], height: size[1] }, getModel('gemini-3.8-flash')).tokens).toBe(1120);
+      expect(countImage({ width: size[0], height: size[1], detail: 'low' }, getModel('gemini-3.8-flash')).tokens).toBe(280);
+    }
+  });
+
+  it('keeps the 258-token tile rule for Gemini 2.x', () => {
+    const legacy = getModel('gemini-2.5-pro');
+    expect(countImage({ width: 384, height: 384 }, legacy).tokens).toBe(258);
+    expect(countImage({ width: 1024, height: 1024 }, legacy).tokens).toBe(1032);
+    // Oversized images are scaled into 3072x3072 before tiling, so the count is bounded.
+    expect(countImage({ width: 8000, height: 8000 }, legacy).tokens).toBe(4128);
   });
 });

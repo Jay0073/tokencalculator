@@ -16,7 +16,7 @@ self.onmessage = (event: MessageEvent<{ id: number; modelId: string; text?: stri
     }
     if (image) {
       const counted = countImage(image, model);
-      self.postMessage({ id, ok: true, result: calculateResult(counted.tokens, model, 'provider-formula', counted.method) });
+      self.postMessage({ id, ok: true, result: calculateResult(counted.tokens, model, counted.accuracy, counted.method) });
       return;
     }
     const nextText = text ?? '';
