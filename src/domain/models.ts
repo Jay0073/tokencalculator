@@ -18,7 +18,10 @@ export type Accuracy = 'exact' | 'provider-formula' | 'estimated';
 export type TokenizerStrategy =
   | 'o200k_base'
   | 'cl100k_base'
+  /** Claude Sonnet 4.6 and earlier. */
   | 'claude-estimate'
+  /** Claude 4.7 and later: Anthropic documents ~30% more tokens for the same text. */
+  | 'claude-47-estimate'
   | 'gemini-estimate'
   | 'deepseek-estimate'
   | 'qwen-estimate'
@@ -29,10 +32,26 @@ export type TokenizerStrategy =
 
 export type VisionStrategy = 'openai-tiles' | 'claude-patches' | 'gemini-tiles';
 
+/**
+ * A service tier multiplies every token price of a model. Providers now sell the same
+ * model at several speeds and several prices, so a single rate no longer describes a bill.
+ */
+export interface ServiceTier {
+  id: string;
+  label: string;
+  /** Multiplier on every token category, relative to the standard price. */
+  multiplier: number;
+  /** Model ids this tier applies to. Undefined means every model from that provider. */
+  appliesTo?: string[];
+  note: string;
+}
+
 export interface PricingTier {
   aboveInputTokens: number;
   inputPerMillion: number;
   cachedInputPerMillion?: number;
+  /** Price of writing a prefix into the cache, where the provider charges for it. */
+  cacheWritePerMillion?: number;
   outputPerMillion: number;
   label: string;
 }
@@ -48,6 +67,12 @@ export interface ModelConfig {
   maxOutput: number;
   inputPerMillion: number;
   cachedInputPerMillion?: number;
+  /**
+   * Price of writing a prefix into the cache. OpenAI charges 1.25x input on GPT-5.6 and
+   * later; Anthropic charges 1.25x (5 minute) or 2x (1 hour). Undefined means the
+   * provider does not publish a separate write price.
+   */
+  cacheWritePerMillion?: number;
   outputPerMillion: number;
   pricingTiers?: PricingTier[];
   vision?: VisionStrategy;

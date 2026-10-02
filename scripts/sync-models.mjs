@@ -44,6 +44,7 @@ const RATE_KEYS = ['inputPerMillion', 'cachedInputPerMillion', 'outputPerMillion
 const BYTES_PER_TOKEN = {
   o200k_base: 4,
   'claude-estimate': 3.75,
+  'claude-47-estimate': 2.88,
   'gemini-estimate': 4,
   'deepseek-estimate': 3.85,
   'qwen-estimate': 3.7,
@@ -78,7 +79,24 @@ function selectModels(providerId, config, catalog) {
       maxOutput: limit.output ?? Math.min(limit.context, 8192),
       inputPerMillion: cost.input,
       cachedInputPerMillion: typeof cost.cache_read === 'number' ? cost.cache_read : undefined,
+      // Writing a prefix to the cache is charged by OpenAI (GPT-5.6 and later), Anthropic
+      // and others. Ignoring it understates every agent and RAG workload.
+      cacheWritePerMillion: typeof cost.cache_write === 'number' ? cost.cache_write : undefined,
       outputPerMillion: cost.output,
+      // Long-context tiers now come from upstream where available, instead of being
+      // maintained by hand in model-policy.json.
+      pricingTiers: Array.isArray(cost.tiers) && cost.tiers.length
+        ? cost.tiers
+            .filter((tier) => tier?.tier?.type === 'context' && typeof tier.tier.size === 'number')
+            .map((tier) => ({
+              aboveInputTokens: tier.tier.size,
+              inputPerMillion: tier.input,
+              ...(typeof tier.cache_read === 'number' ? { cachedInputPerMillion: tier.cache_read } : {}),
+              ...(typeof tier.cache_write === 'number' ? { cacheWritePerMillion: tier.cache_write } : {}),
+              outputPerMillion: tier.output,
+              label: `Long-context rate above ${Math.round(tier.tier.size / 1000)}K input tokens`,
+            }))
+        : undefined,
       // Only claim image support when the upstream feed says the model accepts images
       // AND this provider family has a documented image-token formula.
       vision: config.vision && (model.modalities?.input ?? []).includes('image') ? config.vision : undefined,
@@ -90,13 +108,21 @@ function selectModels(providerId, config, catalog) {
 
   candidates.sort((a, b) => (b.releaseDate || '').localeCompare(a.releaseDate || '') || a.id.localeCompare(b.id));
 
+  // Age limit. Raising the per-provider cap to fit new releases also let long-retired
+  // models back in, because "newest N" still fills spare slots with whatever exists.
+  // A model that is not pinned must be recent; pinned models stay at any age.
+  const oldest = policy.maxAgeDays
+    ? new Date(Date.now() - policy.maxAgeDays * 86_400_000).toISOString().slice(0, 10)
+    : '';
+  const fresh = oldest ? candidates.filter((model) => (model.releaseDate || '') >= oldest) : candidates;
+
   // Pinned models are published regardless of age; the rest of the slots go to the
   // newest releases. Without this, a burst of new launches silently drops the cheap
   // tier and the well-known older models people actually search for.
   const pinned = new Set(policy.pinned ?? []);
   const chosen = [
     ...candidates.filter((model) => pinned.has(model.id)),
-    ...candidates.filter((model) => !pinned.has(model.id)).slice(0, Math.max(0, policy.maxModelsPerProvider - candidates.filter((m) => pinned.has(m.id)).length)),
+    ...fresh.filter((model) => !pinned.has(model.id)).slice(0, Math.max(0, policy.maxModelsPerProvider - candidates.filter((m) => pinned.has(m.id)).length)),
   ].sort((a, b) => (b.releaseDate || '').localeCompare(a.releaseDate || '') || a.id.localeCompare(b.id));
 
   // Merge the hand-maintained layer for facts models.dev does not carry.
@@ -106,8 +132,16 @@ function selectModels(providerId, config, catalog) {
     for (const [key, value] of Object.entries(override)) {
       // Guard the invariant: an override may never restate a base rate. Those must
       // stay owned by the upstream feed, or the drift problem comes straight back.
-      if (['inputPerMillion', 'outputPerMillion', 'cachedInputPerMillion', 'contextWindow'].includes(key)) {
+      if (['inputPerMillion', 'outputPerMillion', 'cachedInputPerMillion', 'cacheWritePerMillion', 'contextWindow'].includes(key)) {
         throw new Error(`Override for '${model.id}' must not set '${key}'. Base rates come from ${policy.source}.`);
+      }
+      // Upstream now publishes context tiers for newer models. Keep the hand-maintained
+      // tier only where upstream has none, and say so when both exist.
+      if (key === 'pricingTiers' && model.pricingTiers) {
+        if (JSON.stringify(model.pricingTiers) !== JSON.stringify(value)) {
+          warnings.push(`'${model.id}' has context tiers upstream and a different hand-written tier in model-policy.json. Upstream is used; delete the override once you have checked it.`);
+        }
+        continue;
       }
       model[key] = value;
     }
@@ -147,6 +181,7 @@ function serialize(model, { accuracyKey = 'textAccuracy', defaultId } = {}) {
     `maxOutput:${num(model.maxOutput)}`,
     `inputPerMillion:${model.inputPerMillion}`,
     ...(model.cachedInputPerMillion !== undefined ? [`cachedInputPerMillion:${model.cachedInputPerMillion}`] : []),
+    ...(model.cacheWritePerMillion !== undefined ? [`cacheWritePerMillion:${model.cacheWritePerMillion}`] : []),
     `outputPerMillion:${model.outputPerMillion}`,
     ...(model.pricingTiers ? [`pricingTiers:${JSON.stringify(model.pricingTiers).replace(/"([a-zA-Z]+)":/g, '$1:').replace(/"/g, "'")}`] : []),
     ...(model.vision ? [`vision:'${model.vision}'`] : []),
@@ -212,9 +247,10 @@ function main(catalog) {
   const pricingNotes = Object.fromEntries(Object.entries(policy.providers).filter(([, config]) => config.pricingNote).map(([id, config]) => [id, config.pricingNote]));
   writeFileSync(
     path.join(root, 'src/data/models.ts'),
-    `${BANNER}\nimport type { ModelConfig, ProviderId } from '../domain/models';\n\n`
+    `${BANNER}\nimport type { ModelConfig, ProviderId, ServiceTier } from '../domain/models';\n\n`
       + `export const MODELS: ModelConfig[] = [\n${siteBody}\n];\n\n`
       + `export const PRICING_NOTES: Partial<Record<ProviderId, string>> = ${JSON.stringify(pricingNotes, null, 2)};\n\n`
+      + `export const SERVICE_TIERS: Partial<Record<ProviderId, ServiceTier[]>> = ${JSON.stringify(policy.serviceTiers ?? {}, null, 2)};\n\n`
       + `export const DEFAULT_MODEL = MODELS.find((model) => model.isDefault) ?? MODELS[0];\n`
       + `export const getModel = (id: string) => MODELS.find((model) => model.id === id) ?? DEFAULT_MODEL;\n`,
     'utf8',

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { MODELS, MODEL_ALIASES, getModel, resolveModelId } from '../packages/tokencalculator-core/src/index';
+import { MODELS, MODEL_ALIASES, BYTES_PER_TOKEN as CORE_BYTES, getModel, resolveModelId } from '../packages/tokencalculator-core/src/index';
+import { BYTES_PER_TOKEN as SITE_BYTES } from '../src/engines/tokenizers/count';
 import { MODELS as SITE_MODELS } from '../src/data/models';
 import { MODELS as PIECE_MODELS } from '../packages/activepieces-tokencalculator/src/lib/calculator';
 import { PROVIDERS } from '../src/data/providers';
@@ -87,6 +88,27 @@ describe('generated model catalogue', () => {
       expect(model!.inputPerMillion, id).toBe(fix.inputPerMillion);
       expect(model!.outputPerMillion, id).toBe(fix.outputPerMillion);
       expect(model!.rateSource, id).toBe(fix.source);
+    }
+  });
+
+  it('uses one bytes-per-token table across the site and the npm package', () => {
+    // The site engine used to carry a shorter list of its own, which counted Qwen, Kimi
+    // and GLM text at 4 bytes per token while the package used 3.7.
+    for (const [family, bytes] of Object.entries(SITE_BYTES)) {
+      if (!(family in CORE_BYTES)) continue;
+      expect(bytes, `bytes per token for '${family}'`).toBe(CORE_BYTES[family as keyof typeof CORE_BYTES]);
+    }
+  });
+
+  it('splits Claude into the pre-4.7 and 4.7-and-later tokenizers', () => {
+    // Anthropic documents ~30% more tokens for the same text on Claude 4.7 and later.
+    const ratio = SITE_BYTES['claude-estimate'] / SITE_BYTES['claude-47-estimate'];
+    expect(ratio).toBeGreaterThan(1.28);
+    expect(ratio).toBeLessThan(1.32);
+    const tokenizerOf = (id: string) => SITE_MODELS.find((model) => model.id === id)?.tokenizer;
+    expect(tokenizerOf('claude-haiku-4-5'), 'Haiku 4.5 predates Claude Opus 4.7').toBe('claude-estimate');
+    for (const id of ['claude-opus-4-8', 'claude-sonnet-5', 'claude-opus-5', 'claude-fable-5-1', 'claude-opus-5-5', 'claude-sonnet-5-5']) {
+      expect(tokenizerOf(id), id).toBe('claude-47-estimate');
     }
   });
 
