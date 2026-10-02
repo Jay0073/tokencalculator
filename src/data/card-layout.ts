@@ -41,3 +41,22 @@ export function bentoSpans(count: number): number[] {
 }
 
 export const cardMinHeight = (span: number): string => MIN_HEIGHT[span] ?? '20rem';
+
+/**
+ * Spans for an equal-column grid (two or three across) whose item count is not a
+ * multiple of the column count. The leftover cards at the end widen to fill the row,
+ * so the hub never shows a half-empty final row.
+ */
+export function fillSpans(count: number, columns: number): number[] {
+  const spans = Array.from({ length: count }, () => 1);
+  const remainder = count % columns;
+  if (remainder === 0 || count < columns) return spans;
+  // Share the full row between the leftover cards: with three columns and two left
+  // over, the first takes two columns and the second takes one.
+  let free = columns - remainder;
+  for (let index = count - remainder; index < count && free > 0; index += 1) {
+    spans[index] += 1;
+    free -= 1;
+  }
+  return spans;
+}

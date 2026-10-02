@@ -4,6 +4,7 @@ import { MODELS } from '../../data/models';
 import { PROVIDERS } from '../../data/providers';
 import UseCaseReviews from './UseCaseReviews.astro';
 import { FEATURED_REVIEWS } from '../../data/reviews';
+import { rate } from '../../lib/format';
 
 interface Props { provider?:ProviderId }
 const { provider }=Astro.props;
@@ -35,7 +36,7 @@ const providerCopy:Record<ProviderId,{method:string;difference:string;image:stri
 
     <section class="shell mt-20 relative z-10" aria-labelledby="models-title">
       <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-7"><div><span class="eyebrow">Curated production models</span><h2 id="models-title" class="section-title mt-3">Models included in this counter</h2></div><p class="mono text-xs muted m-0">Registry reviewed {reviewed}</p></div>
-      <div class="table-shell overflow-x-auto"><table class="seo-table"><thead><tr><th>Model</th><th>Tokenization method</th><th>Context window</th><th>Input / 1M</th><th>Output / 1M</th></tr></thead><tbody>{providerModels.map((model)=><tr><td><strong>{model.name}</strong></td><td>{model.textAccuracy==='exact'?'Exact local BPE':'Provider-Calibrated UTF-8 Projection'}</td><td data-live-context={model.id}>{model.contextWindow.toLocaleString()}</td><td data-live-input={model.id}>${model.inputPerMillion}</td><td data-live-output={model.id}>${model.outputPerMillion}</td></tr>)}</tbody></table></div>
+      <div class="table-shell overflow-x-auto"><table class="seo-table"><thead><tr><th>Model</th><th>Tokenization method</th><th>Context window</th><th>Input / 1M</th><th>Output / 1M</th></tr></thead><tbody>{providerModels.map((model)=><tr><td><strong>{model.name}</strong></td><td>{model.textAccuracy==='exact'?'Exact local BPE':'Provider-Calibrated UTF-8 Projection'}</td><td data-live-context={model.id}>{model.contextWindow.toLocaleString()}</td><td data-live-input={model.id}>{rate(model.inputPerMillion)}</td><td data-live-output={model.id}>{rate(model.outputPerMillion)}</td></tr>)}</tbody></table></div>
       <p class="text-xs muted mt-4">Rates shown are USD per 1,000,000 tokens, verified against the public pricing catalogue on {reviewed}. The table refreshes from the same live source the calculator uses. Provider invoices and official documentation remain authoritative.</p>
     </section>
   </>
@@ -55,9 +56,9 @@ const providerCopy:Record<ProviderId,{method:string;difference:string;image:stri
             <td><strong>{model.name}</strong></td>
             <td>{PROVIDERS[model.provider].name}</td>
             <td data-live-context={model.id}>{model.contextWindow.toLocaleString()}</td>
-            <td data-live-input={model.id}>${model.inputPerMillion}</td>
-            <td>{model.cachedInputPerMillion!==undefined?`$${model.cachedInputPerMillion}`:'—'}</td>
-            <td data-live-output={model.id}>${model.outputPerMillion}</td>
+            <td data-live-input={model.id}>{rate(model.inputPerMillion)}</td>
+            <td>{rate(model.cachedInputPerMillion)}</td>
+            <td data-live-output={model.id}>{rate(model.outputPerMillion)}</td>
           </tr>
         )))}
       </tbody></table></div>

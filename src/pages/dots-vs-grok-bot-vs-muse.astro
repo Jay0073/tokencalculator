@@ -6,6 +6,7 @@ import FlowDiagram from '../components/seo/FlowDiagram.astro';
 import ProviderLinks from '../components/seo/ProviderLinks.astro';
 import { countImage } from '../engines/vision/count';
 import { getModel } from '../data/models';
+import { rate } from '../lib/format';
 
 const breadcrumbs = [{ label: 'Token calculator', href: '/' }, { label: 'Compare', href: '/compare/' }, { label: 'Dots vs Grok Bot vs Muse' }];
 const canonical = '/dots-vs-grok-bot-vs-muse/';
@@ -153,15 +154,15 @@ const faq = [
           {[astra, grok, spark].map((model) => (
             <tr>
               <td><strong>{model.name}</strong></td>
-              <td>${model.inputPerMillion}</td>
-              <td>{model.cachedInputPerMillion !== undefined ? `$${model.cachedInputPerMillion}` : '—'}</td>
-              <td>${model.outputPerMillion}</td>
+              <td>{rate(model.inputPerMillion)}</td>
+              <td>{rate(model.cachedInputPerMillion)}</td>
+              <td>{rate(model.outputPerMillion)}</td>
               <td>{usd(chatCost(model))}</td>
             </tr>
           ))}
         </tbody>
       </table></div>
-      <p>Muse Spark 1.3 is the cheapest of the three by a wide margin, and Meta sells it cheaper still — $0.10 input and $0.20 output per million — on a contributor tier where your prompts and completions may train future models. GPT-6 Astra is the most expensive output on the list at ${astra.outputPerMillion} per million, which matters more for agents than for chat, because agents produce most of their tokens on the output side.</p>
+      <p>Muse Spark 1.3 is the cheapest of the three by a wide margin, and Meta sells it cheaper still — $0.10 input and $0.20 output per million — on a contributor tier where your prompts and completions may train future models. GPT-6 Astra is the most expensive output on the list at {rate(astra.outputPerMillion)} per million, which matters more for agents than for chat, because agents produce most of their tokens on the output side.</p>
 
       <h2 id="choose">How to decide</h2>
       <ul>
