@@ -3,11 +3,18 @@ import {
   calculateTokenCost,
   contextUsage,
   countImageTokens,
+  countMediaTokens,
   countTextTokens,
   getModel,
   resolveModelRates,
   type ModelConfig,
 } from '../packages/tokencalculator-core/src/index';
+
+/** Breakdown groups for the usage summary, so audio never lands in text_tokens. */
+const TEXT_TYPES = ['text', 'message', 'file'] as const;
+const MEDIA_TYPES = ['audio', 'video', 'pdf'] as const;
+const sumTokens = (items: { type: string; tokens: number }[], types: readonly string[]) =>
+  items.filter((item) => types.includes(item.type)).reduce((sum, item) => sum + item.tokens, 0);
 
 interface Env {
   ASSETS: { fetch(request: Request): Promise<Response> };
@@ -19,9 +26,10 @@ type IncludeField = 'usage' | 'breakdown' | 'cost' | 'context' | 'method' | 'pri
 interface MessageInput { role?: string; name?: string; content?: string }
 interface FileInput { name?: string; content?: string; media_type?: string }
 interface ImageInput { width?: number; height?: number; detail?: 'low' | 'high' }
+interface MediaRequestInput { kind?: 'audio' | 'video' | 'pdf'; seconds?: number; pages?: number; detail?: 'low' | 'high'; sound?: boolean }
 interface MeasurementRequest {
   model?: string;
-  input?: { text?: string; messages?: MessageInput[]; files?: FileInput[]; images?: ImageInput[] };
+  input?: { text?: string; messages?: MessageInput[]; files?: FileInput[]; images?: ImageInput[]; media?: MediaRequestInput[] };
   output_tokens?: number;
   cached_input_tokens?: number;
   options?: { include?: IncludeField[] };
@@ -145,9 +153,23 @@ async function measure(request: MeasurementRequest) {
     breakdown.push({ type: 'image', name: `image-${index + 1}`, tokens: result.tokens, accuracy: result.accuracy, method: result.method });
   }
 
+  for (const [index, item] of (Array.isArray(input.media) ? input.media : []).entries()) {
+    if (!item || (item.kind !== 'audio' && item.kind !== 'video' && item.kind !== 'pdf')) throw new TypeError(`input.media[${index}].kind must be 'audio', 'video' or 'pdf'.`);
+    const measure = item.kind === 'pdf' ? 'pages' : 'seconds';
+    if (typeof item[measure] !== 'number' || !Number.isFinite(item[measure]) || (item[measure] as number) < 0) {
+      throw new TypeError(`input.media[${index}] requires a non-negative numeric ${measure}.`);
+    }
+    const result = countMediaTokens(item as Parameters<typeof countMediaTokens>[0], model);
+    // A model with no published rate is reported as zero tokens with the reason, rather
+    // than as a number the provider does not document.
+    breakdown.push(result.supported
+      ? { type: item.kind, name: `${item.kind}-${index + 1}`, tokens: result.tokens, accuracy: result.accuracy, method: result.method }
+      : { type: item.kind, name: `${item.kind}-${index + 1}`, tokens: 0, accuracy: 'estimated', method: result.reason });
+  }
+
   const measuredBytes = [input.text ?? '', ...(input.messages ?? []).map(item => item.content ?? ''), ...(input.files ?? []).map(item => item.content ?? '')].reduce((sum, item) => sum + byteLength(item), 0);
   if (measuredBytes > MAX_TEXT_BYTES) throw new RangeError(`Combined text and extracted file content is limited to ${MAX_TEXT_BYTES} UTF-8 bytes.`);
-  if (!breakdown.length) throw new TypeError('Provide input.text, input.messages, input.files, or input.images.');
+  if (!breakdown.length) throw new TypeError('Provide input.text, input.messages, input.files, input.images, or input.media.');
 
   const inputTokens = breakdown.reduce((sum, item) => sum + item.tokens, 0);
   const outputTokens = finiteNonNegative(request.output_tokens);
@@ -164,7 +186,7 @@ async function measure(request: MeasurementRequest) {
   return {
     object: 'token_measurement',
     model: { id: model.id, name: model.name, provider: model.provider, tokenizer: model.tokenizer },
-    ...(include.has('usage') ? { usage: { input_tokens: inputTokens, text_tokens: breakdown.filter(item => item.type !== 'image').reduce((sum, item) => sum + item.tokens, 0), image_tokens: breakdown.filter(item => item.type === 'image').reduce((sum, item) => sum + item.tokens, 0), cached_input_tokens: cachedInputTokens, output_tokens: outputTokens, total_tokens: inputTokens + outputTokens } } : {}),
+    ...(include.has('usage') ? { usage: { input_tokens: inputTokens, text_tokens: sumTokens(breakdown, TEXT_TYPES), image_tokens: sumTokens(breakdown, ['image']), media_tokens: sumTokens(breakdown, MEDIA_TYPES), cached_input_tokens: cachedInputTokens, output_tokens: outputTokens, total_tokens: inputTokens + outputTokens } } : {}),
     ...(include.has('breakdown') ? { breakdown } : {}),
     ...(include.has('cost') ? { cost: { currency: 'USD', input: cost.input, cached_input: cost.cachedInput, output: cost.output, total: cost.total } } : {}),
     ...(include.has('context') ? { context: { window: model.contextWindow, max_output: model.maxOutput, used: inputTokens + outputTokens, remaining: context.remaining, utilization: context.ratio, over_context: context.overContext } } : {}),

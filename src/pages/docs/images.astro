@@ -2,16 +2,63 @@
 import KnowledgeLayout from '../../layouts/KnowledgeLayout.astro';
 import WorkflowDiagram from '../../components/docs/WorkflowDiagram.astro';
 import RelatedDocs from '../../components/docs/RelatedDocs.astro';
-const toc=[{id:'pipeline',label:'Local image pipeline'},{id:'variables',label:'Formula variables'},{id:'providers',label:'Provider behavior'},{id:'verify',label:'Verification'}];
+const toc=[{id:'pipeline',label:'Local image pipeline'},{id:'openai',label:'OpenAI: 32×32 patches'},{id:'claude',label:'Claude: 28×28 patches'},{id:'gemini',label:'Gemini: fixed budgets'},{id:'unpriced',label:'What is not priced'},{id:'verify',label:'Verification'}];
+// Anthropic's published table. Both columns come from the same formula; only the caps differ.
+const CLAUDE_ROWS=[['200 × 200','64','64'],['1000 × 1000','1,296','1,296'],['1092 × 1092','1,521','1,521'],['1920 × 1080','1,560','2,691'],['2000 × 1500','1,564','3,888'],['3840 × 2160','1,560','4,784']];
 ---
-<KnowledgeLayout title="Image and Vision Token Calculator Documentation" description="Technical documentation for local image dimension inspection and OpenAI, Claude, and Gemini visual-token calculations, model support, and verification." heading="Images and vision-token formulas" eyebrow="Docs · Input pipeline 03" datePublished="2026-08-28" dateModified="2026-08-28" section="Documentation" type="TechArticle" keywords={['image token calculator','vision tokens','image dimensions']} {toc}>
-  <p class="knowledge-lead">The browser reads supported PNG, JPEG, WebP, and GIF dimensions locally. It does not upload pixels. A model-specific formula converts the processed geometry into a preflight token budget.</p>
-  <WorkflowDiagram title="Vision-token calculation" caption="Image dimensions—not compressed file size—drive the resize, tile, or patch formula selected for the model family." steps={[{label:'Image file',detail:'PNG, JPEG, WebP, GIF',tone:'source'},{label:'Read dimensions',detail:'Pixels stay local',tone:'source'},{label:'Resize rules',detail:'Bounds and detail mode',tone:'measure'},{label:'Tiles or patches',detail:'Provider formula',tone:'measure'},{label:'Vision tokens',detail:'Added to text',tone:'action'}]}/>
-  <h2 id="pipeline">Local image pipeline</h2><ol><li>Read file metadata and intrinsic dimensions.</li><li>Resolve provider, model generation, and supported detail mode.</li><li>Apply required resizing, tiling, patching, caps, base budgets, or multipliers.</li><li>Add the resulting visual tokens to text and extracted-file tokens.</li></ol>
-  <h2 id="variables">Variables that matter</h2><p>Width, height, aspect ratio, detail/media-resolution mode, maximum bounds, tile or patch dimensions, and model generation can all alter the result. Compressed file size alone is not a token formula.</p>
-  <h2 id="providers">Provider behavior</h2><p>OpenAI uses model-specific low/high-detail budgets and crops. Anthropic documents a dimension-based approximation after resizing. Gemini exposes multimodal <code>countTokens</code> and model-specific media-resolution behavior. Unsupported model/formula combinations are reported rather than silently borrowing a legacy rule.</p>
-  <div class="table-shell overflow-x-auto"><table class="seo-table"><thead><tr><th>Provider family</th><th>Main geometry concept</th><th>Key setting</th></tr></thead><tbody><tr><td>OpenAI</td><td>Base allocation plus resized image tiles</td><td>Low or high detail</td></tr><tr><td>Anthropic</td><td>Dimension-based 28 × 28 patch estimate with caps</td><td>Model generation and resize ceiling</td></tr><tr><td>Gemini</td><td>Media-resolution allocation and image tiles</td><td>Model-specific media behavior</td></tr></tbody></table></div>
-  <h2>Why two similar images can cost differently</h2><p>A 1600 × 900 JPEG and a 1600 × 900 PNG generally share the same geometry even if their file sizes differ, so their visual-token estimates can match. Change the aspect ratio, cross a resize threshold, or switch detail mode and the tile or patch count can change sharply. Always preserve the final dimensions used by the actual model request.</p>
-  <h2 id="verify">Verification</h2><p>Reconcile the browser result with the exact model endpoint or response usage metadata. Record model ID, dimensions, detail setting, formula revision, and date. Read the <a href="/blog/image-token-calculation-openai-claude-gemini/">full provider comparison</a>.</p>
-  <RelatedDocs hrefs={['/docs/files/','/docs/text-and-code/','/docs/privacy-architecture/']} />
+<KnowledgeLayout title="Image and Vision Token Formulas: Documentation" description="How image tokens are counted: OpenAI 32x32 patches with a 2,500 budget, Claude 28x28 patches in two tiers, and Gemini 3 media_resolution budgets." heading="Images and vision-token formulas" eyebrow="Docs · Input pipeline 03" datePublished="2026-08-28" dateModified="2026-10-02" section="Documentation" type="TechArticle" keywords={['image token calculator','vision tokens','OpenAI patch tokens','Gemini media_resolution']} {toc}>
+  <p class="knowledge-lead">The browser reads image dimensions locally and never uploads pixels. Each provider family then converts that geometry into tokens with its own published formula. The three formulas have nothing in common, so the same image can cost 1,120 tokens on one model and 4,784 on another.</p>
+  <WorkflowDiagram title="Vision-token calculation" caption="Image dimensions—not compressed file size—drive the patch, tile, or fixed-budget rule selected for the model family." steps={[{label:'Image file',detail:'PNG, JPEG, WebP, GIF',tone:'source'},{label:'Read dimensions',detail:'Pixels stay local',tone:'source'},{label:'Select rule',detail:'By model family',tone:'measure'},{label:'Patches, tiles, or budget',detail:'Provider formula',tone:'measure'},{label:'Vision tokens',detail:'Added to text',tone:'action'}]}/>
+
+  <h2 id="pipeline">Local image pipeline</h2>
+  <ol>
+    <li>Read the file's intrinsic width and height in the browser.</li>
+    <li>Select the rule for that model family and generation.</li>
+    <li>Apply the documented resize, patch, tile, or budget step.</li>
+    <li>Add the visual tokens to the text and extracted-file tokens.</li>
+  </ol>
+  <p>Compressed file size is never part of any formula. A 1600 × 900 PNG and a 1600 × 900 JPEG cost the same number of tokens even when one file is ten times larger.</p>
+
+  <h2 id="openai">OpenAI: 32 × 32 patches</h2>
+  <p>Current OpenAI models cut the image into 32-pixel squares and bill the patch count times a multiplier. The patch count is capped at 2,500 and the multiplier is 1.2.</p>
+  <ol>
+    <li>Raw patches: <code>ceil(width / 32) × ceil(height / 32)</code>.</li>
+    <li>If that exceeds 2,500, shrink the image by <code>sqrt(2500 × 32² / (width × height))</code>, then snap the width down to a whole number of patches and recount.</li>
+    <li>Tokens: <code>patches × 1.2</code>, rounded up.</li>
+  </ol>
+  <p>OpenAI's two worked examples both reproduce exactly: a 1024 × 1024 image is 1,024 patches and <strong>1,229 tokens</strong>; a 2048 × 2048 image shrinks to 1600 × 1600, hits the 2,500-patch cap, and costs <strong>3,000 tokens</strong>. There is no low-detail shortcut on a patch model, so the <code>detail</code> field changes nothing.</p>
+  <p>The older tile rule—85 base tokens plus 170 per 512-pixel tile, with a flat 85 for low detail—still applies to the GPT-4o and GPT-5 generations. It stays available in the npm package for anyone measuring those models.</p>
+
+  <h2 id="claude">Claude: 28 × 28 patches</h2>
+  <p>Anthropic counts <code>ceil(width / 28) × ceil(height / 28)</code> after resizing the image to fit two limits: a maximum edge length and a maximum token count. Claude 4.7 and later carry the larger budget, the same release boundary as Anthropic's newer tokenizer.</p>
+  <div class="table-shell overflow-x-auto"><table class="seo-table">
+    <thead><tr><th>Dimensions</th><th>Claude 4.6 and earlier<br/>1,568-token tier</th><th>Claude 4.7 and later<br/>4,784-token tier</th></tr></thead>
+    <tbody>{CLAUDE_ROWS.map((row)=><tr><td>{row[0]}</td><td>{row[1]}</td><td>{row[2]}</td></tr>)}</tbody>
+  </table></div>
+  <p>Every row is Anthropic's own published figure, and each one is covered by a test in this repository. Notice the shape of the table: below about 1.5 megapixels the two tiers agree, because nothing needs resizing. Above that, the older tier flattens at roughly 1,560 tokens while the newer tier keeps climbing to 4,784. A 4K screenshot therefore costs three times more on Claude Sonnet 5.5 than on Claude Haiku 4.5.</p>
+
+  <h2 id="gemini">Gemini: fixed budgets</h2>
+  <p>Gemini 3 ignores image dimensions. Each image spends a fixed budget set by the <code>media_resolution</code> parameter.</p>
+  <div class="table-shell overflow-x-auto"><table class="seo-table">
+    <thead><tr><th><code>media_resolution</code></th><th>Tokens per image</th></tr></thead>
+    <tbody>
+      <tr><td><code>low</code></td><td>280</td></tr>
+      <tr><td><code>medium</code></td><td>560</td></tr>
+      <tr><td><code>high</code> and the default</td><td>1,120</td></tr>
+      <tr><td><code>ultra_high</code></td><td>2,240</td></tr>
+    </tbody>
+  </table></div>
+  <p>This calculator uses 1,120 tokens, Google's default, and 280 when the detail control is set to low. Gemini 2.x models are not part of this scheme: they charge 258 tokens for an image with both sides under 384 pixels, and otherwise tile the image into 768-pixel squares at 258 tokens each, after scaling it to fit 3072 × 3072.</p>
+
+  <h2 id="unpriced">What is not priced</h2>
+  <p>Two cases are reported rather than guessed:</p>
+  <ul>
+    <li><strong>Models with no published image rule.</strong> Qwen, Kimi, GLM, Grok, and Meta accept images, but publish no token formula for them. These models show "image input unavailable" instead of a number borrowed from another vendor.</li>
+    <li><strong>GPT-6 Sol, GPT-6.1 Sol, and GPT-6 Luna.</strong> OpenAI's patch table does not list them. They are counted with the GPT-6 Astra rule, and the result is labelled an estimate with that reason attached.</li>
+  </ul>
+
+  <h2 id="verify">Verification</h2>
+  <p>Reconcile any preflight number against the <code>usage</code> block of a real API response. Record the model ID, the exact dimensions you sent, the detail or media-resolution setting, and the date. Image rules change with model generations more often than text prices change.</p>
+  <p>Read the <a href="/blog/image-token-calculation-openai-claude-gemini/">full provider comparison</a>, or see <a href="/docs/audio-video-pdf-tokens/">audio, video, and PDF pages</a> for the other non-text inputs.</p>
+  <RelatedDocs hrefs={['/docs/audio-video-pdf-tokens/','/docs/files/','/docs/text-and-code/']} />
 </KnowledgeLayout>

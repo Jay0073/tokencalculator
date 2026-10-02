@@ -127,6 +127,8 @@
     },
     "gemini-2.5-pro": {
       "description": "Long-context reasoning",
+      "vision": "gemini-tiles",
+      "$visionComment": "The fixed media_resolution budgets are exclusive to Gemini 3 models (ai.google.dev/gemini-api/docs/media-resolution). Gemini 2.x keeps the 258-token 768px tile rule.",
       "pricingTiers": [
         {
           "aboveInputTokens": 200000,
@@ -184,7 +186,8 @@
       "short": "OAI",
       "tokenizer": "o200k_base",
       "accuracy": "exact",
-      "vision": "openai-tiles",
+      "vision": "openai-patches",
+      "$visionComment": "GPT-6 Astra and the GPT-5.6 family are documented as 32x32 patch models with a 2,500-patch budget and a 1.2 multiplier (developers.openai.com/api/docs/guides/images-vision). GPT-6 Sol, GPT-6.1 Sol and GPT-6 Luna are absent from that table, so the engine applies the same rule and reports an estimate.",
       "pricingUrl": "https://developers.openai.com/api/docs/models/compare",
       "include": [
         "^gpt-6",
@@ -222,7 +225,8 @@
       "short": "GOO",
       "tokenizer": "gemini-estimate",
       "accuracy": "estimated",
-      "vision": "gemini-tiles",
+      "vision": "gemini-budget",
+      "$visionComment": "Gemini 3 spends a fixed budget per image: 280 low, 560 medium, 1,120 high and default, 2,240 ultra-high (ai.google.dev/gemini-api/docs/media-resolution).",
       "pricingUrl": "https://ai.google.dev/gemini-api/docs/pricing",
       "include": [
         "^gemini-"

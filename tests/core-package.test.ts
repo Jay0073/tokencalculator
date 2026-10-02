@@ -42,8 +42,10 @@ describe('companion package', () => {
 
   it('uses provider image formulas and model-specific pricing', () => {
     const result = countImageTokens(1024, 1024, 'gpt-5.6-terra', 'high');
-    expect(result.tokens).toBe(765);
+    expect(result.tokens).toBe(1229);
     expect(result.accuracy).toBe('provider-formula');
+    // The patch model has no low-detail shortcut, so the detail flag changes nothing.
+    expect(countImageTokens(1024, 1024, 'gpt-5.6-terra', 'low').tokens).toBe(1229);
     expect(getModel('gpt-5.6-terra').provider).toBe('openai');
   });
 
@@ -70,8 +72,8 @@ describe('companion package', () => {
       ['gpt-5.6-terra'],
     );
     const textOnly = await countTextTokens('First uploaded document.\n\nSecond uploaded document.', 'gpt-5.6-terra');
-    expect(result[0].inputTokens).toBe(textOnly.tokens + 765 + 85);
-    expect(result[0].method).toContain('OpenAI high-detail formula');
-    expect(result[0].method).toContain('OpenAI low-detail fixed image cost');
+    // 1024px is 1,024 patches and 512px is 256, each billed at 1.2 tokens per patch.
+    expect(result[0].inputTokens).toBe(textOnly.tokens + 1229 + 308);
+    expect(result[0].method).toContain('OpenAI 32×32 patch formula');
   });
 });

@@ -1,16 +1,22 @@
 const TEXT_EXTENSIONS = new Set(['txt', 'md', 'markdown', 'json', 'csv', 'js', 'jsx', 'ts', 'tsx', 'py', 'go', 'rs', 'java', 'c', 'cpp', 'h', 'hpp', 'css', 'html', 'xml', 'yaml', 'yml', 'toml', 'sql', 'sh']);
 const MAX_FILE_BYTES = 12 * 1024 * 1024;
 
-export async function extractDocument(file: File): Promise<string> {
+export interface ExtractedDocument {
+  text: string;
+  /** PDF page count. Providers bill each page as an image on top of its text. */
+  pages?: number;
+}
+
+export async function extractDocument(file: File): Promise<ExtractedDocument> {
   if (file.size > MAX_FILE_BYTES) throw new Error('File exceeds the 12 MB local-processing limit.');
   const extension = file.name.split('.').pop()?.toLowerCase() ?? '';
-  if (TEXT_EXTENSIONS.has(extension)) return file.text();
+  if (TEXT_EXTENSIONS.has(extension)) return { text: await file.text() };
 
   if (extension === 'docx') {
     const mammoth = await import('mammoth/mammoth.browser');
     const result = await mammoth.extractRawText({ arrayBuffer: await file.arrayBuffer() });
     if (!result.value.trim()) throw new Error('No readable text was found in this DOCX file.');
-    return result.value;
+    return { text: result.value };
   }
 
   if (extension === 'pdf') {
@@ -26,7 +32,7 @@ export async function extractDocument(file: File): Promise<string> {
     }
     const text = pages.join('\n\n').trim();
     if (!text) throw new Error('No readable text was found. Scanned PDFs need OCR, which is not supported.');
-    return text;
+    return { text, pages: pdf.numPages };
   }
 
   throw new Error('Unsupported file type. Use a text file, PDF, or DOCX.');

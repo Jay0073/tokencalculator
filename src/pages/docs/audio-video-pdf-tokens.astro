@@ -1,0 +1,80 @@
+---
+import KnowledgeLayout from '../../layouts/KnowledgeLayout.astro';
+import WorkflowDiagram from '../../components/docs/WorkflowDiagram.astro';
+import RelatedDocs from '../../components/docs/RelatedDocs.astro';
+import FAQ from '../../components/seo/FAQ.astro';
+const toc=[{id:'pipeline',label:'How length is measured'},{id:'audio',label:'Audio'},{id:'video',label:'Video'},{id:'pdf',label:'PDF pages'},{id:'unpriced',label:'What is not priced'},{id:'faq',label:'Questions'},{id:'verify',label:'Verification'}];
+const faq=[
+  {question:'How many tokens is one minute of audio?',answer:'On Gemini 3 it is 1,500 input tokens, at 25 tokens a second. On Gemini 2.x it is 1,920, at 32 tokens a second. The rate does not change with media_resolution.'},
+  {question:'How many tokens is a minute of video?',answer:'At the default resolution, Gemini 3 charges 70 tokens for each frame sampled at 1 FPS plus 25 tokens a second for the sound track, so one minute with sound is 5,700 tokens. At media_resolution high the frame cost rises to 280.'},
+  {question:'How many tokens does a PDF page cost?',answer:'Gemini 3 charges 560 tokens a page by default and Gemini 2.x charges 258, on top of the page text. OpenAI, Anthropic and xAI all send pages to the model as images but publish no per-page token figure.'},
+  {question:'Can ChatGPT or Claude models take audio input?',answer:'No current OpenAI or Claude text model accepts audio or video. The calculator names the model and says so, rather than showing a number from another vendor.'},
+  {question:'Is my audio or video file uploaded to count it?',answer:'No. The length is read from the file metadata inside your browser, the same way image dimensions are read. The file itself never leaves the page.'},
+];
+const faqSchema={'@context':'https://schema.org','@type':'FAQPage',mainEntity:faq.map((item)=>({'@type':'Question',name:item.question,acceptedAnswer:{'@type':'Answer',text:item.answer}}))};
+// One minute of audio, costed on both Gemini generations.
+const MINUTE=60;
+const GEMINI_3_AUDIO=25, GEMINI_2_AUDIO=32;
+---
+<KnowledgeLayout title="Audio, Video, and PDF Token Documentation" description="Token rates for non-text input: Gemini 3 bills 25 tokens a second of audio, 70 a video frame at 1 FPS, and 560 a PDF page. With what is not published." heading="Audio, video, and PDF token counting" eyebrow="Docs · Input pipeline 04" datePublished="2026-10-02" dateModified="2026-10-02" section="Documentation" type="TechArticle" keywords={['audio token calculator','video token cost','PDF page tokens','Gemini media_resolution']} {toc}>
+  <p class="knowledge-lead">Audio, video, and PDF pages cost tokens that have nothing to do with the words inside them. One minute of audio is {(MINUTE*GEMINI_3_AUDIO).toLocaleString()} tokens on Gemini 3 before the model reads a single word. Google publishes exact rates for all three input types. Most other vendors publish none, and this page says so rather than filling the gap with an invented number.</p>
+  <WorkflowDiagram title="Media-token calculation" caption="Duration and page count are read in the browser. The file itself never leaves the page." steps={[{label:'Audio, video, or PDF',detail:'Dropped into the calculator',tone:'source'},{label:'Read duration or pages',detail:'Locally, from metadata',tone:'source'},{label:'Select rate',detail:'By model generation',tone:'measure'},{label:'Seconds × rate',detail:'Frames at 1 FPS',tone:'measure'},{label:'Media tokens',detail:'Added to text',tone:'action'}]}/>
+
+  <h2 id="pipeline">How length is measured</h2>
+  <p>The calculator loads the file into a hidden media element and reads <code>duration</code> from its metadata, the same way it reads width and height from an image. For PDFs it reads the page count while extracting the text. Nothing is uploaded, and no byte of the file is sent anywhere.</p>
+  <p>Seconds are billed whole, and part seconds round up. A 90.2-second clip is counted as 91 seconds.</p>
+
+  <h2 id="audio">Audio</h2>
+  <div class="table-shell overflow-x-auto"><table class="seo-table">
+    <thead><tr><th>Model family</th><th>Tokens per second</th><th>One minute</th><th>One hour</th></tr></thead>
+    <tbody>
+      <tr><td>Gemini 3</td><td>{GEMINI_3_AUDIO}</td><td>{(MINUTE*GEMINI_3_AUDIO).toLocaleString()}</td><td>{(3600*GEMINI_3_AUDIO).toLocaleString()}</td></tr>
+      <tr><td>Gemini 2.x</td><td>{GEMINI_2_AUDIO}</td><td>{(MINUTE*GEMINI_2_AUDIO).toLocaleString()}</td><td>{(3600*GEMINI_2_AUDIO).toLocaleString()}</td></tr>
+    </tbody>
+  </table></div>
+  <p>The rate does not change with <code>media_resolution</code>: Google documents audio as a fixed cost per second across every resolution setting. Google's own worked example confirms the older figure—one minute of audio is 1,920 tokens on Gemini 2.x.</p>
+  <p>The practical consequence is that audio is cheap to measure and expensive to ignore. A one-hour meeting recording is 90,000 input tokens on Gemini 3, which is about 9 percent of a one-million-token context window before any prompt or transcript.</p>
+
+  <h2 id="video">Video</h2>
+  <p>Video is billed as frames plus sound. Frames are sampled once per second, so a 30-second clip is 30 frames regardless of its real frame rate.</p>
+  <div class="table-shell overflow-x-auto"><table class="seo-table">
+    <thead><tr><th>Model family</th><th>Per frame, default</th><th>Per frame, high</th><th>Sound</th><th>30 seconds, default</th></tr></thead>
+    <tbody>
+      <tr><td>Gemini 3</td><td>70</td><td>280</td><td>25 per second</td><td>{(30*(70+25)).toLocaleString()}</td></tr>
+      <tr><td>Gemini 2.x</td><td>66</td><td>258</td><td>32 per second</td><td>{(30*(66+32)).toLocaleString()}</td></tr>
+    </tbody>
+  </table></div>
+  <p>Note the default. For images, Google's default budget equals the <code>high</code> setting. For video, the default equals the <code>low</code> setting, so a video frame starts at 70 tokens rather than 280. Raising <code>media_resolution</code> to high multiplies the frame cost by four.</p>
+  <p>The sound track is counted at the audio rate on top of the frames. That is why Google describes default video as "approximately 100 tokens per second": 66 for the frame plus 32 for the second of sound on Gemini 2.x. A silent screen recording costs only the frame part, and the API accepts a flag for that case.</p>
+  <p>Ten minutes of video at the default resolution is {(600*95).toLocaleString()} tokens on Gemini 3. At high resolution the same ten minutes is {(600*305).toLocaleString()} tokens, which no longer fits comfortably alongside a long prompt.</p>
+
+  <h2 id="pdf">PDF pages</h2>
+  <p>A PDF is two costs, not one: the text inside it, and each page sent as an image.</p>
+  <div class="table-shell overflow-x-auto"><table class="seo-table">
+    <thead><tr><th>Model family</th><th>Tokens per page</th><th>Page text</th></tr></thead>
+    <tbody>
+      <tr><td>Gemini 3, default</td><td>560</td><td>Counted separately</td></tr>
+      <tr><td>Gemini 3, <code>low</code> / <code>high</code></td><td>280 / 1,120</td><td>Counted separately</td></tr>
+      <tr><td>Gemini 2.x</td><td>258</td><td>Counted separately</td></tr>
+    </tbody>
+  </table></div>
+  <p>Google's documentation is not consistent here, and it is worth knowing why before you trust any single number. The media-resolution reference lists each PDF level as a page budget "plus native text". The document-processing guide says you are not charged for tokens from extracted native text. Those two statements cannot both be true. This calculator shows the page cost and the text cost as separate lines so you can read the total either way, and treats the sum as an upper bound.</p>
+  <p>A 40-page report is {(40*560).toLocaleString()} tokens of page images on Gemini 3 before its text is counted. On Gemini 2.x the same report is {(40*258).toLocaleString()}.</p>
+
+  <h2 id="unpriced">What is not priced</h2>
+  <p>Two different situations are reported differently, because they mean different things:</p>
+  <ul>
+    <li><strong>The model does not accept the input.</strong> No current OpenAI or Claude text model accepts audio or video. The calculator says so by name: "Claude Sonnet 5.5 does not accept audio input."</li>
+    <li><strong>The model accepts it, but no rate is published.</strong> Qwen, Kimi, and GLM models take video; Meta's Muse Spark takes audio. None of those vendors publishes a token rate. The calculator names the gap instead of borrowing Google's numbers.</li>
+  </ul>
+  <p>PDFs sit in the second group for OpenAI, Anthropic, and xAI. All three accept PDFs and all three send each page to the model as an image, so pages do cost tokens there. Neither OpenAI nor Anthropic publishes a per-page figure. Anthropic's closest published statement is an example: roughly 7,000 tokens for a three-page PDF with full visual understanding, against roughly 1,000 tokens for the same three pages as text alone. That is an example, not a formula, so this calculator counts the text exactly and flags the page images as an unpriced extra.</p>
+
+  <h2 id="faq">Questions people ask</h2>
+  <FAQ items={faq} compact />
+
+  <h2 id="verify">Verification</h2>
+  <p>Every figure on this page is in a test in this repository, including Google's two worked examples. Before you commit a budget, reconcile one real request against the <code>usage</code> block the provider returns, and record the model ID, the duration or page count, and the <code>media_resolution</code> setting you used.</p>
+  <p>Measure a real file in the <a href="/">token calculator</a>, or read how the same work is done for <a href="/docs/images/">images and vision tokens</a>.</p>
+  <RelatedDocs hrefs={['/docs/images/','/docs/files/','/docs/api/']} />
+  <script is:inline type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
+</KnowledgeLayout>

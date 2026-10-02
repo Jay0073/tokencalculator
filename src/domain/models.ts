@@ -30,7 +30,12 @@ export type TokenizerStrategy =
   | 'glm-estimate'
   | 'llama-estimate';
 
-export type VisionStrategy = 'openai-tiles' | 'claude-patches' | 'gemini-tiles';
+export type InputModality = 'text' | 'image' | 'audio' | 'video' | 'pdf';
+
+/** Input types that carry a token cost of their own, beyond the text they contain. */
+export type MediaKind = 'audio' | 'video' | 'pdf';
+
+export type VisionStrategy = 'openai-tiles' | 'openai-patches' | 'claude-patches' | 'gemini-tiles' | 'gemini-budget';
 
 /**
  * A service tier multiplies every token price of a model. Providers now sell the same
@@ -76,6 +81,11 @@ export interface ModelConfig {
   outputPerMillion: number;
   pricingTiers?: PricingTier[];
   vision?: VisionStrategy;
+  /**
+   * Input types the model accepts, from the upstream catalogue. Absence of a type means
+   * the model rejects it; presence does not imply the provider publishes a token rate.
+   */
+  inputModalities?: readonly InputModality[];
   pricingUrl: string;
   /**
    * Set only when models.dev disagreed with the provider and the rates were corrected
