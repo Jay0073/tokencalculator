@@ -65,6 +65,9 @@ const MOVED_PAGES = {
   '/deepseek-v4-flash-vs-gpt-5-6-luna-pricing': '/deepseek-v4-1-flash-vs-gpt-5-6-luna-pricing/',
   // Google names Gemini 3.5 Flash-Lite as the replacement for 3.1 Flash-Lite.
   '/gemini-3-1-flash-lite-vs-gpt-5-6-luna-cost': '/gemini-3-5-flash-lite-vs-gpt-5-6-luna-cost/',
+  // GPT-6 Sol replaced GPT-5.6 Sol at half the price on 2026-09-22.
+  '/deepseek-v4-pro-vs-gpt-5-6-sol-cost': '/deepseek-v4-pro-vs-gpt-6-sol-cost/',
+  '/qwen3-8-max-vs-gpt-5-6-sol-cost': '/qwen3-8-max-vs-gpt-6-sol-cost/',
 };
 
 function trailingSlashRedirects() {
