@@ -1,0 +1,139 @@
+---
+import KnowledgeLayout from '../../layouts/KnowledgeLayout.astro';
+import FAQ from '../../components/seo/FAQ.astro';
+import FlowDiagram from '../../components/seo/FlowDiagram.astro';
+import { getModel } from '../../data/models';
+const toc=[{id:'two',label:'Two products, one name'},{id:'agent',label:'How the agent works'},{id:'meter',label:'The token meter'},{id:'maths',label:'What 500M tokens means'},{id:'spark',label:'Muse Spark and the contributor tier'},{id:'published',label:'What is published'},{id:'faq',label:'Questions'}];
+
+const spark=getModel('muse-spark-1.3');
+const CHAT_TURN=1_500;              // 1,000 input + 500 output, the site's short-chat scenario
+const POWER_WEEK=500_000_000, MAX_WEEK=3_000_000_000;
+const POWER_PRICE=20, MAX_PRICE=100;
+const turnsPerWeek=Math.round(POWER_WEEK/CHAT_TURN);
+const turnsPerHour=Math.round(turnsPerWeek/(7*24));
+const apiValue=(POWER_WEEK/1e6)*spark.inputPerMillion;   // the same volume at the published API input rate
+const CONTRIB_IN=0.10, CONTRIB_OUT=0.20;
+const usd=(value:number)=>`$${value.toFixed(2)}`;
+const faq=[
+  {question:'How many tokens does Meta Muse give you?',answer:`Meta publishes two figures: Power at $${POWER_PRICE} a month includes ${(POWER_WEEK/1e6).toLocaleString()} million Muse tokens a week, and Max at $${MAX_PRICE} a month includes ${(MAX_WEEK/1e9)} billion a week. A free tier exists with a usage limit that Meta does not quantify.`},
+  {question:'What is a Muse token?',answer:'Meta does not define it. It is a billing unit for the consumer agent, not the same thing as an API token on Muse Spark, and Meta publishes no conversion between the two. Treat the weekly figure as a budget for agent work, not as a count of words.'},
+  {question:'Is Meta Muse free?',answer:'There is a free tier with a usage limit, and Meta does not publish the size of that limit. The two paid plans with published token allowances are Power at $20 a month and Max at $100 a month.'},
+  {question:'What is the Muse Spark contributor tier?',answer:'A much cheaper price on the same model in exchange for Meta using your prompts and completions to train future models. Muse Spark 1.3 costs $1.25 per million input tokens on the standard tier against $0.10 on the contributor tier, and $4.25 against $0.20 for output.'},
+  {question:'Why would an agent need 500 million tokens a week?',answer:`Because it works when you do not. At about ${CHAT_TURN.toLocaleString()} tokens for a typical chat exchange, ${(POWER_WEEK/1e6).toLocaleString()} million tokens would be roughly ${turnsPerWeek.toLocaleString()} chat turns a week, or ${turnsPerHour.toLocaleString()} an hour around the clock. No person chats that much. The allowance only makes sense for scheduled and background work.`},
+];
+const faqSchema={'@context':'https://schema.org','@type':'FAQPage',mainEntity:faq.map((item)=>({'@type':'Question',name:item.question,acceptedAnswer:{'@type':'Answer',text:item.answer}}))};
+---
+<KnowledgeLayout title="Meta Muse: The Agent That Meters Itself in Tokens" description="Meta sells its personal AI agent by the token: 500M a week for $20, 3B for $100. What that number means, and how Muse differs from the Muse Spark API models." heading="Meta Muse: the agent that meters itself in tokens" eyebrow="Agent products · Technical explainer" datePublished="2026-10-02" dateModified="2026-10-02" section="AI agents" keywords={['Meta Muse','Muse tokens','Muse pricing','Muse Spark contributor tier','personal AI agent']} {toc}>
+  <p class="knowledge-lead">Every major AI product is sold by the seat or by the message. Meta did something different with Muse: it put a token meter on the pricing page of a consumer product. {(POWER_WEEK/1e6).toLocaleString()} million tokens a week for {usd(POWER_PRICE)} a month. That number is far too large to be about chatting, and that is exactly what makes it informative.</p>
+
+  <h2 id="two">Two products, one name</h2>
+  <p>Keep these apart or nothing else makes sense:</p>
+  <ul>
+    <li><strong>Muse</strong> is the personal AI agent, launched on 8 September 2026 in the US. It runs on iOS, Android, muse.ai and inside WhatsApp. It is sold by the week in "Muse tokens".</li>
+    <li><strong>Muse Spark</strong> is the model family behind it, from Meta Superintelligence Labs, sold through the Meta Model API by the million tokens like any other model. Muse Spark 1.3 is {usd(spark.inputPerMillion)} per million input and {usd(spark.outputPerMillion)} per million output.</li>
+  </ul>
+  <p>One is a product you talk to. The other is an API you build on. They share a brand and nothing else about their pricing.</p>
+
+  <h2 id="agent">How the agent works</h2>
+  <FlowDiagram
+    title="Meta Muse architecture and where its token meter fills"
+    desc="Four surfaces feed the Muse agent, which runs inside a dedicated secure virtual machine alongside the person's data, watched by a separate Sentinel agent that asks for permission. Four kinds of work draw on the weekly token meter: the visible reply, reasoning steps, tool calls, and background state monitoring, which runs continuously without any human message."
+    caption="Three of the four arrows into the meter are invisible to the person using it, and the last one runs while nobody is watching."
+    viewBox="0 0 840 320">
+    <g class="box">
+      <rect x="8" y="40" width="104" height="34" rx="8"/><text x="60" y="62" class="small">iOS</text>
+      <rect x="8" y="86" width="104" height="34" rx="8"/><text x="60" y="108" class="small">Android</text>
+      <rect x="8" y="132" width="104" height="34" rx="8"/><text x="60" y="154" class="small">muse.ai</text>
+      <rect x="8" y="178" width="104" height="34" rx="8"/><text x="60" y="200" class="small">WhatsApp</text>
+    </g>
+    <path class="arrow" d="M112 57 C 140 57, 150 110, 176 110"/>
+    <path class="arrow" d="M112 103 H176"/>
+    <path class="arrow" d="M112 149 C 140 149, 150 124, 176 124"/>
+    <path class="arrow" d="M112 195 C 140 195, 150 138, 176 138"/>
+    <g class="box primary"><rect x="176" y="40" width="208" height="176" rx="12"/></g>
+    <text x="280" y="68">Muse Secure VM</text>
+    <g class="box">
+      <rect x="194" y="86" width="172" height="46" rx="8"/><text x="280" y="114" class="small">Muse agent</text>
+      <rect x="194" y="146" width="172" height="46" rx="8"/><text x="280" y="174" class="small">your data</text>
+    </g>
+    <g class="box"><rect x="176" y="248" width="208" height="46" rx="8"/><text x="280" y="276" class="small">Sentinel agent</text></g>
+    <path class="arrow accent" d="M280 216 V248"/>
+    <text x="292" y="238" class="label">asks permission</text>
+    <g class="box ghost">
+      <rect x="430" y="28" width="178" height="36" rx="8"/><text x="519" y="51" class="small">visible reply</text>
+      <rect x="430" y="76" width="178" height="36" rx="8"/><text x="519" y="99" class="small">reasoning steps</text>
+      <rect x="430" y="124" width="178" height="36" rx="8"/><text x="519" y="147" class="small">tool calls</text>
+      <rect x="430" y="172" width="178" height="36" rx="8"/><text x="519" y="195" class="small">background monitoring</text>
+    </g>
+    <path class="arrow accent" d="M384 100 C 408 100, 406 46, 430 46"/>
+    <path class="arrow accent" d="M384 108 H430"/>
+    <path class="arrow accent" d="M384 116 C 408 116, 406 142, 430 142"/>
+    <path class="arrow accent" d="M384 124 C 408 124, 406 190, 430 190"/>
+    <text x="430" y="228" class="label warn">runs while you sleep</text>
+    <g class="box meter">
+      <rect x="624" y="62" width="208" height="112" rx="10"/>
+      <text x="728" y="92">Muse tokens</text>
+      <text x="728" y="118" class="small">Power {(POWER_WEEK/1e6).toLocaleString()}M / week</text>
+      <text x="728" y="140" class="small">Max {(MAX_WEEK/1e9)}B / week</text>
+      <text x="728" y="162" class="small">free tier · not published</text>
+    </g>
+    <path class="arrow" d="M608 46 C 620 46, 614 100, 624 100"/>
+    <path class="arrow" d="M608 94 C 620 94, 616 110, 624 110"/>
+    <path class="arrow" d="M608 142 C 620 142, 616 124, 624 124"/>
+    <path class="arrow" d="M608 190 C 620 190, 614 140, 624 140"/>
+  </FlowDiagram>
+  <p>Meta describes the architecture in its own words: Muse runs on a "Muse Secure VM", "a dedicated virtual machine that houses both the agent and a person's data", with a separate Sentinel agent that watches activity and asks the person for permission when needed.</p>
+  <p>The capability on offer is not answering questions. It is doing things: sending email, booking travel, listing an item for sale, holding a goal across days. That requires the agent to keep looking at the world between your messages, which is where the token meter comes in.</p>
+
+  <h2 id="meter">The token meter</h2>
+  <div class="overflow-x-auto"><table>
+    <thead><tr><th>Plan</th><th>Price</th><th>Muse tokens per week</th></tr></thead>
+    <tbody>
+      <tr><td>Free</td><td>$0</td><td>A usage limit Meta does not quantify</td></tr>
+      <tr><td>Power</td><td>{usd(POWER_PRICE)} / month</td><td>{(POWER_WEEK/1e6).toLocaleString()} million</td></tr>
+      <tr><td>Max</td><td>{usd(MAX_PRICE)} / month</td><td>{(MAX_WEEK/1e9)} billion</td></tr>
+    </tbody>
+  </table></div>
+  <p>Meta publishes the allowances and not the definition. It does not say how a Muse token is counted, whether it maps to an API token, whether unused tokens roll over, or what happens past the limit. So the figure is best read as a relative budget: Max buys six times the agent work of Power, for five times the price.</p>
+
+  <h2 id="maths">What {(POWER_WEEK/1e6).toLocaleString()} million tokens a week actually means</h2>
+  <p>A typical chat exchange—a question and a useful answer—is about {CHAT_TURN.toLocaleString()} tokens all in. Divide:</p>
+  <div class="overflow-x-auto"><table>
+    <thead><tr><th>Reading of the Power allowance</th><th>Result</th></tr></thead>
+    <tbody>
+      <tr><td>As chat turns per week</td><td>about {turnsPerWeek.toLocaleString()}</td></tr>
+      <tr><td>As chat turns per hour, every hour</td><td>about {turnsPerHour.toLocaleString()}</td></tr>
+      <tr><td>At the published Muse Spark 1.3 input rate</td><td>{usd(apiValue)} of API input tokens a week, sold for {usd(POWER_PRICE)} a month</td></tr>
+    </tbody>
+  </table></div>
+  <p>No person sends {turnsPerHour.toLocaleString()} messages an hour. The allowance is not sized for conversation, and the last row shows it cannot be a resale of API tokens at list price either. Both readings point the same way: a Muse token is a unit of <em>agent work</em>—reasoning, tool calls and background monitoring—where the visible reply is the smallest part.</p>
+  <p>That is the useful lesson for anyone budgeting an agent, on any platform. The chat-shaped intuition, where one question costs one answer, does not survive contact with software that keeps working after the question is answered.</p>
+
+  <h2 id="spark">Muse Spark, and the price of your prompts</h2>
+  <p>On the API side, Meta made a different kind of offer. The same model is sold at two prices:</p>
+  <div class="overflow-x-auto"><table>
+    <thead><tr><th>Per 1M tokens</th><th>Muse Spark 1.3</th><th>Contributor tier</th><th>Difference</th></tr></thead>
+    <tbody>
+      <tr><td>Input</td><td>{usd(spark.inputPerMillion)}</td><td>${CONTRIB_IN.toFixed(2)}</td><td>{(spark.inputPerMillion/CONTRIB_IN).toFixed(1)}× cheaper</td></tr>
+      <tr><td>Output</td><td>{usd(spark.outputPerMillion)}</td><td>${CONTRIB_OUT.toFixed(2)}</td><td>{(spark.outputPerMillion/CONTRIB_OUT).toFixed(1)}× cheaper</td></tr>
+    </tbody>
+  </table></div>
+  <p>The contributor tier's condition is that Meta may use your prompts and completions to train future models. That is a clear, priced trade, which is rarer than it should be: most vendors either train on your data by default or charge more to stop. For internal tooling on public data the discount is large enough to change which model a project can afford. For anything under a customer confidentiality clause it is not a question of price at all.</p>
+
+  <h2 id="published">What Meta publishes, and what it does not</h2>
+  <p><strong>Published:</strong> the Power and Max prices and their weekly token allowances; that a free tier exists with a usage limit; the Muse Secure VM and Sentinel architecture; the Muse Spark API rates on both tiers; and the surfaces Muse runs on.</p>
+  <p><strong>Not published:</strong> what a Muse token counts, the size of the free allowance, whether tokens roll over, overage pricing, and the conversion between Muse tokens and Muse Spark API tokens. Every "how far does the free tier go" figure in circulation is an estimate on top of a number Meta has not released.</p>
+
+  <h2 id="faq">Questions people ask</h2>
+  <FAQ items={faq} compact />
+
+  <p>Price Muse Spark against other models in the <a href="/">token calculator</a>, read the same analysis for <a href="/blog/openai-dots-always-on-agent-tokens/">OpenAI Dots</a> and <a href="/blog/grok-bot-agent-architecture-tokens/">Grok Bot</a>, or compare all three in <a href="/dots-vs-grok-bot-vs-muse/">Dots vs Grok Bot vs Muse</a>.</p>
+
+  <div class="source-ledger"><h2>Evidence ledger</h2><p><strong>Reviewed:</strong> 2 October 2026 · Plan prices and allowances are Meta's published figures; model rates come from the live catalogue.</p><ul>
+    <li><a href="https://about.fb.com/news/2026/09/introducing-muse-personal-ai-agent/">Meta, Introducing Muse</a> (8 September 2026)</li>
+    <li><a href="https://www.meta.com/help/subscriptions/1021145227643680/">Meta subscriptions help</a>, for the Power and Max allowances</li>
+    <li><a href="https://dev.meta.ai/docs/overview">Meta Model API documentation</a></li>
+    <li><a href="https://models.dev">models.dev</a>, for the standard and contributor rate cards</li>
+  </ul></div>
+  <script is:inline type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
+</KnowledgeLayout>

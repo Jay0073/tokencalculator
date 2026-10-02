@@ -1,0 +1,62 @@
+---
+/**
+ * A labelled SVG flow diagram. The shapes come from the page, so each diagram can tell its
+ * own story, while the markers, colours and type scale stay identical across pages and
+ * follow the active theme.
+ *
+ * Classes available to the slot: .box (a node), .box.primary (the subject),
+ * .box.meter (a cost sink), .box.ghost (dashed, a flow of tokens rather than a thing),
+ * .arrow (a solid connector), .arrow.accent (a highlighted one), .arrow.loop (dashed),
+ * .label (small caption text, left aligned), .label.warn (the same in the warning colour),
+ * .small (a muted second line inside a box).
+ */
+interface Props { title: string; desc: string; caption: string; viewBox?: string }
+const { title, desc, caption, viewBox = '0 0 840 300' } = Astro.props;
+const id = Math.random().toString(36).slice(2, 8);
+---
+<figure class="diagram-figure">
+  <svg {viewBox} role="img" aria-labelledby={`t-${id} d-${id}`} class="flow-diagram" preserveAspectRatio="xMidYMid meet">
+    <title id={`t-${id}`}>{title}</title>
+    <desc id={`d-${id}`}>{desc}</desc>
+    <defs>
+      <marker id={`head-${id}`} viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M0 0 L10 5 L0 10 z" class="marker-line"/>
+      </marker>
+      <marker id={`head-accent-${id}`} viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M0 0 L10 5 L0 10 z" class="marker-accent"/>
+      </marker>
+    </defs>
+    <g style={`--head:url(#head-${id}); --head-accent:url(#head-accent-${id})`}>
+      <slot />
+    </g>
+  </svg>
+  <figcaption>{caption}</figcaption>
+</figure>
+
+<style is:global>
+  .diagram-figure { margin: 1.9rem 0; }
+  .diagram-figure .flow-diagram {
+    width: 100%; height: auto; display: block;
+    background: var(--panel-2); border: 1px solid var(--line); border-radius: 12px; padding: .35rem;
+  }
+  .diagram-figure figcaption { margin-top: .65rem; font-size: .85rem; line-height: 1.5; color: var(--muted); }
+  .flow-diagram text { fill: var(--text); font-family: var(--font-sans); font-size: 13.5px; text-anchor: middle; }
+  .flow-diagram .box rect { fill: var(--panel); stroke: var(--line-strong); stroke-width: 1.5; }
+  .flow-diagram .box.primary rect { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 2; }
+  .flow-diagram .box.meter rect { fill: var(--panel); stroke: var(--accent); stroke-width: 2; }
+  .flow-diagram .box.ghost rect { fill: none; stroke: var(--line-strong); stroke-dasharray: 5 4; }
+  .flow-diagram .small { fill: var(--muted); font-size: 11.5px; font-family: var(--font-mono); }
+  .flow-diagram .label { fill: var(--muted); font-size: 11.5px; font-family: var(--font-mono); text-anchor: start; }
+  .flow-diagram .label.warn { fill: var(--warn); }
+  .flow-diagram .label.mid { text-anchor: middle; }
+  .flow-diagram .arrow { fill: none; stroke: var(--line-strong); stroke-width: 1.6; marker-end: var(--head); }
+  .flow-diagram .arrow.accent { stroke: var(--accent); marker-end: var(--head-accent); }
+  .flow-diagram .arrow.loop { stroke: var(--accent); stroke-dasharray: 5 4; marker-end: var(--head-accent); }
+  .flow-diagram .arrow.plain { marker-end: none; }
+  .flow-diagram .marker-line { fill: var(--line-strong); }
+  .flow-diagram .marker-accent { fill: var(--accent); }
+  @media (max-width: 640px) {
+    .flow-diagram text { font-size: 15px; }
+    .flow-diagram .small, .flow-diagram .label { font-size: 13px; }
+  }
+</style>

@@ -1,0 +1,121 @@
+---
+import KnowledgeLayout from '../../layouts/KnowledgeLayout.astro';
+import FAQ from '../../components/seo/FAQ.astro';
+import FlowDiagram from '../../components/seo/FlowDiagram.astro';
+import { getModel } from '../../data/models';
+const toc=[{id:'what',label:'What a Bot is'},{id:'architecture',label:'One computer, many screens'},{id:'capable',label:'Skills and routines'},{id:'chat',label:'Agent against chat'},{id:'cliff',label:'The 200K cliff'},{id:'published',label:'What is published'},{id:'faq',label:'Questions'}];
+
+const grok=getModel('grok-4.7');
+const tier=grok.pricingTiers![0];
+const CHAT_IN=1_000, CHAT_OUT=500;
+const TASK_OUT=81_000;   // Artificial Analysis, Grok 4.7 at xHigh, per Intelligence Index task
+const chatCost=(CHAT_IN/1e6)*grok.inputPerMillion+(CHAT_OUT/1e6)*grok.outputPerMillion;
+const taskCost=(TASK_OUT/1e6)*grok.outputPerMillion;
+const taskCostOverCliff=(TASK_OUT/1e6)*tier.outputPerMillion;
+const usd=(value:number)=>`$${value.toFixed(value<0.01?4:2)}`;
+const faq=[
+  {question:'What is Grok Bot?',answer:'Grok Bot is xAI’s agent product. In xAI’s words, it "gives you Bots you can keep around: AI teammates with names, jobs, and context that compounds over time." Bots sign in to your apps and drive them, using connectors where one exists and computer use everywhere else.'},
+  {question:'Is there a Grok Bot API?',answer:'No. Grok Bot is a product, not a model id, and xAI does not publish which model runs behind it. The Grok models themselves are available through the normal API, where Grok 4.7 costs $2 per million input tokens and $6 per million output tokens.'},
+  {question:'Does each Bot get its own computer?',answer:'No, and this is the part people get wrong. xAI documents one cloud computer per account: "All of your Bots use the same cloud computer, sharing its files, browser sessions, and app logins." Each Bot gets its own screen on that shared machine, and one Bot runs one computer-use task on its screen at a time.'},
+  {question:'How is Grok Bot usage billed?',answer:'xAI states that Grok Bot is included with every paid individual Cursor plan and with Cursor Teams, and that usage resets weekly. The size of that weekly allowance is not published.'},
+  {question:'Why does an agent cost more than a chat on the same model?',answer:'Three reasons. Computer use adds screenshots to the input. Routines run on a schedule, so work happens without anyone asking. And an agent conversation accumulates, which on Grok matters more than on most models, because every rate doubles above 200,000 input tokens.'},
+];
+const faqSchema={'@context':'https://schema.org','@type':'FAQPage',mainEntity:faq.map((item)=>({'@type':'Question',name:item.question,acceptedAnswer:{'@type':'Answer',text:item.answer}}))};
+---
+<KnowledgeLayout title="Grok Bot: One Computer, Many Screens" description="How xAI's agent product works: one shared cloud computer, a screen per Bot, skills and routines, and why that architecture changes the token footprint." heading="Grok Bot: one computer, many screens" eyebrow="Agent products · Technical explainer" datePublished="2026-10-02" dateModified="2026-10-02" section="AI agents" keywords={['Grok Bot','xAI agents','Grok Bot pricing','Grok 4.7 cost','agent token usage']} {toc}>
+  <p class="knowledge-lead">Most agent products give each agent its own sandbox. xAI did the opposite: every Bot on your account shares one cloud computer, and each Bot gets a screen on it. That single decision explains most of what Grok Bot is good at, and most of what people complain about.</p>
+
+  <h2 id="what">What a Bot is</h2>
+  <p>xAI describes Bots as "AI teammates with names, jobs, and context that compounds over time." A Bot is not a chat thread. It signs in to your applications and operates them the way a person would, then hands back finished work.</p>
+  <p>How it reaches an application is the first design choice worth understanding: "They use connectors where available and computer use for everything else." A connector is a structured integration, which is fast and cheap. Computer use is the fallback, where the Bot looks at a screen and clicks, which is slower and, as we will see, far more expensive in tokens.</p>
+
+  <h2 id="architecture">One computer, many screens</h2>
+  <FlowDiagram
+    title="Grok Bot architecture: one shared cloud computer with a screen per Bot"
+    desc="A single persistent cloud computer per account holds a browser, a filesystem, a terminal and shared app logins. Three Bots each have their own screen on that one machine and can pass work between them. Work reaches an application either through a structured connector or, failing that, through computer use, which produces screenshots."
+    caption="The shared machine is the feature and the risk at once: no re-setup when work moves between Bots, and no boundary between them either."
+    viewBox="0 0 840 320">
+    <g class="box primary"><rect x="8" y="30" width="392" height="250" rx="12"/></g>
+    <text x="204" y="56">Persistent cloud computer · one per account</text>
+    <g class="box">
+      <rect x="26" y="74" width="110" height="36" rx="8"/><text x="81" y="97" class="small">Browser</text>
+      <rect x="146" y="74" width="110" height="36" rx="8"/><text x="201" y="97" class="small">Filesystem</text>
+      <rect x="266" y="74" width="116" height="36" rx="8"/><text x="324" y="97" class="small">Terminal</text>
+      <rect x="26" y="126" width="356" height="36" rx="8"/><text x="204" y="149" class="small">shared sessions + app logins</text>
+    </g>
+    <g class="box">
+      <rect x="26" y="182" width="110" height="94" rx="8"/><text x="81" y="212">Bot A</text><text x="81" y="234" class="small">screen 1</text>
+      <rect x="146" y="182" width="110" height="94" rx="8"/><text x="201" y="212">Bot B</text><text x="201" y="234" class="small">screen 2</text>
+      <rect x="272" y="182" width="110" height="94" rx="8"/><text x="327" y="212">Bot C</text><text x="327" y="234" class="small">screen 3</text>
+    </g>
+    <path class="arrow plain" d="M136 258 H146"/>
+    <path class="arrow plain" d="M256 258 H272"/>
+    <text x="204" y="304" class="label mid">one computer-use task per screen at a time</text>
+    <g class="box ghost">
+      <rect x="452" y="86" width="196" height="44" rx="8"/><text x="550" y="113" class="small">connector · structured</text>
+      <rect x="452" y="186" width="196" height="44" rx="8"/><text x="550" y="213" class="small">computer use · fallback</text>
+    </g>
+    <path class="arrow accent" d="M400 150 C 430 150, 424 108, 452 108"/>
+    <path class="arrow accent" d="M400 206 H452"/>
+    <text x="452" y="252" class="label warn">screenshots enter the prompt</text>
+    <g class="box meter">
+      <rect x="684" y="110" width="148" height="100" rx="10"/>
+      <text x="758" y="142">Target app</text>
+      <text x="758" y="166" class="small">same result,</text>
+      <text x="758" y="188" class="small">very different cost</text>
+    </g>
+    <path class="arrow" d="M648 108 C 670 108, 666 144, 684 144"/>
+    <path class="arrow" d="M648 208 C 670 208, 666 178, 684 178"/>
+  </FlowDiagram>
+  <p>xAI documents the arrangement plainly: "All of your Bots use the same cloud computer, sharing its files, browser sessions, and app logins," and "Each Bot gets its own screen on the shared computer, and one Bot runs one computer-use task on its screen at a time." Between accounts, "isolation is strict."</p>
+  <p>The upside is real. Hand a half-finished task from one Bot to another and there is nothing to set up: same files, same logins, same browser state. The downside is the same sentence read backwards. Bots are not a security boundary from each other, and xAI's documentation says so directly. A credential with more scope than you intended is available to every Bot on the account, not only the one you gave it to.</p>
+
+  <h2 id="capable">Skills and routines: where the intelligence compounds</h2>
+  <p>The capability that separates Grok Bot from a chat window is not raw model quality. It is that the work becomes reusable:</p>
+  <ul>
+    <li><strong>Skills.</strong> "Walk a Bot through a multi-step path once, and it can save the path as a skill and rerun it on a schedule." You demonstrate; it remembers the path.</li>
+    <li><strong>Routines.</strong> A skill attached to a Bot on a schedule or an event trigger. This is the moment the product stops waiting for you.</li>
+    <li><strong>Team Bots.</strong> Shared agents, so a saved path becomes something a team owns rather than one person's trick.</li>
+  </ul>
+  <p>A chat model can be asked to do the same work every morning. A routine actually does it every morning. That is the whole difference, and it is also the whole cost difference.</p>
+
+  <h2 id="chat">An agent is not a chat</h2>
+  <p>On the API, a Grok 4.7 chat turn of {CHAT_IN.toLocaleString()} input and {CHAT_OUT} output tokens costs {usd(chatCost)}. Three things change when the same model runs as an agent.</p>
+  <ol>
+    <li><strong>Nobody pressed enter.</strong> A routine on a daily schedule runs 30 times a month whether or not anyone needed it that day.</li>
+    <li><strong>Screens become prompts.</strong> Computer use means each step is a screenshot. xAI publishes no image-token formula for the Grok models, so the exact cost of a screen cannot be calculated from its documentation. What is certain is the direction: a connector sends a short structured payload, and computer use sends a picture of a screen.</li>
+    <li><strong>The conversation accumulates.</strong> A chat ends. An agent working through a task carries the whole trail forward, which runs straight into the pricing cliff below.</li>
+  </ol>
+  <p>For scale, Artificial Analysis measured Grok 4.7 at its xHigh reasoning setting using about <strong>{TASK_OUT.toLocaleString()} output tokens per task</strong> on its Intelligence Index, against roughly 36,000 for Grok 4.6 and 27,000 for GPT-6 Astra. At the published Grok 4.7 output rate, {TASK_OUT.toLocaleString()} tokens is {usd(taskCost)} of output for one task—about {Math.round(TASK_OUT/CHAT_OUT)} chat turns' worth of generation.</p>
+
+  <h2 id="cliff">The 200K cliff</h2>
+  <p>Grok's rate card has a step in it that most comparisons miss. Below 200,000 input tokens, Grok 4.7 costs {usd(grok.inputPerMillion)} per million input and {usd(grok.outputPerMillion)} per million output. At or above that point, every rate doubles.</p>
+  <div class="overflow-x-auto"><table>
+    <thead><tr><th>Per 1M tokens</th><th>Under 200K input</th><th>At 200K and above</th></tr></thead>
+    <tbody>
+      <tr><td>Input</td><td>{usd(grok.inputPerMillion)}</td><td>{usd(tier.inputPerMillion)}</td></tr>
+      <tr><td>Cached input</td><td>{usd(grok.cachedInputPerMillion!)}</td><td>{usd(tier.cachedInputPerMillion!)}</td></tr>
+      <tr><td>Output</td><td>{usd(grok.outputPerMillion)}</td><td>{usd(tier.outputPerMillion)}</td></tr>
+      <tr><td>One measured agent task, output only</td><td>{usd(taskCost)}</td><td>{usd(taskCostOverCliff)}</td></tr>
+    </tbody>
+  </table></div>
+  <p>A chat turn never approaches 200,000 input tokens. An agent that has been working on a problem for twenty steps, carrying screenshots forward, can cross it in a single session. The same task then costs twice as much for the rest of that session, and nothing in the interface announces it.</p>
+  <p>This is the most actionable thing on this page. If you run Grok as an agent, the single most effective cost control is keeping the working context under 200,000 tokens: summarise between steps, prefer connectors over computer use where one exists, and start a fresh session when a task changes shape.</p>
+
+  <h2 id="published">What xAI publishes, and what it does not</h2>
+  <p><strong>Published:</strong> the architecture quoted above; that Grok Bot runs on macOS, Windows, Linux, iOS and Android; that it is included with every paid individual Cursor plan and with Cursor Teams; that usage resets weekly; and the full Grok API rate card, including the 200K step and tool calls at $5 per 1,000 for web search, X search and code execution.</p>
+  <p><strong>Not published:</strong> the size of the weekly allowance, the price of on-demand usage beyond it, and which model runs behind a Bot. Any monthly figure you see for Grok Bot itself is therefore an estimate built on a quota nobody outside xAI can see.</p>
+
+  <h2 id="faq">Questions people ask</h2>
+  <FAQ items={faq} compact />
+
+  <p>Price a real agent loop with the <a href="/">token calculator</a>, read the same analysis for <a href="/blog/openai-dots-always-on-agent-tokens/">OpenAI Dots</a>, or compare all three in <a href="/dots-vs-grok-bot-vs-muse/">Dots vs Grok Bot vs Muse</a>.</p>
+
+  <div class="source-ledger"><h2>Evidence ledger</h2><p><strong>Reviewed:</strong> 2 October 2026 · Quotations are from xAI's own documentation; rates come from the live catalogue.</p><ul>
+    <li><a href="https://docs.x.ai/grok-bot/overview">xAI, Grok Bot overview</a></li>
+    <li><a href="https://x.ai/bot">x.ai/bot</a>, the product page</li>
+    <li><a href="https://docs.x.ai/developers/pricing">xAI API pricing</a>, including the 200K tier and tool-call rates</li>
+    <li>Artificial Analysis Intelligence Index, output tokens per task, as reported by VentureBeat</li>
+  </ul></div>
+  <script is:inline type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
+</KnowledgeLayout>
