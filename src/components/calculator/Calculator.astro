@@ -203,6 +203,19 @@ const visibleProviders = [...new Set(visibleModels.map((model) => model.provider
     const formatContext = (value:number) => value >= 1_000_000 ? `${(value/1_000_000).toFixed(value%1_000_000===0?0:1)}M` : `${Math.round(value/1000)}K`;
     const setLiveStatus=(label:string,busy=false)=>{const status=$('#live-status');status.querySelector('span:last-child')!.textContent=label;status.classList.toggle('animate-pulse',busy);};
 
+    // Whitespace is invisible inside a coloured chip, which hides the single most
+    // confusing thing about BPE: the leading space belongs to the token after it.
+    const WHITESPACE_MARK:Record<string,string>={' ':'\u00b7','\n':'\u21b5','\t':'\u2192','\r':''};
+    function appendTokenText(chip:HTMLElement,text:string) {
+      for(const run of text.match(/\s+|\S+/g)??[]) {
+        if(!/^\s/.test(run)) { chip.append(document.createTextNode(run)); continue; }
+        const mark=document.createElement('span');
+        mark.className='token-space';
+        mark.textContent=[...run].map((character)=>WHITESPACE_MARK[character]??character).join('');
+        chip.append(mark);
+      }
+    }
+
     async function renderTokenInspection() {
       const inspector=$('#token-inspector');
       if(!inspectionVisible)return;
@@ -211,8 +224,18 @@ const visibleProviders = [...new Set(visibleModels.map((model) => model.provider
       try {
         const pieces=await requestInspection(text);
         inspector.innerHTML='';
-        const note=document.createElement('p');note.className='basis-full muted text-xs mb-2';note.textContent=`${pieces.reduce((total,piece)=>total+piece.tokenIds.length,0).toLocaleString()} exact BPE tokens. Unicode characters can span multiple tokens, so those tokens stay in one readable chip.`;inspector.append(note);
-        pieces.forEach((piece)=>{const chip=document.createElement('span');chip.className='token-chip max-w-full rounded px-1.5 py-0.5 whitespace-pre-wrap';chip.textContent=piece.text;chip.title=piece.tokenIds.length===1?`Token ${piece.tokenIds[0]}`:`${piece.tokenIds.length} tokens: ${piece.tokenIds.join(', ')}`;chip.setAttribute('aria-label',`${piece.tokenIds.length} token${piece.tokenIds.length===1?'':'s'}: ${piece.text}`);inspector.append(chip);});
+        const total=pieces.reduce((sum,piece)=>sum+piece.tokenIds.length,0);
+        const note=document.createElement('p');note.className='basis-full muted text-xs mb-2';
+        note.textContent=`${total.toLocaleString()} exact BPE tokens. A token normally carries the space in front of it, shown as ·, which is why " deterministic" is one token and "deterministic" alone is three. Characters that span several tokens stay in one chip.`;
+        inspector.append(note);
+        pieces.forEach((piece)=>{
+          const chip=document.createElement('span');
+          chip.className='token-chip max-w-full rounded px-1.5 py-0.5 whitespace-pre-wrap';
+          appendTokenText(chip,piece.text);
+          chip.title=piece.tokenIds.length===1?`Token ${piece.tokenIds[0]}`:`${piece.tokenIds.length} tokens: ${piece.tokenIds.join(', ')}`;
+          chip.setAttribute('aria-label',`${piece.tokenIds.length} token${piece.tokenIds.length===1?'':'s'}: ${piece.text}`);
+          inspector.append(chip);
+        });
       } catch(error) { inspector.innerHTML=`<span class="muted">${error instanceof Error?error.message:t.calcFailed}</span>`; }
     }
 

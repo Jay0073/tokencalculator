@@ -69,8 +69,7 @@ const GEMINI_3_AUDIO=25, GEMINI_2_AUDIO=32;
   </ul>
   <p>PDFs sit in the second group for OpenAI, Anthropic, and xAI. All three accept PDFs and all three send each page to the model as an image, so pages do cost tokens there. Neither OpenAI nor Anthropic publishes a per-page figure. Anthropic's closest published statement is an example: roughly 7,000 tokens for a three-page PDF with full visual understanding, against roughly 1,000 tokens for the same three pages as text alone. That is an example, not a formula, so this calculator counts the text exactly and flags the page images as an unpriced extra.</p>
 
-  <h2 id="faq">Questions people ask</h2>
-  <FAQ items={faq} compact />
+  <FAQ items={faq} compact title="Questions people ask" id="faq" />
 
   <h2 id="verify">Verification</h2>
   <p>Every figure on this page is in a test in this repository, including Google's two worked examples. Before you commit a budget, reconcile one real request against the <code>usage</code> block the provider returns, and record the model ID, the duration or page count, and the <code>media_resolution</code> setting you used.</p>

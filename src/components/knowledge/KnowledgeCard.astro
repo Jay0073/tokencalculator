@@ -1,9 +1,13 @@
 ---
 import type { KnowledgeEntry } from '../../data/knowledge';
-interface Props { entry:KnowledgeEntry; index?:number }
-const {entry,index=0}=Astro.props;
+import { cardMinHeight } from '../../data/card-layout';
+interface Props { entry:KnowledgeEntry; index?:number; span?:number }
+const {entry,index=0,span=4}=Astro.props;
+// Custom properties rather than inline grid-column, so the mobile rule can still
+// override the span. An inline style would outrank the media query.
+const style=`--card-span:${span};--card-min:${cardMinHeight(span)}`;
 ---
-<a class="knowledge-card panel" href={entry.href}>
+<a class="knowledge-card panel" href={entry.href} {style}>
   <div class="knowledge-card-top"><span class="mono">{String(index+1).padStart(2,'0')}</span><span>{entry.label}</span></div>
   <h2>{entry.title}</h2><p>{entry.description}</p>
   <footer><span>{entry.readTime}</span><span aria-hidden="true">Read →</span></footer>
