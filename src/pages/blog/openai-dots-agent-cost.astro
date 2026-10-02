@@ -121,10 +121,9 @@ const faqSchema={'@context':'https://schema.org','@type':'FAQPage',mainEntity:fa
   <p><strong>Published:</strong> the GPT-6 Astra API rates used throughout this page ({usd(astra.inputPerMillion)} input, {usd(astra.cachedInputPerMillion!)} cached input and {usd(astra.outputPerMillion)} output per million, doubling above 272K input tokens); that one dot is included with eligible paid plans; that proactive background research is read-only, so a dot cannot send messages or change app content on its own.</p>
   <p><strong>Not published:</strong> any token allowance attached to a dot, the price of additional dots, and how much of a plan's usage a dot consumes. Until those appear, the honest answer to "what does a dot cost per month" is the plan price, and the honest answer to "what does the work cost" is the API arithmetic above.</p>
 
-  <h2 id="faq">Questions people ask</h2>
-  <FAQ items={faq} compact />
+  <FAQ items={faq} compact title="Questions people ask" id="faq" />
 
-  <p>Price your own agent loop with the <a href="/">token calculator</a>, compare the three agent products in <a href="/dots-vs-grok-bot-vs-muse/">Dots vs Grok Bot vs Muse</a>, or see what a cached prefix saves in <a href="/prompt-caching-cost/">prompt caching cost</a>.</p>
+  <p>Price your own agent loop with the <a href="/">token calculator</a>, read the same analysis for <a href="/blog/grok-bot-agent-cost/">Grok Bot</a> and <a href="/blog/meta-muse-token-cost/">Meta Muse</a>, or compare all three in <a href="/dots-vs-grok-bot-vs-muse/">Dots vs Grok Bot vs Muse</a>.</p>
 
   <div class="source-ledger"><h2>Evidence ledger</h2><p><strong>Reviewed:</strong> 2 October 2026 · Product details come from OpenAI's launch and contemporaneous reporting; rates come from the live catalogue.</p><ul>
     <li><a href="https://openai.com/index/introducing-dots/">OpenAI, Introducing Dots</a> (29 September 2026)</li>

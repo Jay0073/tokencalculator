@@ -22,7 +22,7 @@ const faq=[
 ];
 const faqSchema={'@context':'https://schema.org','@type':'FAQPage',mainEntity:faq.map((item)=>({'@type':'Question',name:item.question,acceptedAnswer:{'@type':'Answer',text:item.answer}}))};
 ---
-<KnowledgeLayout title="Grok Bot: One Computer, Many Screens" description="How xAI's agent product works: one shared cloud computer, a screen per Bot, skills and routines, and why that architecture changes the token footprint." heading="Grok Bot: one computer, many screens" eyebrow="Agent products · Technical explainer" datePublished="2026-10-02" dateModified="2026-10-02" section="AI agents" keywords={['Grok Bot','xAI agents','Grok Bot pricing','Grok 4.7 cost','agent token usage']} {toc}>
+<KnowledgeLayout title="Grok Bot Explained: One Computer, Many Screens" description="How xAI's agent product works: one shared cloud computer, a screen per Bot, skills and routines, and why that architecture changes the token footprint." heading="Grok Bot: one computer, many screens" eyebrow="Agent products · Technical explainer" datePublished="2026-10-02" dateModified="2026-10-02" section="AI agents" keywords={['Grok Bot','xAI agents','Grok Bot pricing','Grok 4.7 cost','agent token usage']} {toc}>
   <p class="knowledge-lead">Most agent products give each agent its own sandbox. xAI did the opposite: every Bot on your account shares one cloud computer, and each Bot gets a screen on it. That single decision explains most of what Grok Bot is good at, and most of what people complain about.</p>
 
   <h2 id="what">What a Bot is</h2>
@@ -106,10 +106,9 @@ const faqSchema={'@context':'https://schema.org','@type':'FAQPage',mainEntity:fa
   <p><strong>Published:</strong> the architecture quoted above; that Grok Bot runs on macOS, Windows, Linux, iOS and Android; that it is included with every paid individual Cursor plan and with Cursor Teams; that usage resets weekly; and the full Grok API rate card, including the 200K step and tool calls at $5 per 1,000 for web search, X search and code execution.</p>
   <p><strong>Not published:</strong> the size of the weekly allowance, the price of on-demand usage beyond it, and which model runs behind a Bot. Any monthly figure you see for Grok Bot itself is therefore an estimate built on a quota nobody outside xAI can see.</p>
 
-  <h2 id="faq">Questions people ask</h2>
-  <FAQ items={faq} compact />
+  <FAQ items={faq} compact title="Questions people ask" id="faq" />
 
-  <p>Price a real agent loop with the <a href="/">token calculator</a>, read the same analysis for <a href="/blog/openai-dots-always-on-agent-tokens/">OpenAI Dots</a>, or compare all three in <a href="/dots-vs-grok-bot-vs-muse/">Dots vs Grok Bot vs Muse</a>.</p>
+  <p>Price a real agent loop with the <a href="/">token calculator</a>, read the same analysis for <a href="/blog/openai-dots-agent-cost/">OpenAI Dots</a>, or compare all three in <a href="/dots-vs-grok-bot-vs-muse/">Dots vs Grok Bot vs Muse</a>.</p>
 
   <div class="source-ledger"><h2>Evidence ledger</h2><p><strong>Reviewed:</strong> 2 October 2026 · Quotations are from xAI's own documentation; rates come from the live catalogue.</p><ul>
     <li><a href="https://docs.x.ai/grok-bot/overview">xAI, Grok Bot overview</a></li>

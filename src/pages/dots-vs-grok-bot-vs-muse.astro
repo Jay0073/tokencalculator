@@ -36,7 +36,7 @@ const AGENTS = [
     runs: 'ChatGPT on web, desktop and mobile, plus Slack and Teams',
     pay: 'One dot included with eligible paid plans. No published per-dot or per-token price.',
     api: 'No Dots API. The model is on the API as gpt-6-astra.',
-    href: '/blog/openai-dots-always-on-agent-tokens/',
+    href: '/blog/openai-dots-agent-cost/',
   },
   {
     name: 'Grok Bot',
@@ -45,7 +45,7 @@ const AGENTS = [
     runs: 'macOS, Windows, Linux, iOS and Android',
     pay: 'Included with paid Cursor plans and Cursor Teams. Usage resets weekly; the allowance is not published.',
     api: 'No Grok Bot API. The Grok models are on the API.',
-    href: '/blog/grok-bot-agent-architecture-tokens/',
+    href: '/blog/grok-bot-agent-cost/',
   },
   {
     name: 'Meta Muse',
@@ -54,7 +54,7 @@ const AGENTS = [
     runs: 'iOS, Android, muse.ai and WhatsApp',
     pay: 'Metered in Muse tokens: 500M a week on Power ($20/mo), 3B on Max ($100/mo).',
     api: 'No Muse agent API. Muse Spark models are on the Meta Model API.',
-    href: '/blog/meta-muse-token-meter-explained/',
+    href: '/blog/meta-muse-token-cost/',
   },
 ];
 
@@ -171,10 +171,9 @@ const faq = [
         <li><strong>Read the data terms before the price.</strong> Meta's contributor discount is a priced trade on training data. A shared agent computer means a credential given to one Bot is reachable by all of them.</li>
       </ul>
 
-      <h2 id="faq">Questions people ask</h2>
-      <FAQ items={faq} compact />
+      <FAQ items={faq} compact title="Questions people ask" id="faq" />
 
-      <p>Measure a real workload in the <a href="/">token calculator</a>, see every model's rates on the <a href="/compare/">comparison hub</a>, or read the full explainers for <a href="/blog/openai-dots-always-on-agent-tokens/">Dots</a>, <a href="/blog/grok-bot-agent-architecture-tokens/">Grok Bot</a> and <a href="/blog/meta-muse-token-meter-explained/">Muse</a>.</p>
+      <p>Measure a real workload in the <a href="/">token calculator</a>, see every model's rates on the <a href="/compare/">comparison hub</a>, or read the full explainers for <a href="/blog/openai-dots-agent-cost/">Dots</a>, <a href="/blog/grok-bot-agent-cost/">Grok Bot</a> and <a href="/blog/meta-muse-token-cost/">Muse</a>.</p>
 
       <div class="source-ledger"><h2>Evidence ledger</h2><p><strong>Reviewed:</strong> 2 October 2026 · Product facts come from each company's own pages; every rate comes from the live model catalogue.</p><ul>
         <li><a href="https://openai.com/index/introducing-dots/">OpenAI, Introducing Dots</a> · <a href="https://developers.openai.com/api/docs/pricing">OpenAI API pricing</a></li>
