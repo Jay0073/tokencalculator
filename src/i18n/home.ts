@@ -30,7 +30,7 @@ export const homeCopy: Record<Locale, HomeCopy> = {
     faq: [{ question: '¿Puedo calcular tokens de archivos e imágenes?', answer: 'Sí. Añade PDF, DOCX, código, datos, PNG, JPEG, WebP o GIF. La extracción y la medición se ejecutan localmente en el navegador.' }, { question: '¿La herramienta sube mi contenido?', answer: 'No. Tus textos, documentos, código e imágenes permanecen en el navegador.' }],
   },
   ja: {
-    title: 'テキスト・ファイル・画像対応 LLMトークン計算ツール', description: 'テキスト、PDF、DOCX、コード、データファイル、画像のLLMトークン数とAPI料金をブラウザ内で安全に計算します。',
+    title: 'テキスト・ファイル・画像対応 LLMトークン計算ツール', description: 'テキスト、PDF、DOCX、コード、画像、音声、動画のLLMトークン数とAPI料金を、内容をアップロードせずブラウザ内で計算。主要な40以上のモデルに対応しています。',
     eyebrow: 'プライバシー優先 · ブラウザ内で処理', heading: 'テキスト、ファイル、画像のトークンを計算。', intro: 'プロンプトを貼り付けるか、PDF、DOCX、コード、データファイル、画像を追加してください。コンテンツをアップロードせず、結果と料金をリアルタイムで更新します。',
     methodology: 'OpenAIのテキストにはローカルのo200k_base BPEによる正確なトークン化を使用します。Claude、Gemini、DeepSeekにはプロバイダー別に調整した決定論的UTF-8トークン投影を使用し、画像には各社が公開する視覚トークン式を適用します。',
     privacyFirst: 'プライバシー優先', privacyDetail: 'テキスト、文書、コード、画像はブラウザ内でローカル処理されます。', theme: 'カラーテーマを切り替える', language: '言語を選択', footerPrivacy: 'テキスト、プロンプト、アップロードしたファイルを外部サーバーへ送信しません。', methodologyNav: '計算方法', about: '概要', privacy: 'プライバシー', terms: '利用規約', contact: 'お問い合わせ', howItWorks: '仕組み', measurementHeading: '推測ではなく、技術的根拠に基づく測定です。', pricingNote: '各結果には計算方式と精度レベルを表示します。料金はModels.devから更新され、内蔵レジストリがオフライン時の代替になります。', methodologyLink: '計算方法の詳細 →',

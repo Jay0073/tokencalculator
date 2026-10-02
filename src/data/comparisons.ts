@@ -693,7 +693,7 @@ export const COMPARISONS: ComparisonPage[] = [
     card: { title: 'Claude vs GPT token cost', detail: 'What replaced GPT-4o in the balanced tier' },
     group: 'legacy',
     title: 'Claude vs GPT Token Cost Calculator',
-    description: 'GPT-4o has been superseded. Compare the models that replaced it, Claude Sonnet 5 and GPT-5.6 Terra, on real token cost for chat, RAG, and long-document workloads.',
+    description: 'GPT-4o has been superseded. Compare its replacements, Claude Sonnet 5 and GPT-5.6 Terra, on real token cost for chat, RAG and long-document work.',
     eyebrow: 'Balanced model comparison', crumb: 'Claude vs GPT token cost',
     heading: 'Claude vs GPT token cost.',
     intro: 'GPT-4o is retired from current pricing. This page compares the models that took its place in the balanced tier.',

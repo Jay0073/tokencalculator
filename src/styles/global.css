@@ -40,8 +40,13 @@ button,input,select,textarea { font:inherit; }
 button,select { cursor:pointer; }
 :focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
 .shell { width:min(1180px,calc(100% - 32px)); margin-inline:auto; }
-.header-shell { width:min(1380px,calc(100% - 32px)); }
+/* The brand sat hard against the left edge of the window. The header keeps its own
+   inset, a little wider than the page shell, so the logo has room to breathe. */
+.header-shell { width:min(1380px,calc(100% - 32px)); padding-inline:clamp(.25rem,1.6vw,1.35rem); }
 .hairline { border-color:var(--line); }
+/* Centring boxes leaves the mark slightly low against the wordmark, because the text's
+   ink sits above the middle of its line box. This aligns the two optically. */
+.brand-link>svg { transform:translateY(-1px); }
 .site-header { border-bottom:1px solid color-mix(in srgb,var(--line) 72%,transparent); background:color-mix(in srgb,var(--bg) 88%,transparent); backdrop-filter:blur(14px); }
 .nav-provider { display:flex; align-items:center; gap:.45rem; min-height:42px; padding:.55rem .75rem; border-radius:.6rem; color:var(--muted); font-size:.875rem; font-weight:600; text-decoration:none; }
 .nav-provider:hover { color:var(--text); background:var(--panel-2); }
@@ -56,6 +61,10 @@ button,select { cursor:pointer; }
 .mega-menu[open] .mega-chevron { transform:rotate(180deg); }
 .mega-menu[open]>summary { color:var(--text); background:var(--panel-2); }
 .mega-popover { transform-origin:top center; animation:mega-menu-in .16s ease-out; }
+/* The panel hangs below the header, so a pointer travelling down from the trigger
+   crosses empty header space. This invisible bridge keeps that journey inside the
+   menu, which is what makes the links reliably clickable. */
+.mega-menu[open]::after { content:''; position:absolute; left:-28px; right:-28px; top:100%; height:20px; }
 .mega-grid { display:grid; grid-template-columns:1fr 1fr; gap:1px; background:var(--line); }
 .mega-grid>section { padding:1.25rem; background:var(--panel-raised); }
 .mega-label { margin:0 0 .65rem; color:var(--faint); font:600 .62rem var(--font-mono); letter-spacing:.12em; text-transform:uppercase; }
@@ -200,7 +209,9 @@ a.panel:focus-visible,button.panel:focus-visible,label.panel:focus-visible,summa
 .surface-action:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
 .surface-static { background:var(--panel-2); border:1px solid transparent; }
 .action-row { display:flex; align-items:center; gap:.4rem; margin-top:auto; padding-top:1rem; color:var(--accent); font-size:.875rem; font-weight:650; }
-.action-row::after { content:''; flex:1; height:1px; background:var(--line); }
+.action-row::after { content:''; flex:1; height:1px; background:var(--line); transform:translateY(.1em); }
+/* The rule continues the arrow's shaft, and a glyph does not sit at the centre of its
+   line box, so the rule is nudged onto the shaft. In em, so it holds at any size. */
 .action-row span { display:inline-block; transition:transform .18s ease; }
 .surface-action:hover .action-row span,.surface-action:focus-visible .action-row span { transform:translateX(4px); }
 
