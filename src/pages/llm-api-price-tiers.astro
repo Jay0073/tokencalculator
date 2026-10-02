@@ -1,0 +1,120 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumbs from '../components/seo/Breadcrumbs.astro';
+import FAQ from '../components/seo/FAQ.astro';
+import ProviderLinks from '../components/seo/ProviderLinks.astro';
+import { MODELS, SERVICE_TIERS } from '../data/models';
+import { PROVIDERS } from '../data/providers';
+import type { ProviderId } from '../domain/models';
+
+// A model's price is no longer one number. Every figure here is the catalogue rate times a
+// published tier multiplier, so the table cannot drift away from the model data.
+const breadcrumbs = [{ label: 'Token calculator', href: '/' }, { label: 'API price tiers' }];
+const canonical = '/llm-api-price-tiers/';
+const FEATURED: Partial<Record<ProviderId, string[]>> = {
+  openai: ['gpt-6-astra', 'gpt-6.1-sol', 'gpt-6-luna'],
+  anthropic: ['claude-opus-5-5', 'claude-sonnet-5-5', 'claude-fable-5-1'],
+  google: ['gemini-3.8-flash', 'gemini-3.5-flash-lite'],
+  deepseek: ['deepseek-flash', 'deepseek-v4-pro'],
+};
+const usd = (value: number) => `$${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 4 })}`;
+const sections = (Object.entries(SERVICE_TIERS) as [ProviderId, typeof SERVICE_TIERS[ProviderId]][])
+  .map(([provider, tiers]) => ({
+    provider,
+    label: PROVIDERS[provider].name,
+    tiers: tiers ?? [],
+    models: (FEATURED[provider] ?? []).map((id) => MODELS.find((model) => model.id === id)).filter((model) => model !== undefined),
+  }))
+  .filter((section) => section.models.length > 0 && section.tiers.length > 0);
+
+const astra = MODELS.find((model) => model.id === 'gpt-6-astra')!;
+const faq = [
+  { question: 'Why does one model have several prices?', answer: 'Providers sell the same model at different speeds and priorities. OpenAI has Batch and Flex at half price, Fast at twice the price, and Ultrafast at six times. Anthropic has Batch at half price and a Fast mode at twice the price on Opus models. Google has Batch at half price and a Priority tier at 1.8 times. DeepSeek charges double during peak hours.' },
+  { question: 'How much does OpenAI Ultrafast cost?', answer: `Six times the standard price, and only on GPT-6 Astra below the long-context threshold. That is ${usd(astra.inputPerMillion * 6)} per million input tokens and ${usd(astra.outputPerMillion * 6)} per million output tokens, the highest published text price in the market.` },
+  { question: 'Do tier discounts stack with prompt caching?', answer: 'Yes. Anthropic states that its batch discount and cache multipliers stack, and that a US data-residency setting multiplies every token category by 1.1 on top. Combine them by multiplying, not by adding.' },
+  { question: 'When is batch processing worth it?', answer: 'Whenever the work can wait. Batch halves the price on OpenAI, Anthropic and Google, and the only cost is latency, usually up to 24 hours. Evaluation runs, bulk classification, embeddings backfills and content generation pipelines all fit.' },
+  { question: 'Which prices does this calculator use?', answer: 'The standard tier, because it is the one most requests use. Multiply by the tier figure in the tables above for batch, fast or peak-hour pricing.' },
+];
+---
+<BaseLayout
+  title="The Same Model at Five Prices: API Service Tiers"
+  description="OpenAI, Anthropic, Google and DeepSeek sell the same model at several prices. Compare batch, flex, fast, ultrafast and peak-hour rates, computed per model."
+  {canonical} {breadcrumbs} {faq}
+>
+  <Breadcrumbs items={breadcrumbs} />
+  <section class="shell max-w-4xl pt-12 sm:pt-16 pb-8 relative z-10">
+    <span class="eyebrow">Request economics</span>
+    <h1 class="m-0 mt-4 text-[clamp(2.25rem,5vw,3.75rem)] leading-[1.02] tracking-[-.055em] max-w-4xl">The same model at five prices.</h1>
+    <p class="muted text-[16px] sm:text-[17px] mt-4 mb-0 max-w-3xl">
+      A model's price used to be one number. It is now a starting point. The same GPT-6 Astra request costs
+      {usd(astra.inputPerMillion * 0.5)} per million input tokens in batch and {usd(astra.inputPerMillion * 6)} on the
+      Ultrafast tier, a twelve-fold spread with no change to the model or the prompt.
+    </p>
+  </section>
+
+  {sections.map((section) => (
+    <section class="shell mt-12 relative z-10" aria-labelledby={`tiers-${section.provider}`}>
+      <div class="content-heading">
+        <span class="eyebrow">{section.label}</span>
+        <h2 id={`tiers-${section.provider}`} class="section-title mt-3">{section.label} tiers</h2>
+      </div>
+      <div class="table-shell overflow-x-auto mt-5">
+        <table class="seo-table">
+          <thead>
+            <tr>
+              <th>Model</th>
+              <th>Standard in / out</th>
+              {section.tiers.map((tier) => <th>{tier.label} ({tier.multiplier}×)</th>)}
+            </tr>
+          </thead>
+          <tbody>
+            {section.models.map((model) => (
+              <tr>
+                <td><strong>{model!.name}</strong></td>
+                <td>{usd(model!.inputPerMillion)} / {usd(model!.outputPerMillion)}</td>
+                {section.tiers.map((tier) => (
+                  <td>{tier.appliesTo && !tier.appliesTo.includes(model!.id)
+                    ? '—'
+                    : `${usd(model!.inputPerMillion * tier.multiplier)} / ${usd(model!.outputPerMillion * tier.multiplier)}`}</td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <ul class="muted text-sm mt-4 grid gap-1 list-none p-0">
+        {section.tiers.map((tier) => <li><strong>{tier.label}:</strong> {tier.note}</li>)}
+      </ul>
+    </section>
+  ))}
+
+  <section class="shell mt-16 grid md:grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)] gap-8 md:gap-16 relative z-10">
+    <div><h2 class="section-title m-0">Batch is the only free lunch</h2></div>
+    <div class="muted">
+      <p>Batch halves the price on OpenAI, Anthropic and Google, and the only thing you give up is immediacy. Work that can wait a few hours costs half as much: evaluation runs, bulk classification, embedding backfills, overnight content generation.</p>
+      <p>OpenAI's Flex tier charges the same as batch while still answering in a single request, for workloads that can accept slower responses but not a queue.</p>
+      <p>The opposite end is rarely worth it by cost alone. Ultrafast is six times the standard price and exists for one model, so it is a latency purchase, not an economy one. Measure what a second of latency is worth to your product before buying it.</p>
+    </div>
+  </section>
+
+  <section class="shell mt-16 grid md:grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)] gap-8 md:gap-16 relative z-10">
+    <div><h2 class="section-title m-0">Multipliers stack, so multiply them</h2></div>
+    <div class="muted">
+      <p>Anthropic says its batch discount, cache multipliers and data-residency premium stack. A cached read on the batch tier with US-only inference is 0.1 × 0.5 × 1.1 of the base input rate, not a sum of three separate discounts.</p>
+      <p>DeepSeek's time-of-day pricing behaves the same way: the peak multiplier applies to the cached rate as well, so a cached read during peak hours costs double a cached read at night.</p>
+      <p>Our calculator and comparison pages use standard-tier prices, because that is what most requests pay. To price another tier, multiply by the figure in the tables above.</p>
+    </div>
+  </section>
+
+  <ProviderLinks current={canonical} limit={4} />
+  <FAQ items={faq} />
+
+  <section class="shell mt-12 mb-8 relative z-10">
+    <div class="source-ledger mt-0"><h2>Sources</h2><p><strong>Checked:</strong> 2 October 2026. Only tiers published on a provider page are listed.</p><ul>
+      <li><a href="https://developers.openai.com/api/docs/pricing" target="_blank" rel="noreferrer">OpenAI API pricing</a></li>
+      <li><a href="https://platform.claude.com/docs/en/about-claude/pricing" target="_blank" rel="noreferrer">Anthropic pricing</a></li>
+      <li><a href="https://ai.google.dev/gemini-api/docs/pricing" target="_blank" rel="noreferrer">Gemini API pricing</a></li>
+      <li><a href="https://api-docs.deepseek.com/quick_start/pricing" target="_blank" rel="noreferrer">DeepSeek models and pricing</a></li>
+    </ul></div>
+  </section>
+</BaseLayout>

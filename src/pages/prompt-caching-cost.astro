@@ -17,30 +17,35 @@ const PREFIX_TOKENS = 100_000;   // System prompt, tool definitions, retrieved c
 const FRESH_TOKENS = 1_500;      // The new user turn.
 const OUTPUT_TOKENS = 600;
 const TURNS = 20;
-// Providers document a cache write at roughly 1.25x the base input rate for a short
-// time-to-live. Anthropic charges 2x for a one-hour window.
-const WRITE_MULTIPLIER = 1.25;
+// Cache writes are no longer free or uniform. OpenAI charges 1.25x the input rate on
+// GPT-5.6 and later; Anthropic charges 1.25x for five minutes and 2x for an hour. Where a
+// provider publishes a write price it comes from the catalogue; otherwise 1.25x is used
+// and the row says so.
+const FALLBACK_WRITE_MULTIPLIER = 1.25;
 
 const rows = MODELS
   .filter((model) => model.cachedInputPerMillion !== undefined && model.cachedInputPerMillion < model.inputPerMillion)
-  .filter((model) => ['gpt-6-astra', 'claude-fable-5-1', 'gpt-5.6-terra', 'claude-sonnet-5', 'gemini-3.8-flash', 'qwen3.8-max', 'deepseek-flash'].includes(model.id))
+  .filter((model) => ['gpt-6.1-sol', 'gpt-6-astra', 'claude-opus-5-5', 'claude-fable-5-1', 'claude-sonnet-5-5', 'gemini-3.8-flash', 'qwen3.8-max', 'deepseek-flash'].includes(model.id))
   .map((model) => {
     const inRate = model.inputPerMillion / 1_000_000;
     const cacheRate = model.cachedInputPerMillion! / 1_000_000;
+    const publishedWrite = model.cacheWritePerMillion;
+    const writeRate = (publishedWrite ?? model.inputPerMillion * FALLBACK_WRITE_MULTIPLIER) / 1_000_000;
     const outRate = model.outputPerMillion / 1_000_000;
     const perTurnOutput = OUTPUT_TOKENS * outRate + FRESH_TOKENS * inRate;
 
     // Without caching every turn pays full input price for the whole prefix.
     const uncached = TURNS * (PREFIX_TOKENS * inRate) + TURNS * perTurnOutput;
-    // With caching the prefix is written once at a premium, then read at the cached rate.
-    const cached = PREFIX_TOKENS * inRate * WRITE_MULTIPLIER
+    // With caching the prefix is written once, then read at the cached rate.
+    const cached = PREFIX_TOKENS * writeRate
       + (TURNS - 1) * (PREFIX_TOKENS * cacheRate)
       + TURNS * perTurnOutput;
 
     const discount = 1 - model.cachedInputPerMillion! / model.inputPerMillion;
     // Reads needed before the write premium is repaid.
-    const breakEven = Math.max(1, Math.ceil((model.inputPerMillion * (WRITE_MULTIPLIER - 1)) / (model.inputPerMillion - model.cachedInputPerMillion!)));
-    return { model, uncached, cached, saved: uncached - cached, share: 1 - cached / uncached, discount, breakEven };
+    const premium = Math.max(0, writeRate - inRate);
+    const breakEven = Math.max(1, Math.ceil(premium / (inRate - cacheRate)));
+    return { model, uncached, cached, saved: uncached - cached, share: 1 - cached / uncached, discount, breakEven, writePerMillion: writeRate * 1_000_000, writePublished: publishedWrite !== undefined };
   })
   .sort((a, b) => b.share - a.share);
 
@@ -51,7 +56,7 @@ const worst = rows[rows.length - 1];
 const faq = [
   { question: 'How much does prompt caching actually save?', answer: 'It depends on the cached-input discount and on how often the prefix is reused. In the twenty-turn agent loop priced on this page the saving ranges from about ' + Math.round(worst.share * 100) + ' to ' + Math.round(best.share * 100) + ' percent of the total bill, depending on the model.' },
   { question: 'How many times must a prompt be reused before caching pays off?', answer: 'Usually once or twice. A cache write costs roughly 1.25 times the base input rate for a short lifetime, while a read costs a fraction of it, so the premium is repaid almost immediately and every later read is nearly free by comparison.' },
-  { question: 'Do all providers charge for writing to the cache?', answer: 'No. Anthropic charges a write premium, 1.25x for a five-minute lifetime and 2x for one hour. OpenAI caches automatically once a prompt exceeds about 1,024 tokens with no write premium. Google offers implicit caching at a smaller discount, and explicit caching that adds a storage fee per hour.' },
+  { question: 'Do all providers charge for writing to the cache?', answer: 'Most now do. Anthropic charges 1.25x the input rate for a five-minute lifetime and 2x for one hour. OpenAI charges 1.25x on GPT-5.6 and later, where earlier models were free. Google offers implicit caching at a smaller discount, and explicit caching that adds a storage fee per hour.' },
   { question: 'How do I structure a prompt so it caches well?', answer: 'Put everything static at the top and everything variable at the bottom. Caching matches on a prefix, so a single changing token near the start, such as a timestamp or a user id, invalidates the whole cache for that request.' },
   { question: 'Does caching change the answer the model gives?', answer: 'No. It changes how the input is billed and how quickly the request is served. The tokens the model sees are identical.' },
 ];
@@ -80,17 +85,19 @@ const faq = [
     <p class="muted max-w-3xl mt-4 mb-6">
       Each turn carries a {PREFIX_TOKENS.toLocaleString()}-token prefix, adds {FRESH_TOKENS.toLocaleString()} new
       tokens, and returns {OUTPUT_TOKENS} output tokens. Uncached, the prefix is billed at full input price
-      {TURNS} times. Cached, it is written once at a {WRITE_MULTIPLIER}x premium and read {TURNS - 1} times
+      {TURNS} times. Cached, it is written once at the provider's write price and read {TURNS - 1} times
       at the cached rate.
     </p>
     <div class="table-shell overflow-x-auto">
       <table class="seo-table">
-        <thead><tr><th>Model</th><th>Provider</th><th>Uncached</th><th>Cached</th><th>Saved</th><th>Cut</th><th>Break-even</th></tr></thead>
+        <thead><tr><th>Model</th><th>Provider</th><th>Write / 1M</th><th>Read / 1M</th><th>Uncached</th><th>Cached</th><th>Saved</th><th>Cut</th><th>Break-even</th></tr></thead>
         <tbody>
           {rows.map((row) => (
             <tr>
               <td><strong>{row.model.name}</strong></td>
               <td>{PROVIDERS[row.model.provider].name}</td>
+              <td>${row.writePerMillion.toFixed(2)}{row.writePublished ? '' : '*'}</td>
+              <td>${row.model.cachedInputPerMillion!.toFixed(3)}</td>
               <td>{usd(row.uncached)}</td>
               <td>{usd(row.cached)}</td>
               <td>{usd(row.saved)}</td>
@@ -102,9 +109,10 @@ const faq = [
       </table>
     </div>
     <p class="text-xs muted mt-4">
-      Rates are USD per 1,000,000 tokens from the maintained catalogue. The write premium is the
-      short-lifetime figure providers currently document; a longer lifetime costs more to write and is
-      only worth it across many more reads.
+      Rates are USD per 1,000,000 tokens from the maintained catalogue, using each provider's published
+      short-lifetime write price. A star marks a model where no write price is published, where the table
+      assumes {FALLBACK_WRITE_MULTIPLIER}x the input rate. A longer cache lifetime costs more to write and
+      only pays off across many more reads.
     </p>
   </section>
 
@@ -120,9 +128,10 @@ const faq = [
   <section class="shell mt-16 grid md:grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)] gap-8 md:gap-16 relative z-10">
     <div><h2 class="section-title m-0">Providers implement it differently</h2></div>
     <div class="muted">
-      <p>Anthropic requires you to mark what to cache and charges to write it: 1.25 times the base input rate for a five-minute lifetime, twice for an hour. Reads are heavily discounted. The one-hour option only pays back across a large number of reads.</p>
-      <p>OpenAI caches automatically once a prompt passes roughly 1,024 tokens, with no write premium. You get less control over where the cache boundary falls, and in exchange there is nothing to implement.</p>
+      <p>Anthropic charges to write: 1.25 times the base input rate for a five-minute lifetime, twice for an hour. Reads used to be a flat tenth of the input rate, but they are now set per model: a tenth on most, a twentieth on Claude Opus 5.5, and a fortieth on Claude Fable 5.1. The minimum cacheable prompt also varies by model, from 512 tokens on the newest models to 4,096 on Claude Haiku 4.5.</p>
+      <p>OpenAI used to cache for free. On GPT-5.6 and later a cache write now costs 1.25 times the input rate, reads cost a tenth, and GPT-6.1 Sol reads cost a twentieth. The cache lifetime on these models is a single 30-minute setting, where older models offered a short in-memory cache or 24 hours.</p>
       <p>Google offers implicit caching at a smaller discount, and explicit caching that adds a storage fee charged per hour. That storage fee is unique among the three and makes explicit caching worth it mainly for large, long-lived content such as a code repository or a long video.</p>
+      <p>Anthropic's multipliers also stack with other modifiers: the batch discount halves them, and pinning inference to the United States multiplies every token category by 1.1.</p>
     </div>
   </section>
 

@@ -17,6 +17,9 @@ const left = getModel(page.leftId);
 const right = getModel(page.rightId);
 // Provider-wide billing facts, such as DeepSeek's peak-hour pricing, shown once per page.
 const pricingNotes = [...new Set([left, right].map((model) => PRICING_NOTES[model.provider]).filter((note): note is string => Boolean(note)))];
+// Writing a prefix into the cache is charged by most providers now, and it decides agent
+// workloads. The column appears only when at least one side publishes a write price.
+const showCacheWrite = [left, right].some((model) => model.cacheWritePerMillion !== undefined);
 const canonical = `/${page.slug}/`;
 const breadcrumbs = [{ label: 'Token calculator', href: '/' }, { label: page.crumb }];
 // Exact published rate, never rounded, with at least two decimals ($0.60, not $0.6).
@@ -35,9 +38,9 @@ const money = (value: number | undefined) => value === undefined ? '—' : `$${v
       <p class="text-sm text-[var(--warn)] m-0 mb-5"><strong>Current-model note:</strong> {page.legacyTerms}</p>
       <div class="overflow-x-auto">
         <table class="w-full min-w-[620px] text-left text-sm">
-          <thead><tr class="muted"><th class="pb-3">Current model</th><th class="pb-3">Input / 1M</th><th class="pb-3">Cached / 1M</th><th class="pb-3">Output / 1M</th><th class="pb-3">Context</th></tr></thead>
+          <thead><tr class="muted"><th class="pb-3">Current model</th><th class="pb-3">Input / 1M</th><th class="pb-3">Cached / 1M</th>{showCacheWrite && <th class="pb-3">Cache write / 1M</th>}<th class="pb-3">Output / 1M</th><th class="pb-3">Context</th></tr></thead>
           <tbody>
-            {[left, right].map((model) => <tr class="border-t hairline"><th class="py-4 pr-5"><span class="block">{model.name}</span><a class="text-xs text-[var(--accent)] font-normal" href={model.pricingUrl} target="_blank" rel="noreferrer">Official pricing ↗</a></th><td data-live-input={model.id}>{money(model.inputPerMillion)}</td><td>{money(model.cachedInputPerMillion)}</td><td data-live-output={model.id}>{money(model.outputPerMillion)}</td><td data-live-context={model.id}>{model.contextWindow.toLocaleString()}</td></tr>)}
+            {[left, right].map((model) => <tr class="border-t hairline"><th class="py-4 pr-5"><span class="block">{model.name}</span><a class="text-xs text-[var(--accent)] font-normal" href={model.pricingUrl} target="_blank" rel="noreferrer">Official pricing ↗</a></th><td data-live-input={model.id}>{money(model.inputPerMillion)}</td><td>{money(model.cachedInputPerMillion)}</td>{showCacheWrite && <td>{money(model.cacheWritePerMillion)}</td>}<td data-live-output={model.id}>{money(model.outputPerMillion)}</td><td data-live-context={model.id}>{model.contextWindow.toLocaleString()}</td></tr>)}
           </tbody>
         </table>
       </div>
