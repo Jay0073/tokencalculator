@@ -1,5 +1,7 @@
 ---
 import { COMPARISONS as PAGES, COST_GUIDES } from '../../data/comparisons';
+import type { Locale } from '../../i18n/config';
+import { sectionCopy } from '../../i18n/sections';
 
 interface Props {
   /** Slug of the page being rendered, so it does not link to itself. */
@@ -7,8 +9,14 @@ interface Props {
   /** How many comparison cards to show. Comparison pages show a related subset
       rather than the full list, which keeps repeated boilerplate off every page. */
   limit?: number;
+  locale?: Locale;
 }
-const { current, limit } = Astro.props;
+const { current, limit, locale = 'en' } = Astro.props;
+const copy = sectionCopy[locale].links;
+// The counter cards keep their provider names in English; only the label and the
+// one-line description are translated.
+const counterHrefs = ['/openai-token-counter/', '/claude-token-counter/', '/gemini-token-counter/', '/deepseek-token-counter/'];
+const counterCodes = ['OAI', 'ANT', 'GOO', 'DSK'];
 
 // One shared list with the comparison route and the /compare/ hub.
 const COMPARISONS = PAGES.map((page) => ({ href: `/${page.slug}/`, title: page.card.title, detail: page.card.detail }));
@@ -17,16 +25,15 @@ const guides = COST_GUIDES.filter((item) => item.href !== current);
 const shown = COMPARISONS.filter((item) => item.href !== current).slice(0, limit ?? COMPARISONS.length);
 ---
 <section class="shell mt-24 relative z-10">
-  <span class="eyebrow">Focused counters</span><h2 class="section-title mt-3 mb-8">Measure against the model you use</h2>
+  <span class="eyebrow">{copy.eyebrow}</span><h2 class="section-title mt-3 mb-8">{copy.title}</h2>
   <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
-    <a href="/openai-token-counter/" class="panel rounded-xl p-5 no-underline hover:border-[var(--line-strong)]"><span class="mono text-xs text-[var(--accent)]">OAI</span><strong class="block mt-5">OpenAI token counter</strong><span class="text-sm muted">Exact local o200k_base BPE</span></a>
-    <a href="/claude-token-counter/" class="panel rounded-xl p-5 no-underline hover:border-[var(--line-strong)]"><span class="mono text-xs text-[var(--accent)]">ANT</span><strong class="block mt-5">Claude token counter</strong><span class="text-sm muted">Provider-Calibrated UTF-8 Projection</span></a>
-    <a href="/gemini-token-counter/" class="panel rounded-xl p-5 no-underline hover:border-[var(--line-strong)]"><span class="mono text-xs text-[var(--accent)]">GOO</span><strong class="block mt-5">Gemini token counter</strong><span class="text-sm muted">Text and image rules</span></a>
-    <a href="/deepseek-token-counter/" class="panel rounded-xl p-5 no-underline hover:border-[var(--line-strong)]"><span class="mono text-xs text-[var(--accent)]">DSK</span><strong class="block mt-5">DeepSeek token counter</strong><span class="text-sm muted">Current API pricing</span></a>
+    {copy.counters.map((counter, index) => (
+      <a href={counterHrefs[index]} class="panel rounded-xl p-5 no-underline hover:border-[var(--line-strong)]"><span class="mono text-xs text-[var(--accent)]">{counterCodes[index]}</span><strong class="block mt-5">{counter.name}</strong><span class="text-sm muted">{counter.detail}</span></a>
+    ))}
   </div>
 </section>
 <section class="shell mt-16 relative z-10">
-  <span class="eyebrow">Current model comparisons</span><h2 class="section-title mt-3 mb-8">{current ? 'Other comparisons worth running' : 'Compare cost with the same real workload'}</h2>
+  <span class="eyebrow">{copy.comparisonsEyebrow}</span><h2 class="section-title mt-3 mb-8">{current ? 'Other comparisons worth running' : copy.comparisonsTitle}</h2>
   <div class="grid md:grid-cols-2 gap-3">
     {shown.map((item) => (
       <a href={item.href} class="panel rounded-xl p-5 no-underline hover:border-[var(--line-strong)]"><strong>{item.title}</strong><span class="block text-sm muted mt-1">{item.detail}</span></a>
@@ -34,7 +41,7 @@ const shown = COMPARISONS.filter((item) => item.href !== current).slice(0, limit
   </div>
 </section>
 <section class="shell mt-16 relative z-10">
-  <span class="eyebrow">Cost guides</span><h2 class="section-title mt-3 mb-8">Compare approaches, not just models</h2>
+  <span class="eyebrow">{copy.guidesEyebrow}</span><h2 class="section-title mt-3 mb-8">{copy.guidesTitle}</h2>
   <div class="grid md:grid-cols-2 gap-3">
     {guides.map((item) => (
       <a href={item.href} class="panel rounded-xl p-5 no-underline hover:border-[var(--line-strong)]"><strong>{item.title}</strong><span class="block text-sm muted mt-1">{item.detail}</span></a>

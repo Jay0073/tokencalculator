@@ -21,15 +21,18 @@
  */
 
 /** @type {DirectoryBadge[]} */
+/*
+ * Only badges whose listing returns a dofollow link stay here.
+ *
+ * Checked on 2026-10-08 by fetching all 25 listing URLs and looking for an anchor back
+ * to tokencalculator.dev: 7 returned a dofollow link, 2 were nofollow only, and 16
+ * returned nothing, one of them a 404. A badge with no link back is an outbound link
+ * that earns nothing, and 25 of them on one page is a pattern search engines read as a
+ * link exchange. The retired entries are kept below so a listing can be restored if a
+ * directory starts linking back.
+ */
 export const DIRECTORY_BADGES = [
-  {
-    name: 'Findly.tools',
-    href: 'https://findly.tools/tokencalculator-dev?utm_source=tokencalculator-dev',
-    src: 'https://findly.tools/badges/findly-tools-badge-light.svg',
-    alt: 'Featured on Findly.tools',
-    width: 175,
-    height: 55,
-  },
+  
   {
     name: 'Turbo0',
     href: 'https://turbo0.com/item/tokencalculatordev',
@@ -38,94 +41,7 @@ export const DIRECTORY_BADGES = [
     width: 190,
     height: 54,
   },
-  {
-    name: 'Twelve Tools',
-    href: 'https://twelve.tools',
-    src: 'https://twelve.tools/badge1-light.svg',
-    alt: 'Featured on Twelve Tools',
-    width: 148,
-    height: 40,
-  },
-  {
-    name: 'ShowMeBestAI',
-    href: 'https://showmebest.ai',
-    src: 'https://showmebest.ai/badge/feature-badge-white.webp',
-    alt: 'Featured on ShowMeBestAI',
-    width: 220,
-    height: 60,
-  },
-  {
-    name: 'ToolFame',
-    href: 'https://toolfame.com/item/tokencalculatordev',
-    src: 'https://toolfame.com/badge-light.svg',
-    alt: 'Featured on ToolFame',
-    width: 190,
-    height: 54,
-  },
-  {
-    name: 'Good AI Tools',
-    href: 'https://goodaitools.com/ai/tokencalculator',
-    src: 'https://goodaitools.com/assets/images/badge.png',
-    alt: 'Good AI Tools',
-    width: 190,
-    height: 54,
-  },
-  {
-    name: 'FoundrList',
-    href: 'https://www.foundrlist.com/product/tokencalculatordev?utm_source=badge&utm_medium=embed',
-    src: 'https://www.foundrlist.com/api/badge/tokencalculatordev',
-    alt: 'Featured on FoundrList',
-    width: 150,
-    height: 48,
-  },
-  {
-    name: 'LaunchBuck',
-    href: 'https://launchbuck.com/p/tokencalculator-dev',
-    src: 'https://launchbuck.com/badges/card-accent.png',
-    alt: 'TokenCalculator.dev — Featured on LaunchBuck',
-    width: 190,
-    height: 58,
-  },
-  {
-    name: 'Direct2App',
-    href: 'https://www.direct2app.com',
-    src: 'https://www.direct2app.com/featured-dark.svg',
-    alt: 'Featured on Direct2App',
-    width: 190,
-    height: 54,
-  },
-  {
-    name: 'Dynamite AI',
-    href: 'https://www.dynamite-ai.com/tools/undefined',
-    src: '/badges/dynamite-ai.svg',
-    alt: 'Featured on Dynamite AI',
-    width: 190,
-    height: 54,
-  },
-  {
-    name: 'Submit AI Tools',
-    href: 'https://submitaitools.org',
-    src: 'https://submitaitools.org/static_submitaitools/images/submitaitools.png',
-    alt: 'Submit AI Tools',
-    width: 200,
-    height: 60,
-  },
-  {
-    name: 'ToolPilot',
-    href: 'https://www.toolpilot.ai/',
-    src: 'https://www.toolpilot.ai/cdn/shop/files/f-w_690x151_crop_center.png',
-    alt: 'Featured on ToolPilot',
-    width: 690,
-    height: 151,
-  },
-  {
-    name: 'FrogDR',
-    href: 'https://frogdr.com/tokencalculator.dev?utm_source=tokencalculator.dev',
-    src: 'https://frogdr.com/tokencalculator.dev/badge-light.svg?badge=1&s=ui',
-    alt: 'Monitor your Domain Rating with FrogDR',
-    width: 250,
-    height: 54,
-  },
+  
   {
     name: 'AI Hunt List',
     href: 'https://aihuntlist.com/tool/tokencalculator-dev',
@@ -134,6 +50,130 @@ export const DIRECTORY_BADGES = [
     width: 200,
     height: 54,
   },
+  
+  {
+    name: 'Huzzler',
+    href: 'https://huzzler.so/products/Us68WDYnXK/tokencalculatordev?utm_source=huzzler_product_website&utm_medium=badge&utm_campaign=free_listing',
+    src: 'https://huzzler.so/assets/images/embeddable-badges/featured.png',
+    alt: 'Huzzler Embed Badge',
+    width: 159,
+    height: 55,
+  },
+];
+
+/**
+ * Retired on 2026-10-08: no dofollow link back at the time of checking.
+ * Restore an entry to DIRECTORY_BADGES if its directory starts linking back.
+ */
+export const RETIRED_BADGES = [
+  {
+    name: 'Findly.tools',
+    href: 'https://findly.tools/tokencalculator-dev?utm_source=tokencalculator-dev',
+    src: 'https://findly.tools/badges/findly-tools-badge-light.svg',
+    alt: 'Featured on Findly.tools',
+    width: 175,
+    height: 55,
+  },
+  
+  {
+    name: 'Twelve Tools',
+    href: 'https://twelve.tools',
+    src: 'https://twelve.tools/badge1-light.svg',
+    alt: 'Featured on Twelve Tools',
+    width: 148,
+    height: 40,
+  },
+  
+  {
+    name: 'ShowMeBestAI',
+    href: 'https://showmebest.ai',
+    src: 'https://showmebest.ai/badge/feature-badge-white.webp',
+    alt: 'Featured on ShowMeBestAI',
+    width: 220,
+    height: 60,
+  },
+  
+  {
+    name: 'ToolFame',
+    href: 'https://toolfame.com/item/tokencalculatordev',
+    src: 'https://toolfame.com/badge-light.svg',
+    alt: 'Featured on ToolFame',
+    width: 190,
+    height: 54,
+  },
+  
+  {
+    name: 'Good AI Tools',
+    href: 'https://goodaitools.com/ai/tokencalculator',
+    src: 'https://goodaitools.com/assets/images/badge.png',
+    alt: 'Good AI Tools',
+    width: 190,
+    height: 54,
+  },
+  
+  {
+    name: 'FoundrList',
+    href: 'https://www.foundrlist.com/product/tokencalculatordev?utm_source=badge&utm_medium=embed',
+    src: 'https://www.foundrlist.com/api/badge/tokencalculatordev',
+    alt: 'Featured on FoundrList',
+    width: 150,
+    height: 48,
+  },
+  
+  {
+    name: 'LaunchBuck',
+    href: 'https://launchbuck.com/p/tokencalculator-dev',
+    src: 'https://launchbuck.com/badges/card-accent.png',
+    alt: 'TokenCalculator.dev — Featured on LaunchBuck',
+    width: 190,
+    height: 58,
+  },
+  
+  {
+    name: 'Direct2App',
+    href: 'https://www.direct2app.com',
+    src: 'https://www.direct2app.com/featured-dark.svg',
+    alt: 'Featured on Direct2App',
+    width: 190,
+    height: 54,
+  },
+  
+  {
+    name: 'Dynamite AI',
+    href: 'https://www.dynamite-ai.com/tools/undefined',
+    src: '/badges/dynamite-ai.svg',
+    alt: 'Featured on Dynamite AI',
+    width: 190,
+    height: 54,
+  },
+  
+  {
+    name: 'Submit AI Tools',
+    href: 'https://submitaitools.org',
+    src: 'https://submitaitools.org/static_submitaitools/images/submitaitools.png',
+    alt: 'Submit AI Tools',
+    width: 200,
+    height: 60,
+  },
+  
+  {
+    name: 'ToolPilot',
+    href: 'https://www.toolpilot.ai/',
+    src: 'https://www.toolpilot.ai/cdn/shop/files/f-w_690x151_crop_center.png',
+    alt: 'Featured on ToolPilot',
+    width: 690,
+    height: 151,
+  },
+  
+  {
+    name: 'FrogDR',
+    href: 'https://frogdr.com/tokencalculator.dev?utm_source=tokencalculator.dev',
+    src: 'https://frogdr.com/tokencalculator.dev/badge-light.svg?badge=1&s=ui',
+    alt: 'Monitor your Domain Rating with FrogDR',
+    width: 250,
+    height: 54,
+  },
+  
   {
     name: 'Best AI',
     href: 'https://best-ai.org',
@@ -143,6 +183,7 @@ export const DIRECTORY_BADGES = [
     width: 200,
     height: 48,
   },
+  
   {
     name: 'Bowora',
     href: 'https://bowora.com/?via=k4t62aaa',
@@ -151,6 +192,7 @@ export const DIRECTORY_BADGES = [
     width: 170,
     height: 50,
   },
+  
   {
     name: 'FindYourAgent',
     href: 'https://findyouragent.ai',
@@ -159,6 +201,7 @@ export const DIRECTORY_BADGES = [
     width: 200,
     height: 54,
   },
+  
   {
     name: 'Uno Directory',
     href: 'https://uno.directory',
@@ -167,6 +210,7 @@ export const DIRECTORY_BADGES = [
     width: 120,
     height: 30,
   },
+  
   {
     name: 'Webspot',
     href: 'https://webspot.app',
@@ -175,6 +219,7 @@ export const DIRECTORY_BADGES = [
     width: 200,
     height: 54,
   },
+  
   {
     name: 'OpenHunts',
     href: 'https://openhunts.com',
@@ -183,6 +228,7 @@ export const DIRECTORY_BADGES = [
     width: 195,
     height: 42,
   },
+  
   {
     name: 'SimilarLabs',
     href: 'https://similarlabs.com',
@@ -191,6 +237,7 @@ export const DIRECTORY_BADGES = [
     width: 127,
     height: 43,
   },
+  
   {
     // Supplied as inline SVG that loads its logo from indie.deals. An <img> cannot load
     // external files from inside an SVG, so the same badge is kept locally with the
@@ -202,6 +249,7 @@ export const DIRECTORY_BADGES = [
     width: 180,
     height: 60,
   },
+  
   {
     name: 'Startup Inspire',
     href: 'https://www.startupinspire.com',
@@ -210,6 +258,7 @@ export const DIRECTORY_BADGES = [
     width: 149,
     height: 43,
   },
+  
   {
     // Supplied at height 55 with automatic width; the SVG is 300x80.
     name: 'StartupBase',
@@ -217,14 +266,6 @@ export const DIRECTORY_BADGES = [
     src: 'https://statics.startupbase.io/site/badges/featured-on-sb-neutral.svg',
     alt: 'Featured on StartupBase',
     width: 206,
-    height: 55,
-  },
-  {
-    name: 'Huzzler',
-    href: 'https://huzzler.so/products/Us68WDYnXK/tokencalculatordev?utm_source=huzzler_product_website&utm_medium=badge&utm_campaign=free_listing',
-    src: 'https://huzzler.so/assets/images/embeddable-badges/featured.png',
-    alt: 'Huzzler Embed Badge',
-    width: 159,
     height: 55,
   },
 ];
