@@ -143,7 +143,7 @@ The site does not claim access to proprietary Claude, Gemini, or DeepSeek produc
 <!-- generated-pricing:start -->
 ## Model pricing snapshot
 
-Rates below are USD per one million tokens, regenerated from https://models.dev/api.json and verified 2026-10-02. The browser refreshes them from the same source at runtime. Long-context tiers and provider terms can still change a final bill.
+Rates below are USD per one million tokens, regenerated from https://models.dev/api.json and verified 2026-10-12. The browser refreshes them from the same source at runtime. Long-context tiers and provider terms can still change a final bill.
 
 | Model | Provider | Input | Cached input | Output | Context |
 | --- | --- | ---: | ---: | ---: | ---: |
@@ -154,7 +154,7 @@ Rates below are USD per one million tokens, regenerated from https://models.dev/
 | GPT-5.6 Luna | OpenAI | $0.20 | $0.02 | $1.20 | 1,050,000 |
 | GPT-5.6 Sol | OpenAI | $4.00 | $0.40 | $20.00 | 1,050,000 |
 | GPT-5.6 Terra | OpenAI | $2.00 | $0.20 | $12.00 | 1,050,000 |
-| Claude Sonnet 5.5 | Anthropic | $2.00 | $0.20 | $10.00 | 1,000,000 |
+| Claude Sonnet 5.5 | Anthropic | $2.00 | $0.10 | $10.00 | 1,000,000 |
 | Claude Opus 5.5 | Anthropic | $4.00 | $0.20 | $20.00 | 1,000,000 |
 | Claude Fable 5.1 | Anthropic | $10.00 | $0.25 | $50.00 | 1,000,000 |
 | Claude Opus 5 | Anthropic | $5.00 | $0.50 | $25.00 | 1,000,000 |
@@ -186,10 +186,8 @@ Rates below are USD per one million tokens, regenerated from https://models.dev/
 | GLM-5.3-Flash | Z.ai GLM | $0.15 | $0.03 | $0.50 | 1,000,000 |
 | GLM-5.3 | Z.ai GLM | $1.40 | $0.26 | $4.40 | 1,000,000 |
 | GLM-5.2 | Z.ai GLM | $1.40 | $0.26 | $4.40 | 1,000,000 |
-| GLM-5.1 | Z.ai GLM | $1.40 | $0.26 | $4.40 | 200,000 |
 | Muse Spark 1.3 | Meta | $1.25 | $0.15 | $4.25 | 1,048,576 |
 | Muse Spark 1.2 | Meta | $1.25 | $0.15 | $4.25 | 1,048,576 |
-| Muse Spark 1.1 | Meta | $1.25 | $0.15 | $4.25 | 1,048,576 |
 
 Models with a long-context tier: GPT-6.1 Sol, GPT-6 Luna, GPT-6 Sol, GPT-6 Astra, GPT-5.6 Luna, GPT-5.6 Sol, GPT-5.6 Terra, Gemini 2.5 Pro, Qwen3.7 Flash, Qwen3.7 Plus, Grok 4.7, Grok 4.6, Grok 4.5, Grok 4.3. Above the tier threshold the higher rate applies to the whole request.
 

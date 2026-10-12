@@ -1337,6 +1337,19 @@
          }
         }
        }
+      },
+      "ultrafast": {
+       "cost": {
+        "input": 12,
+        "output": 60,
+        "cache_read": 0.6,
+        "cache_write": 15
+       },
+       "provider": {
+        "body": {
+         "service_tier": "ultrafast"
+        }
+       }
       }
      }
     },
@@ -3123,7 +3136,7 @@
     },
     "open_weights": false,
     "limit": {
-     "context": 1000000,
+     "context": 200000,
      "output": 64000
     },
     "cost": {
@@ -3511,7 +3524,7 @@
     },
     "open_weights": false,
     "limit": {
-     "context": 1000000,
+     "context": 200000,
      "output": 64000
     },
     "cost": {
@@ -3662,6 +3675,69 @@
      "cache_write": 1.25
     }
    },
+   "claude-haiku-5-5": {
+    "id": "claude-haiku-5-5",
+    "name": "Claude Haiku 5.5",
+    "description": "Fast Claude model for responsive assistance, classification, and lightweight agents",
+    "family": "claude-haiku",
+    "attachment": true,
+    "reasoning": true,
+    "reasoning_options": [
+     {
+      "type": "toggle"
+     },
+     {
+      "type": "effort",
+      "values": [
+       "low",
+       "medium",
+       "high",
+       "xhigh",
+       "max"
+      ]
+     }
+    ],
+    "tool_call": true,
+    "structured_output": true,
+    "temperature": false,
+    "knowledge": "2026-06",
+    "release_date": "2026-10-07",
+    "last_updated": "2026-10-07",
+    "modalities": {
+     "input": [
+      "text",
+      "image",
+      "pdf"
+     ],
+     "output": [
+      "text"
+     ]
+    },
+    "open_weights": false,
+    "limit": {
+     "context": 1000000,
+     "output": 128000
+    },
+    "cost": {
+     "input": 0.1,
+     "output": 0.5,
+     "cache_read": 0.01,
+     "cache_write": 0.125,
+     "tiers": [
+      {
+       "input": 0.5,
+       "output": 2.5,
+       "cache_read": 0.05,
+       "cache_write": 0.625,
+       "tier": {
+        "type": "context",
+        "size": 100000
+       }
+      }
+     ]
+    },
+    "canonical_model_id": "anthropic/claude-haiku-5-5"
+   },
    "claude-sonnet-4-6": {
     "id": "claude-sonnet-4-6",
     "name": "Claude Sonnet 4.6",
@@ -3755,7 +3831,7 @@
     "cost": {
      "input": 2,
      "output": 10,
-     "cache_read": 0.2,
+     "cache_read": 0.1,
      "cache_write": 2.5
     },
     "canonical_model_id": "anthropic/claude-sonnet-5-5"
@@ -5617,10 +5693,10 @@
      "output": 393216
     },
     "cost": {
-     "input": 0.435,
-     "output": 0.87,
-     "reasoning": 0.87,
-     "cache_read": 0.003625
+     "input": 0.66,
+     "output": 1.98,
+     "reasoning": 1.98,
+     "cache_read": 0.022
     },
     "canonical_model_id": "deepseek/deepseek-v4-pro-0813"
    },
@@ -7979,8 +8055,8 @@
      "output": 4096
     },
     "cost": {
-     "input": 0.72,
-     "output": 0.72
+     "input": 0.07,
+     "output": 0.16
     }
    }
   }
@@ -8038,7 +8114,8 @@
     "cost": {
      "input": 3,
      "output": 15,
-     "cache_read": 0.3
+     "cache_read": 0.3,
+     "cache_write": 3
     },
     "canonical_model_id": "moonshotai/kimi-k3"
    },
@@ -8234,6 +8311,34 @@
      }
     },
     "canonical_model_id": "xai/grok-4.7"
+   },
+   "grok-imagine-video-1.5-lite": {
+    "id": "grok-imagine-video-1.5-lite",
+    "name": "Grok Imagine Video 1.5 Lite",
+    "description": "Cost-efficient video model for text-to-video and image-to-video generation",
+    "family": "grok",
+    "attachment": true,
+    "reasoning": false,
+    "tool_call": false,
+    "temperature": false,
+    "release_date": "2026-10-01",
+    "last_updated": "2026-10-01",
+    "modalities": {
+     "input": [
+      "text",
+      "image",
+      "pdf"
+     ],
+     "output": [
+      "video"
+     ]
+    },
+    "open_weights": false,
+    "limit": {
+     "context": 1024,
+     "output": 0
+    },
+    "canonical_model_id": "xai/grok-imagine-video-1.5-lite"
    },
    "grok-imagine-image": {
     "id": "grok-imagine-image",

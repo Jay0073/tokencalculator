@@ -25,7 +25,7 @@ export const MODELS: readonly ModelConfig[] = [
   { id: 'gpt-5.6-luna', name: 'GPT-5.6 Luna', provider: 'openai', contextWindow: 1_050_000, inputPerMillion: 0.2, cachedInputPerMillion: 0.02, outputPerMillion: 1.2, bytesPerToken: 4, vision: 'openai' },
   { id: 'gpt-5.6-sol', name: 'GPT-5.6 Sol', provider: 'openai', contextWindow: 1_050_000, inputPerMillion: 4, cachedInputPerMillion: 0.4, outputPerMillion: 20, bytesPerToken: 4, vision: 'openai' },
   { id: 'gpt-5.6-terra', name: 'GPT-5.6 Terra', provider: 'openai', contextWindow: 1_050_000, inputPerMillion: 2, cachedInputPerMillion: 0.2, outputPerMillion: 12, bytesPerToken: 4, vision: 'openai' },
-  { id: 'claude-sonnet-5-5', name: 'Claude Sonnet 5.5', provider: 'anthropic', contextWindow: 1_000_000, inputPerMillion: 2, cachedInputPerMillion: 0.2, outputPerMillion: 10, bytesPerToken: 2.88, vision: 'claude' },
+  { id: 'claude-sonnet-5-5', name: 'Claude Sonnet 5.5', provider: 'anthropic', contextWindow: 1_000_000, inputPerMillion: 2, cachedInputPerMillion: 0.1, outputPerMillion: 10, bytesPerToken: 2.88, vision: 'claude' },
   { id: 'claude-opus-5-5', name: 'Claude Opus 5.5', provider: 'anthropic', contextWindow: 1_000_000, inputPerMillion: 4, cachedInputPerMillion: 0.2, outputPerMillion: 20, bytesPerToken: 2.88, vision: 'claude' },
   { id: 'claude-fable-5-1', name: 'Claude Fable 5.1', provider: 'anthropic', contextWindow: 1_000_000, inputPerMillion: 10, cachedInputPerMillion: 0.25, outputPerMillion: 50, bytesPerToken: 2.88, vision: 'claude' },
   { id: 'claude-opus-5', name: 'Claude Opus 5', provider: 'anthropic', contextWindow: 1_000_000, inputPerMillion: 5, cachedInputPerMillion: 0.5, outputPerMillion: 25, bytesPerToken: 2.88, vision: 'claude' },
@@ -57,10 +57,8 @@ export const MODELS: readonly ModelConfig[] = [
   { id: 'glm-5.3-flash', name: 'GLM-5.3-Flash', provider: 'zai', contextWindow: 1_000_000, inputPerMillion: 0.15, cachedInputPerMillion: 0.03, outputPerMillion: 0.5, bytesPerToken: 3.7 },
   { id: 'glm-5.3', name: 'GLM-5.3', provider: 'zai', contextWindow: 1_000_000, inputPerMillion: 1.4, cachedInputPerMillion: 0.26, outputPerMillion: 4.4, bytesPerToken: 3.7 },
   { id: 'glm-5.2', name: 'GLM-5.2', provider: 'zai', contextWindow: 1_000_000, inputPerMillion: 1.4, cachedInputPerMillion: 0.26, outputPerMillion: 4.4, bytesPerToken: 3.7 },
-  { id: 'glm-5.1', name: 'GLM-5.1', provider: 'zai', contextWindow: 200_000, inputPerMillion: 1.4, cachedInputPerMillion: 0.26, outputPerMillion: 4.4, bytesPerToken: 3.7 },
   { id: 'muse-spark-1.3', name: 'Muse Spark 1.3', provider: 'meta', contextWindow: 1_048_576, inputPerMillion: 1.25, cachedInputPerMillion: 0.15, outputPerMillion: 4.25, bytesPerToken: 4 },
   { id: 'muse-spark-1.2', name: 'Muse Spark 1.2', provider: 'meta', contextWindow: 1_048_576, inputPerMillion: 1.25, cachedInputPerMillion: 0.15, outputPerMillion: 4.25, bytesPerToken: 4 },
-  { id: 'muse-spark-1.1', name: 'Muse Spark 1.1', provider: 'meta', contextWindow: 1_048_576, inputPerMillion: 1.25, cachedInputPerMillion: 0.15, outputPerMillion: 4.25, bytesPerToken: 4 },
 ];
 // </generated-models>
 
