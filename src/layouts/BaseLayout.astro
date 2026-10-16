@@ -79,4 +79,30 @@ const schema = [
     {schema.length > 0 && <script is:inline type="application/ld+json" set:html={JSON.stringify(schema)} />}
   </head>
   <body><Header {locale}/><main><slot /></main><Footer {locale} showDirectoryBadges={url.pathname==='/'} /></body>
+  <script>
+    // Horizontal tables are usable by touch and mouse by default, but keyboard users
+    // need a focus target before arrow-key scrolling works. Add one consistently to
+    // static article tables and tables rendered later by interactive estimators.
+    function enhanceScrollableRegions(root:ParentNode=document){
+      const regions=[
+        ...(root instanceof HTMLElement&&root.matches('.overflow-x-auto')?[root]:[]),
+        ...root.querySelectorAll<HTMLElement>('.overflow-x-auto'),
+      ];
+      regions.forEach((region,index)=>{
+        if(!region.hasAttribute('tabindex'))region.tabIndex=0;
+        // `group` makes the accessible name valid without creating duplicate nested
+        // landmark regions when the table already sits in a labelled <section>.
+        if(!region.hasAttribute('role'))region.setAttribute('role','group');
+        if(region.hasAttribute('aria-label')||region.hasAttribute('aria-labelledby'))return;
+        const heading=region.closest('section,article')?.querySelector<HTMLElement>('h2[id],h3[id],h1[id]');
+        if(heading?.id)region.setAttribute('aria-labelledby',heading.id);
+        else region.setAttribute('aria-label',`Scrollable data table ${index+1}`);
+      });
+    }
+    document.addEventListener('astro:page-load',()=>enhanceScrollableRegions());
+    enhanceScrollableRegions();
+    new MutationObserver((records)=>records.forEach((record)=>record.addedNodes.forEach((node)=>{
+      if(node instanceof HTMLElement)enhanceScrollableRegions(node);
+    }))).observe(document.body,{childList:true,subtree:true});
+  </script>
 </html>

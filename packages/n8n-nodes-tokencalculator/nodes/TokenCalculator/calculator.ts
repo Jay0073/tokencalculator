@@ -4,18 +4,37 @@ export interface ModelConfig {
 	outputPerMillion: number; bytesPerToken: number; vision?: 'openai'|'claude'|'gemini';
 }
 
+// <generated-models>
+// GENERATED FILE - DO NOT EDIT BY HAND.
+// Produced by scripts/sync-models.mjs from https://models.dev/api.json.
+// Every rate below comes from that feed. To change which models appear,
+// edit scripts/model-policy.json and re-run: npm run sync:models
 export const MODELS: readonly ModelConfig[] = [
-	{ id:'gpt-5.6-sol', name:'GPT-5.6 Sol', provider:'openai', contextWindow:1_050_000, inputPerMillion:5, cachedInputPerMillion:.5, outputPerMillion:30, bytesPerToken:4, vision:'openai' },
-	{ id:'gpt-5.6-terra', name:'GPT-5.6 Terra', provider:'openai', contextWindow:1_050_000, inputPerMillion:2, cachedInputPerMillion:.2, outputPerMillion:12, bytesPerToken:4, vision:'openai' },
-	{ id:'gpt-5.6-luna', name:'GPT-5.6 Luna', provider:'openai', contextWindow:1_050_000, inputPerMillion:.2, cachedInputPerMillion:.02, outputPerMillion:1.2, bytesPerToken:4, vision:'openai' },
-	{ id:'claude-opus-4.8', name:'Claude Opus 4.8', provider:'anthropic', contextWindow:1_000_000, inputPerMillion:5, cachedInputPerMillion:.5, outputPerMillion:25, bytesPerToken:3.75, vision:'claude' },
-	{ id:'claude-sonnet-5', name:'Claude Sonnet 5', provider:'anthropic', contextWindow:1_000_000, inputPerMillion:2, cachedInputPerMillion:.2, outputPerMillion:10, bytesPerToken:3.75, vision:'claude' },
-	{ id:'claude-haiku-4.5', name:'Claude Haiku 4.5', provider:'anthropic', contextWindow:200_000, inputPerMillion:1, cachedInputPerMillion:.1, outputPerMillion:5, bytesPerToken:3.75, vision:'claude' },
-	{ id:'gemini-3.1-flash-lite', name:'Gemini 3.1 Flash-Lite', provider:'google', contextWindow:1_048_576, inputPerMillion:.25, cachedInputPerMillion:.025, outputPerMillion:1.5, bytesPerToken:4, vision:'gemini' },
-	{ id:'gemini-2.5-pro', name:'Gemini 2.5 Pro', provider:'google', contextWindow:1_048_576, inputPerMillion:1.25, cachedInputPerMillion:.125, outputPerMillion:10, bytesPerToken:4, vision:'gemini' },
-	{ id:'deepseek-v4-flash', name:'DeepSeek V4 Flash', provider:'deepseek', contextWindow:1_000_000, inputPerMillion:.44, cachedInputPerMillion:.014, outputPerMillion:1.32, bytesPerToken:3.85 },
-	{ id:'deepseek-v4-pro', name:'DeepSeek V4 Pro', provider:'deepseek', contextWindow:1_000_000, inputPerMillion:1.32, cachedInputPerMillion:.044, outputPerMillion:3.96, bytesPerToken:3.85 },
+	{ id:'gpt-6.1-sol', name:'GPT-6.1 Sol', provider:'openai', contextWindow:1_050_000, inputPerMillion:2, cachedInputPerMillion:0.1, outputPerMillion:10, bytesPerToken:4, vision:'openai' },
+	{ id:'gpt-6-luna', name:'GPT-6 Luna', provider:'openai', contextWindow:1_050_000, inputPerMillion:0.1, cachedInputPerMillion:0.01, outputPerMillion:0.5, bytesPerToken:4, vision:'openai' },
+	{ id:'gpt-6-sol', name:'GPT-6 Sol', provider:'openai', contextWindow:1_050_000, inputPerMillion:2, cachedInputPerMillion:0.2, outputPerMillion:10, bytesPerToken:4, vision:'openai' },
+	{ id:'gpt-6-astra', name:'GPT-6 Astra', provider:'openai', contextWindow:1_050_000, inputPerMillion:10, cachedInputPerMillion:1, outputPerMillion:50, bytesPerToken:4, vision:'openai' },
+	{ id:'gpt-5.6-luna', name:'GPT-5.6 Luna', provider:'openai', contextWindow:1_050_000, inputPerMillion:0.2, cachedInputPerMillion:0.02, outputPerMillion:1.2, bytesPerToken:4, vision:'openai' },
+	{ id:'gpt-5.6-sol', name:'GPT-5.6 Sol', provider:'openai', contextWindow:1_050_000, inputPerMillion:4, cachedInputPerMillion:0.4, outputPerMillion:20, bytesPerToken:4, vision:'openai' },
+	{ id:'gpt-5.6-terra', name:'GPT-5.6 Terra', provider:'openai', contextWindow:1_050_000, inputPerMillion:2, cachedInputPerMillion:0.2, outputPerMillion:12, bytesPerToken:4, vision:'openai' },
+	{ id:'claude-sonnet-5-5', name:'Claude Sonnet 5.5', provider:'anthropic', contextWindow:1_000_000, inputPerMillion:2, cachedInputPerMillion:0.1, outputPerMillion:10, bytesPerToken:2.88, vision:'claude' },
+	{ id:'claude-opus-5-5', name:'Claude Opus 5.5', provider:'anthropic', contextWindow:1_000_000, inputPerMillion:4, cachedInputPerMillion:0.2, outputPerMillion:20, bytesPerToken:2.88, vision:'claude' },
+	{ id:'claude-fable-5-1', name:'Claude Fable 5.1', provider:'anthropic', contextWindow:1_000_000, inputPerMillion:10, cachedInputPerMillion:0.25, outputPerMillion:50, bytesPerToken:2.88, vision:'claude' },
+	{ id:'claude-opus-5', name:'Claude Opus 5', provider:'anthropic', contextWindow:1_000_000, inputPerMillion:5, cachedInputPerMillion:0.5, outputPerMillion:25, bytesPerToken:2.88, vision:'claude' },
+	{ id:'claude-sonnet-5', name:'Claude Sonnet 5', provider:'anthropic', contextWindow:1_000_000, inputPerMillion:2, cachedInputPerMillion:0.2, outputPerMillion:10, bytesPerToken:2.88, vision:'claude' },
+	{ id:'claude-opus-4-8', name:'Claude Opus 4.8', provider:'anthropic', contextWindow:1_000_000, inputPerMillion:5, cachedInputPerMillion:0.5, outputPerMillion:25, bytesPerToken:2.88, vision:'claude' },
+	{ id:'claude-haiku-4-5', name:'Claude Haiku 4.5', provider:'anthropic', contextWindow:200_000, inputPerMillion:1, cachedInputPerMillion:0.1, outputPerMillion:5, bytesPerToken:3.75, vision:'claude' },
+	{ id:'gemini-4-argon', name:'Gemini 4 Argon', provider:'google', contextWindow:1_048_576, inputPerMillion:2, cachedInputPerMillion:0.1, outputPerMillion:10, bytesPerToken:4, vision:'gemini' },
+	{ id:'gemini-3.8-flash', name:'Gemini 3.8 Flash', provider:'google', contextWindow:1_048_576, inputPerMillion:0.75, cachedInputPerMillion:0.075, outputPerMillion:3.75, bytesPerToken:4, vision:'gemini' },
+	{ id:'gemini-3.7-flash', name:'Gemini 3.7 Flash', provider:'google', contextWindow:1_048_576, inputPerMillion:0.75, cachedInputPerMillion:0.075, outputPerMillion:3.75, bytesPerToken:4, vision:'gemini' },
+	{ id:'gemini-3.5-flash-lite', name:'Gemini 3.5 Flash Lite', provider:'google', contextWindow:1_048_576, inputPerMillion:0.3, cachedInputPerMillion:0.03, outputPerMillion:2.5, bytesPerToken:4, vision:'gemini' },
+	{ id:'gemini-3.6-flash', name:'Gemini 3.6 Flash', provider:'google', contextWindow:1_048_576, inputPerMillion:0.75, cachedInputPerMillion:0.075, outputPerMillion:3.75, bytesPerToken:4, vision:'gemini' },
+	{ id:'gemini-3.1-flash-lite', name:'Gemini 3.1 Flash Lite', provider:'google', contextWindow:1_048_576, inputPerMillion:0.25, cachedInputPerMillion:0.025, outputPerMillion:1.5, bytesPerToken:4, vision:'gemini' },
+	{ id:'gemini-2.5-pro', name:'Gemini 2.5 Pro', provider:'google', contextWindow:1_048_576, inputPerMillion:1.25, cachedInputPerMillion:0.125, outputPerMillion:10, bytesPerToken:4, vision:'gemini' },
+	{ id:'deepseek-flash', name:'DeepSeek V4.1 Flash', provider:'deepseek', contextWindow:1_000_000, inputPerMillion:0.15, cachedInputPerMillion:0.003, outputPerMillion:0.6, bytesPerToken:3.85 },
+	{ id:'deepseek-v4-pro', name:'DeepSeek V4 Pro', provider:'deepseek', contextWindow:1_000_000, inputPerMillion:0.66, cachedInputPerMillion:0.022, outputPerMillion:1.98, bytesPerToken:3.85 },
 ];
+// </generated-models>
 
 const getModel = (id: string) => {
 	const model = MODELS.find((candidate) => candidate.id === id);

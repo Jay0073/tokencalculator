@@ -1,15 +1,15 @@
 ---
 import BaseLayout from './BaseLayout.astro';
 import Breadcrumbs from '../components/seo/Breadcrumbs.astro';
-interface Props { title:string; description:string; heading:string; eyebrow:string; datePublished:string; dateModified:string; section:string; keywords?:string[]; type?:'BlogPosting'|'TechArticle'; toc?:{id:string;label:string}[] }
-const { title,description,heading,eyebrow,datePublished,dateModified,section,keywords=[],type='BlogPosting',toc=[] }=Astro.props;
+interface Props { title:string; description:string; heading:string; eyebrow:string; datePublished:string; dateModified:string; section:string; keywords?:string[]; type?:'BlogPosting'|'TechArticle'; toc?:{id:string;label:string}[]; faq?:{question:string;answer:string}[] }
+const { title,description,heading,eyebrow,datePublished,dateModified,section,keywords=[],type='BlogPosting',toc=[],faq=[] }=Astro.props;
 const root=type==='TechArticle'?'/docs/':'/blog/';
 const rootLabel=type==='TechArticle'?'Docs':'Blog';
 const breadcrumbs=[{label:'Token calculator',href:'/'},{label:rootLabel,href:root},{label:heading}];
 const article={headline:heading,datePublished,dateModified,section,keywords,type};
 const formatted=new Intl.DateTimeFormat('en-US',{year:'numeric',month:'long',day:'numeric'}).format(new Date(`${dateModified}T00:00:00Z`));
 ---
-<BaseLayout {title} {description} {breadcrumbs} {article} socialImage="/social/token-calculator.png">
+<BaseLayout {title} {description} {breadcrumbs} {article} {faq} socialImage="/social/token-calculator.png">
   <Breadcrumbs items={breadcrumbs}/>
   <article class="knowledge-shell shell pt-12 relative z-10">
     <header class="knowledge-header">

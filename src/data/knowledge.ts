@@ -3,6 +3,7 @@ export interface KnowledgeEntry {
 }
 
 export const blogPosts:KnowledgeEntry[] = [
+  { title:'Gemini 4 Argon pricing, context window, and API cost', description:'Current and scheduled Gemini 4 Argon rates, its 1,048,576-token context, Batch, Flex, Priority, caching, and worked workload costs.', href:'/blog/gemini-4-argon-pricing-token-cost/', label:'Model analysis', published:'2026-10-16', updated:'2026-10-16', readTime:'8 min', kind:'blog' },
   { title:'OpenAI Dots: what an always-on agent changes', description:'Dots are GPT-6 Astra agents that keep working after you close the tab. What they can do, and why scheduled work changes the token footprint.', href:'/blog/openai-dots-agent-cost/', label:'Agent products', published:'2026-10-02', updated:'2026-10-02', readTime:'8 min', kind:'blog' },
   { title:'Grok Bot: one computer, many screens', description:'xAI gives every Bot a screen on one shared cloud computer. How that architecture works, and why the 200K pricing cliff hits agents and never hits chats.', href:'/blog/grok-bot-agent-cost/', label:'Agent products', published:'2026-10-02', updated:'2026-10-02', readTime:'8 min', kind:'blog' },
   { title:'Meta Muse: the agent that meters itself in tokens', description:'500 million Muse tokens a week for $20. What that number means, what a Muse token is not, and the contributor tier that trades your prompts for a 21x discount.', href:'/blog/meta-muse-token-cost/', label:'Agent products', published:'2026-10-02', updated:'2026-10-02', readTime:'8 min', kind:'blog' },

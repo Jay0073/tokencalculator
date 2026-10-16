@@ -18,7 +18,7 @@ const representativeWorkflows = copy.workflows;
     <p class="muted review-intro">{copy.intro}</p>
   </div>
 
-  <div class="review-carousel" aria-label={copy.carouselLabel}>
+  <div class="review-carousel" role="region" aria-label={copy.carouselLabel} tabindex="0">
     <div class:list={["review-track", { "review-track-static": reviews.length > 0 }]}>
       {reviews.length ? reviews.map((item) => (
         <article class="review-card panel">

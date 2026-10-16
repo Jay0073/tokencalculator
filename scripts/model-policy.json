@@ -17,6 +17,7 @@
     "claude-haiku-4-5",
     "claude-opus-4-8",
     "gemini-3.8-flash",
+    "gemini-4-argon",
     "gemini-3.5-flash-lite",
     "gemini-3.1-flash-lite",
     "gemini-2.5-pro",
@@ -62,6 +63,11 @@
     },
     "gemini-3.8-flash": {
       "description": "Latest multimodal Flash"
+    },
+    "gemini-4-argon": {
+      "description": "Flagship long-horizon reasoning",
+      "maxOutput": 65536,
+      "maxOutputSource": "https://ai.google.dev/gemini-api/docs/models/gemini-4-argon"
     },
     "gemini-3.7-flash": {
       "description": "Multimodal Flash"
@@ -165,21 +171,7 @@
     }
   },
   "$correctionsComment": "Rare, documented exceptions to the single-source rule, for when models.dev disagrees with the provider's own pricing page. Each entry names the official source, the date it was checked, and the models.dev values it replaces. The sync warns when models.dev starts to agree (remove the entry) or changes again (re-check the source). The browser refresh skips corrected models.",
-  "corrections": {
-    "deepseek-v4-pro": {
-      "inputPerMillion": 0.66,
-      "cachedInputPerMillion": 0.022,
-      "outputPerMillion": 1.98,
-      "source": "https://api-docs.deepseek.com/quick_start/pricing",
-      "checked": "2026-09-21",
-      "note": "Off-peak rate, the same basis models.dev uses for DeepSeek V4.1 Flash. Peak hours cost double: $1.32 input, $0.044 cached, $3.96 output.",
-      "upstream": {
-        "inputPerMillion": 0.435,
-        "cachedInputPerMillion": 0.003625,
-        "outputPerMillion": 0.87
-      }
-    }
-  },
+  "corrections": {},
   "providers": {
     "openai": {
       "label": "OpenAI",
@@ -413,13 +405,23 @@
         "note": "Asynchronous processing."
       },
       {
+        "id": "flex",
+        "label": "Flex",
+        "multiplier": 0.5,
+        "appliesTo": [
+          "gemini-4-argon"
+        ],
+        "note": "Lower-priority capacity for Gemini 4 Argon, billed at the same rates as Batch."
+      },
+      {
         "id": "priority",
         "label": "Priority",
         "multiplier": 1.8,
         "appliesTo": [
+          "gemini-4-argon",
           "gemini-3.8-flash"
         ],
-        "note": "Confirmed for Gemini 3.8 Flash on the pricing page."
+        "note": "Confirmed for Gemini 4 Argon and Gemini 3.8 Flash on the pricing page."
       }
     ],
     "deepseek": [

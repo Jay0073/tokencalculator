@@ -13,10 +13,10 @@
 :root {
   color-scheme: light;
   --bg:#f3f2f0; --panel:#ffffff; --panel-2:#eceae6; --panel-raised:#ffffff;
-  --line:#e0ddd7; --line-strong:#c7c3bb; --text:#121211; --muted:#57554f; --faint:#8a877f;
+  --line:#e0ddd7; --line-strong:#c7c3bb; --text:#121211; --muted:#57554f; --faint:#6f6c65;
   --surface-hover:#faf9f6;
   --accent:#066f91; --accent-hover:#055d79; --accent-soft:#e5f4f8; --accent-soft-strong:#70bdd2;
-  --success:#16845b; --warn:#b76a13; --danger:#c63c3c; --mark-bg:#eceae6;
+  --success:#16845b; --warn:#a05a0b; --danger:#c63c3c; --mark-bg:#eceae6;
   --shadow:0 12px 34px rgba(20,28,38,.07),0 1px 3px rgba(20,28,38,.06);
   /* Cost magnitude, cheapest to dearest. One hue, so it reads as a scale, and amber
      rather than teal, so it never competes with the colour that means "clickable". */
@@ -25,7 +25,7 @@
 :root:not(.light) {
   color-scheme:dark;
   --bg:#0a0a0b; --panel:#121213; --panel-2:#18181a; --panel-raised:#151517;
-  --line:#232325; --line-strong:#35353a; --text:#f0efed; --muted:#9a9892; --faint:#6a6862;
+  --line:#232325; --line-strong:#35353a; --text:#f0efed; --muted:#9a9892; --faint:#8f8c85;
   --surface-hover:#1a1a1c;
   --accent:#45b8d8; --accent-hover:#69c8e1; --accent-soft:#12343e; --accent-soft-strong:#247c94;
   --success:#43b581; --warn:#e4a34f; --danger:#ef6464; --mark-bg:#18181a; --shadow:0 16px 50px rgba(0,0,0,.28);
@@ -162,7 +162,7 @@ a.panel:focus-visible,button.panel:focus-visible,label.panel:focus-visible,summa
 .review-intro { max-width:31rem; margin:0; font-size:.925rem; }
 .review-carousel { width:100%; overflow:hidden; padding:.15rem 0 1rem; mask-image:linear-gradient(to right,transparent,#000 2.5rem,#000 calc(100% - 2.5rem),transparent); }
 .review-track { display:flex; width:max-content; gap:1rem; animation:review-scroll 38s linear infinite; }
-.review-track:hover,.review-track:focus-within { animation-play-state:paused; }
+.review-track:hover,.review-track:focus-within,.review-carousel:focus .review-track { animation-play-state:paused; }
 .review-track-static { width:100%; overflow-x:auto; scroll-snap-type:x mandatory; animation:none; }
 .review-card { display:flex; width:min(23rem,calc(100vw - 64px)); min-height:21rem; flex:0 0 auto; flex-direction:column; padding:1.35rem; border-radius:1rem; scroll-snap-align:start; }
 .review-workload,.review-meta { display:flex; align-items:center; justify-content:space-between; gap:.75rem; color:var(--faint); font:600 .62rem/1.35 var(--font-mono); letter-spacing:.08em; text-transform:uppercase; }
@@ -273,6 +273,8 @@ a.panel:focus-visible,button.panel:focus-visible,label.panel:focus-visible,summa
 .knowledge-prose h2 { scroll-margin-top:2rem; margin:3.3rem 0 1rem; color:var(--text); font-size:clamp(1.5rem,3vw,2rem); line-height:1.2; letter-spacing:-.035em; }
 .knowledge-prose h3 { margin-top:2.2rem; color:var(--text); }
 .knowledge-prose a { color:var(--accent); }
+.knowledge-prose p a,.knowledge-prose li a,.knowledge-prose .callout a,.prose-content p a,.prose-content li a { text-decoration-line:underline; text-decoration-thickness:.08em; text-underline-offset:.16em; text-decoration-color:currentColor; }
+.overflow-x-auto:focus-visible,.review-carousel:focus-visible { outline:3px solid color-mix(in srgb,var(--accent) 65%,transparent); outline-offset:3px; }
 .knowledge-prose strong { color:var(--text); }
 .knowledge-prose li { margin:.55rem 0; padding-left:.25rem; }
 .knowledge-prose code { border:1px solid var(--line); border-radius:.3rem; background:var(--panel-2); padding:.1rem .3rem; color:var(--text); font:500 .86em var(--font-mono); overflow-wrap:anywhere; }

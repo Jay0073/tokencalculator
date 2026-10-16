@@ -5488,6 +5488,54 @@
     },
     "canonical_model_id": "google/gemini-3.1-flash-live-preview"
    },
+   "gemini-4-argon": {
+    "id": "gemini-4-argon",
+    "name": "Gemini 4 Argon",
+    "description": "Google's flagship reasoning model for complex software engineering, deep math and science, and long-horizon autonomous agents",
+    "family": "gemini",
+    "attachment": true,
+    "reasoning": true,
+    "reasoning_options": [
+     {
+      "type": "effort",
+      "values": [
+       "low",
+       "medium",
+       "high"
+      ]
+     }
+    ],
+    "tool_call": true,
+    "structured_output": true,
+    "temperature": true,
+    "knowledge": "2026-03",
+    "release_date": "2026-10-13",
+    "last_updated": "2026-10-13",
+    "modalities": {
+     "input": [
+      "text",
+      "image",
+      "video",
+      "audio",
+      "pdf"
+     ],
+     "output": [
+      "text"
+     ]
+    },
+    "open_weights": false,
+    "limit": {
+     "context": 1048576,
+     "output": 32768
+    },
+    "cost": {
+     "input": 2,
+     "output": 10,
+     "cache_read": 0.1,
+     "input_audio": 2
+    },
+    "canonical_model_id": "google/gemini-4-argon"
+   },
    "gemini-3.1-flash-lite": {
     "id": "gemini-3.1-flash-lite",
     "name": "Gemini 3.1 Flash Lite",
@@ -8366,7 +8414,8 @@
     "limit": {
      "context": 16000,
      "output": 0
-    }
+    },
+    "canonical_model_id": "xai/grok-imagine-image"
    },
    "grok-imagine-video": {
     "id": "grok-imagine-video",
@@ -9787,6 +9836,55 @@
      "cache_read": 0.002
     },
     "canonical_model_id": "meta/muse-spark-1.2"
+   },
+   "muse-wonder-1.0": {
+    "id": "muse-wonder-1.0",
+    "name": "Muse Wonder",
+    "description": "Muse Wonder is a frontier multimodal reasoning model from Meta for personal and professional agents, long-horizon coding, and computer use. It combines Active Memory, which carries relevant context across conversations, with Active Focus, which keeps it working through blockers toward a goal.",
+    "family": "muse",
+    "attachment": true,
+    "reasoning": true,
+    "reasoning_options": [
+     {
+      "type": "effort",
+      "values": [
+       "minimal",
+       "low",
+       "medium",
+       "high",
+       "xhigh",
+       "max"
+      ]
+     }
+    ],
+    "tool_call": true,
+    "structured_output": true,
+    "temperature": true,
+    "release_date": "2026-10-12",
+    "last_updated": "2026-10-12",
+    "modalities": {
+     "input": [
+      "text",
+      "image",
+      "video",
+      "pdf",
+      "audio"
+     ],
+     "output": [
+      "text"
+     ]
+    },
+    "open_weights": false,
+    "limit": {
+     "context": 1048576,
+     "output": 131072
+    },
+    "cost": {
+     "input": 4,
+     "output": 20,
+     "cache_read": 0.2
+    },
+    "canonical_model_id": "meta/muse-wonder-1.0"
    },
    "muse-spark-1.3-contributor": {
     "id": "muse-spark-1.3-contributor",

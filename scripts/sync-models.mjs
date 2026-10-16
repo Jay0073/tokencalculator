@@ -185,6 +185,7 @@ function serialize(model, { accuracyKey = 'textAccuracy', defaultId } = {}) {
     `${accuracyKey}:'${model.textAccuracy}'`,
     `contextWindow:${num(model.contextWindow)}`,
     `maxOutput:${num(model.maxOutput)}`,
+    ...(model.maxOutputSource ? [`maxOutputSource:'${model.maxOutputSource}'`] : []),
     `inputPerMillion:${model.inputPerMillion}`,
     ...(model.cachedInputPerMillion !== undefined ? [`cachedInputPerMillion:${model.cachedInputPerMillion}`] : []),
     ...(model.cacheWritePerMillion !== undefined ? [`cacheWritePerMillion:${model.cacheWritePerMillion}`] : []),
@@ -224,7 +225,7 @@ function main(catalog) {
   // to publish but means a no-op sync still rewrites every line. Compare the material
   // fields against what is already generated so CI only opens a pull request when a
   // rate, a context window or the model list actually moved.
-  const materialFields = ['id', 'name', 'provider', 'contextWindow', 'maxOutput', 'inputPerMillion', 'cachedInputPerMillion', 'outputPerMillion', 'vision', 'tokenizer'];
+  const materialFields = ['id', 'name', 'provider', 'contextWindow', 'maxOutput', 'maxOutputSource', 'inputPerMillion', 'cachedInputPerMillion', 'outputPerMillion', 'vision', 'tokenizer'];
   // The generated file writes large integers with underscore separators, so both sides
   // are normalised before comparing.
   const norm = (value) => String(value ?? '').replace(/_/g, '');
@@ -302,6 +303,30 @@ function main(catalog) {
   const apPattern = markerPattern.test(apSource) ? markerPattern : fallbackPattern;
   if (!apPattern.test(apSource)) throw new Error('Could not locate the MODELS block in the Activepieces package.');
   writeFileSync(apPath, apSource.replace(apPattern, () => apBlock), 'utf8');
+
+  // n8n ships a standalone calculator rather than depending on the core package.
+  // Keep its four supported provider families on the same generated rates too.
+  const n8nPath = path.join(root, 'packages/n8n-nodes-tokencalculator/nodes/TokenCalculator/calculator.ts');
+  const n8nSource = readFileSync(n8nPath, 'utf8');
+  const n8nProviders = new Set(['openai', 'anthropic', 'google', 'deepseek']);
+  const n8nBody = selected.filter((model) => n8nProviders.has(model.provider)).map((model) => {
+    const fields = [
+      `id:'${model.id}'`,
+      `name:'${model.name.replace(/'/g, "\\'")}'`,
+      `provider:'${model.provider}'`,
+      `contextWindow:${num(model.contextWindow)}`,
+      `inputPerMillion:${model.inputPerMillion}`,
+      ...(model.cachedInputPerMillion !== undefined ? [`cachedInputPerMillion:${model.cachedInputPerMillion}`] : []),
+      `outputPerMillion:${model.outputPerMillion}`,
+      `bytesPerToken:${BYTES_PER_TOKEN[model.tokenizer] ?? 4}`,
+      ...(model.vision ? [`vision:'${visionFamily[model.vision]}'`] : []),
+    ];
+    return `\t{ ${fields.join(', ')} },`;
+  }).join('\n');
+  const n8nBlock = `// <generated-models>\n${BANNER}\nexport const MODELS: readonly ModelConfig[] = [\n${n8nBody}\n];\n// </generated-models>`;
+  const n8nPattern = markerPattern.test(n8nSource) ? markerPattern : fallbackPattern;
+  if (!n8nPattern.test(n8nSource)) throw new Error('Could not locate the MODELS block in the n8n package.');
+  writeFileSync(n8nPath, n8nSource.replace(n8nPattern, () => n8nBlock), 'utf8');
 
 
   // llms.txt carries a pricing table that AI agents read directly. It was hand-written
