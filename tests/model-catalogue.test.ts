@@ -5,20 +5,24 @@ import { countImage } from '../src/engines/vision/count';
 import { countImageTokens } from '../packages/tokencalculator-core/src/index';
 import { MODELS as SITE_MODELS } from '../src/data/models';
 import { MODELS as PIECE_MODELS } from '../packages/activepieces-tokencalculator/src/lib/calculator';
+import { MODELS as N8N_MODELS } from '../packages/n8n-nodes-tokencalculator/nodes/TokenCalculator/calculator';
 import { PROVIDERS } from '../src/data/providers';
 import policy from '../scripts/model-policy.json';
 import { COMPARISONS } from '../src/data/comparisons';
 
 /**
- * The catalogue is generated from models.dev by scripts/sync-models.mjs into three
+ * The catalogue is generated from models.dev by scripts/sync-models.mjs into four
  * places. These tests pin the invariants that generation must never break - the kind
  * that previously let prices drift and alias targets rot without anyone noticing.
  */
 describe('generated model catalogue', () => {
-  it('publishes the same model ids to the site, the npm package, and the Activepieces piece', () => {
+  it('publishes matching model ids to the site, npm, Activepieces, and n8n catalogues', () => {
     const core = MODELS.map((model) => model.id);
     expect(SITE_MODELS.map((model) => model.id)).toEqual(core);
     expect(PIECE_MODELS.map((model) => model.id)).toEqual(core);
+    expect(N8N_MODELS.map((model) => model.id)).toEqual(
+      MODELS.filter((model) => ['openai', 'anthropic', 'google', 'deepseek'].includes(model.provider)).map((model) => model.id),
+    );
   });
 
   it('publishes the same rates in all three catalogues', () => {
@@ -29,7 +33,24 @@ describe('generated model catalogue', () => {
       expect(site.outputPerMillion, model.id).toBe(model.outputPerMillion);
       expect(piece.inputPerMillion, model.id).toBe(model.inputPerMillion);
       expect(piece.outputPerMillion, model.id).toBe(model.outputPerMillion);
+      const n8n = N8N_MODELS.find((candidate) => candidate.id === model.id);
+      if (n8n) {
+        expect(n8n.inputPerMillion, model.id).toBe(model.inputPerMillion);
+        expect(n8n.outputPerMillion, model.id).toBe(model.outputPerMillion);
+      }
     }
+  });
+
+  it('keeps Gemini 4 Argon on its provider-documented output limit and current rates', () => {
+    const argon = SITE_MODELS.find((model) => model.id === 'gemini-4-argon');
+    expect(argon).toMatchObject({
+      inputPerMillion: 2,
+      cachedInputPerMillion: 0.1,
+      outputPerMillion: 10,
+      contextWindow: 1_048_576,
+      maxOutput: 65_536,
+      maxOutputSource: 'https://ai.google.dev/gemini-api/docs/models/gemini-4-argon',
+    });
   });
 
   it('resolves every alias to a model that exists', () => {

@@ -1,0 +1,130 @@
+---
+import KnowledgeLayout from '../../layouts/KnowledgeLayout.astro';
+import FAQ from '../../components/seo/FAQ.astro';
+import { MODELS } from '../../data/models';
+
+const argon = MODELS.find((model) => model.id === 'gemini-4-argon');
+const gpt = MODELS.find((model) => model.id === 'gpt-6.1-sol');
+const opus = MODELS.find((model) => model.id === 'claude-opus-5-5');
+if (!argon || !gpt || !opus) throw new Error('Gemini 4 Argon comparison models are missing from the catalogue.');
+
+const money = (value:number) => `$${value.toLocaleString('en-US', { minimumFractionDigits:2, maximumFractionDigits:2 })}`;
+const rate = (input:number, output:number) => `${money(input)} / ${money(output)}`;
+// Preserve the dated introductory examples even after a future registry sync applies
+// Google's scheduled 1 December rates.
+const intro = { input:2, cached:.1, output:10 } as const;
+const standardExample = 500 * intro.input + 100 * intro.output;
+const cachedExample = 100 * intro.input + 400 * intro.cached + 100 * intro.output;
+const longRequest = .5 * intro.input + .032 * intro.output;
+
+const faq=[
+  {question:'How much does Gemini 4 Argon cost?',answer:'Through 30 November 2026, standard API pricing is $2 per million input tokens, $0.10 per million cached input tokens, and $10 per million output tokens, including thinking tokens. Google has scheduled those rates to become $4, $0.20, and $20 on 1 December 2026.'},
+  {question:'Does Gemini 4 Argon have a free API tier?',answer:'No. Google lists no free API tier and no Google AI Pro API allowance for Gemini 4 Argon. Usage is paid from the first request.'},
+  {question:'What is the Gemini 4 Argon context window?',answer:'Gemini 4 Argon has a unified 1,048,576-token context window. Normal synchronous generation supports up to 65,536 output tokens; Google also documents a long-decode path for much longer background generations.'},
+  {question:'Does Gemini 4 Argon support prompt caching?',answer:'It supports implicit caching, not explicit cache creation. Eligible prompts require at least 4,096 tokens, and a cache hit is billed at $0.10 per million cached tokens during the introductory period—a 95 percent discount from standard input.'},
+  {question:'Should I use a separate Gemini 4 Argon calculator?',answer:'No separate tool is necessary. Select Gemini 4 Argon in the Gemini token calculator to estimate text, document, image, audio, video, and PDF input locally, then set expected output and request volume for a workload estimate.'},
+];
+const toc=[
+  {id:'answer',label:'Price at a glance'},
+  {id:'tiers',label:'All service tiers'},
+  {id:'context',label:'Context and output'},
+  {id:'workloads',label:'Worked costs'},
+  {id:'compare',label:'Price comparison'},
+  {id:'caching',label:'Caching and thinking'},
+  {id:'migration',label:'Implementation checklist'},
+];
+---
+<KnowledgeLayout
+  title="Gemini 4 Argon Pricing, Context Window & API Cost"
+  description="Gemini 4 Argon costs $2/$10 per 1M input/output tokens through Nov. 30, then $4/$20. See caching, Batch, Flex, Priority, and workload costs."
+  heading="Gemini 4 Argon pricing, context window, and real API cost"
+  eyebrow="Model analysis · Released 13 October 2026"
+  datePublished="2026-10-16"
+  dateModified="2026-10-16"
+  section="LLM API cost"
+  keywords={['Gemini 4 Argon pricing','Gemini 4 Argon API cost','Gemini 4 Argon context window','gemini-4-argon','Gemini 4 Argon token calculator']}
+  {toc}
+  {faq}
+>
+  <p class="knowledge-lead"><strong>Gemini 4 Argon costs $2 per million input tokens, $0.10 per million cached input tokens, and $10 per million output tokens through 30 November 2026.</strong> Google has scheduled all three standard rates to double on 1 December: $4 input, $0.20 cached input, and $20 output. Thinking tokens are billed as output.</p>
+
+  <aside class="callout"><strong>Use the existing calculator.</strong> Gemini 4 Argon is now available in the <a href="/gemini-token-counter/">Gemini token calculator</a>. A separate one-model calculator would duplicate the same interface and compete with that page in search; this guide answers the pricing, context, caching, and migration questions the calculator cannot.</aside>
+
+  <h2 id="answer">Gemini 4 Argon price at a glance</h2>
+  <div class="overflow-x-auto" role="region" aria-label="Gemini 4 Argon standard pricing" tabindex="0"><table>
+    <thead><tr><th>Per 1M tokens</th><th>Through Nov. 30, 2026</th><th>From Dec. 1, 2026</th></tr></thead>
+    <tbody>
+      <tr><td>Input</td><td>$2.00</td><td>$4.00</td></tr>
+      <tr><td>Cached input</td><td>$0.10</td><td>$0.20</td></tr>
+      <tr><td>Output, including thinking</td><td>$10.00</td><td>$20.00</td></tr>
+    </tbody>
+  </table></div>
+  <p>These are Google AI Developer API prices. Google lists no free tier for Argon, so prototypes and production calls are both billable. The model ID is <code>gemini-4-argon</code>.</p>
+
+  <h2 id="tiers">Batch, Flex, Priority, and Contributor pricing</h2>
+  <p>Argon has more than one price because Google sells different scheduling and data-use terms. Batch and Flex are half the standard rate. Priority is 1.8 times standard. Contributor is invite-only and permits Google to use submitted content to improve its products.</p>
+  <div class="overflow-x-auto" role="region" aria-label="Gemini 4 Argon service tier pricing" tabindex="0"><table>
+    <thead><tr><th>Tier</th><th>Through Nov. 30: input / output</th><th>From Dec. 1: input / output</th><th>Use when</th></tr></thead>
+    <tbody>
+      <tr><td>Standard</td><td>$2.00 / $10.00</td><td>$4.00 / $20.00</td><td>Interactive production traffic</td></tr>
+      <tr><td>Batch</td><td>$1.00 / $5.00</td><td>$2.00 / $10.00</td><td>Asynchronous bulk jobs</td></tr>
+      <tr><td>Flex</td><td>$1.00 / $5.00</td><td>$2.00 / $10.00</td><td>Lower-priority online work</td></tr>
+      <tr><td>Priority</td><td>$3.60 / $18.00</td><td>$7.20 / $36.00</td><td>Latency-sensitive traffic</td></tr>
+      <tr><td>Contributor</td><td>$1.00 / $5.00</td><td>$2.00 / $10.00</td><td>Invite-only, non-confidential data</td></tr>
+    </tbody>
+  </table></div>
+  <p>Cached input follows the same multipliers: $0.05 per million on Batch, Flex, and Contributor, and $0.18 on Priority during the introductory period. Google Search and Maps grounding are separate line items. Google includes 5,000 grounded prompts a month across Gemini 3 and newer models, then charges $14 per 1,000 search queries; one model request may issue several billable search queries.</p>
+
+  <h2 id="context">A 1,048,576-token unified context</h2>
+  <p>Gemini 4 Argon accepts text, images, video, audio, and PDFs and returns text. Its unified context limit is 1,048,576 tokens. For ordinary synchronous requests, Google documents a 65,536-token maximum output. The long-decode workflow can run in the background and extend generation much further, up to 1,048,576 output tokens.</p>
+  <p>The practical constraint is not merely the advertised window. Long prompts raise input cost, leave less room in a unified context, take longer to process, and may trigger more thinking output. Google recommends reserving at least 32,768 output tokens for Argon. Set that ceiling deliberately rather than assuming the model will stop at a cheap length.</p>
+
+  <h2 id="workloads">Worked Gemini 4 Argon costs</h2>
+  <p>These examples use the current standard rates in the model registry and separate input from output. They exclude grounding, storage, and network charges.</p>
+  <div class="overflow-x-auto" role="region" aria-label="Gemini 4 Argon workload cost examples" tabindex="0"><table>
+    <thead><tr><th>Workload</th><th>Calculation through Nov. 30</th><th>Cost</th></tr></thead>
+    <tbody>
+      <tr><td>One long request: 500K input + 32K output</td><td>0.5 × {money(intro.input)} + 0.032 × {money(intro.output)}</td><td><strong>{money(longRequest)}</strong></td></tr>
+      <tr><td>100K requests: 5K input + 1K output each</td><td>500M input + 100M output</td><td><strong>{money(standardExample)}</strong></td></tr>
+      <tr><td>Same workload with an 80% cache hit</td><td>100M fresh + 400M cached + 100M output</td><td><strong>{money(cachedExample)}</strong></td></tr>
+      <tr><td>Same workload on Batch or Flex</td><td>50% of standard</td><td><strong>{money(standardExample * .5)}</strong></td></tr>
+    </tbody>
+  </table></div>
+  <p>On 1 December, the token portion of each example doubles unless Google changes the announced schedule. For your own files and prompt, use the <a href="/gemini-token-counter/">calculator</a>; for cache-heavy systems, use the <a href="/prompt-caching-cost/">prompt-caching cost estimator</a>.</p>
+
+  <h2 id="compare">How Argon compares on token price</h2>
+  <div class="overflow-x-auto" role="region" aria-label="Gemini 4 Argon price comparison" tabindex="0"><table>
+    <thead><tr><th>Model</th><th>Input / output per 1M</th><th>Cached input</th><th>Important pricing condition</th></tr></thead>
+    <tbody>
+      <tr><td><strong>{argon.name}</strong> (through Nov. 30)</td><td>{rate(intro.input, intro.output)}</td><td>{money(intro.cached)}</td><td>Introductory rates double Dec. 1</td></tr>
+      <tr><td>{gpt.name}</td><td>{rate(gpt.inputPerMillion, gpt.outputPerMillion)}</td><td>{money(gpt.cachedInputPerMillion ?? gpt.inputPerMillion)}</td><td>Long-context tier above 272K input</td></tr>
+      <tr><td>{opus.name}</td><td>{rate(opus.inputPerMillion, opus.outputPerMillion)}</td><td>{money(opus.cachedInputPerMillion ?? opus.inputPerMillion)}</td><td>No separate long-context tier in the catalogue</td></tr>
+    </tbody>
+  </table></div>
+  <p>At the introductory rate, Argon and GPT-6.1 Sol have the same headline input and output price. That does not make their final task cost equal: tokenizer behavior, reasoning volume, cache hits, tool calls, and output length still decide the invoice. From 1 December, Argon's announced standard rate matches the current Claude Opus 5.5 headline rate. Compare complete workloads, not only the first two numbers on a pricing page.</p>
+
+  <h2 id="caching">Implicit caching and thinking costs</h2>
+  <p>Argon supports implicit caching rather than explicit cache creation. A prompt needs at least 4,096 tokens to qualify. A cache hit receives a 95 percent discount during the introductory period, but the application cannot assume every repeated prefix will hit. Budget the miss path, measure real cache-hit reporting, and treat the discount as observed savings rather than guaranteed savings.</p>
+  <p>Thinking is not a free hidden channel. Google includes thinking tokens in the output meter, so a short visible answer can still produce a larger output bill. The supported thinking levels are low, medium, and high, with medium as the default. Record total output usage by task and thinking level during evaluation.</p>
+
+  <h2 id="migration">Implementation checklist</h2>
+  <ol>
+    <li>Use the exact model ID <code>gemini-4-argon</code> and budget for paid usage from the first call.</li>
+    <li>Reserve at least 32,768 output tokens where a complex task may need it, but cap output to the smallest safe value for the product.</li>
+    <li>Run long generations as background work rather than holding a synchronous request open; Google documents a 15-minute request timeout.</li>
+    <li>Do not rely on temperature, top-p, or top-k tuning: Google says Argon ignores those controls.</li>
+    <li>Measure implicit cache hits instead of treating repeated text as automatically discounted.</li>
+    <li>Model the 1 December price change before committing an annual budget.</li>
+  </ol>
+  <p>For the broader difference between a text count and a provider invoice, read <a href="/blog/token-count-vs-api-bill/">why token count is not the same as API cost</a>. The <a href="/llm-api-price-tiers/">API service-tier guide</a> shows the multipliers across providers.</p>
+
+  <FAQ items={faq}/>
+
+  <div class="source-ledger"><h2>Evidence ledger</h2><p><strong>Reviewed:</strong> 16 October 2026. Prices are dated because Google has already announced a change.</p><ul>
+    <li><a href="https://ai.google.dev/gemini-api/docs/models/gemini-4-argon" target="_blank" rel="noreferrer">Google: Gemini 4 Argon model specification</a></li>
+    <li><a href="https://ai.google.dev/gemini-api/docs/latest-model?hl=en" target="_blank" rel="noreferrer">Google: Gemini 4 Argon API guide</a></li>
+    <li><a href="https://ai.google.dev/gemini-api/docs/pricing" target="_blank" rel="noreferrer">Google: Gemini Developer API pricing</a></li>
+    <li><a href="https://blog.google/innovation-and-ai/technology/developers-tools/build-with-gemini-4-argon/" target="_blank" rel="noreferrer">Google: build with Gemini 4 Argon</a></li>
+    <li><a href="https://deepmind.google/models/model-cards/" target="_blank" rel="noreferrer">Google DeepMind model cards</a></li>
+  </ul></div>
+</KnowledgeLayout>

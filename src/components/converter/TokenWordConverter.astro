@@ -8,8 +8,9 @@
       </div>
       <label class="conversion-field">
         <span id="conversion-quantity-label">Token quantity</span>
-        <input id="conversion-quantity" type="number" inputmode="numeric" min="0" step="1" value="1000000" aria-labelledby="conversion-quantity-label" />
+        <input id="conversion-quantity" type="number" inputmode="numeric" min="0" step="1" value="1000000" required aria-labelledby="conversion-quantity-label" aria-describedby="conversion-error" />
       </label>
+      <p id="conversion-error" class="hidden text-sm text-[var(--warn)] mt-2 mb-0" role="alert">Enter a whole number of zero or more.</p>
       <label class="conversion-field">
         <span>Content profile</span>
         <select id="conversion-profile">
@@ -28,7 +29,7 @@
         <span class="eyebrow">Planning estimate</span>
         <p id="conversion-result" class="conversion-result">750,000</p>
         <p id="conversion-unit" class="conversion-unit">estimated words</p>
-        <div class="conversion-range" aria-label="Planning interval">
+        <div class="conversion-range" role="group" aria-label="Planning interval">
           <div><span>Lower bound</span><strong id="conversion-low">700,000</strong></div>
           <div><span>Upper bound</span><strong id="conversion-high">800,000</strong></div>
         </div>
@@ -60,9 +61,20 @@
     let direction:Direction='tokens-to-words';
     const quantity=root.querySelector<HTMLInputElement>('#conversion-quantity')!;
     const profileSelect=root.querySelector<HTMLSelectElement>('#conversion-profile')!;
+    const error=root.querySelector<HTMLElement>('#conversion-error')!;
     const format=(value:number)=>Math.max(0,Math.round(value)).toLocaleString('en-US');
     const render=()=>{
-      const value=Math.max(0,Number(quantity.value)||0);
+      const value=Number(quantity.value);
+      const valid=quantity.value.trim()!==''&&quantity.validity.valid&&Number.isFinite(value);
+      quantity.setAttribute('aria-invalid',String(!valid));
+      error.classList.toggle('hidden',valid);
+      if(!valid){
+        root.querySelector('#conversion-result')!.textContent='—';
+        root.querySelector('#conversion-low')!.textContent='—';
+        root.querySelector('#conversion-high')!.textContent='—';
+        root.querySelector('#conversion-formula')!.textContent='Enter a whole number of zero or more.';
+        return;
+      }
       const profile=profiles[profileSelect.value]??profiles.prose;
       const reverse=direction==='words-to-tokens';
       const center=reverse?value/profile.center:value*profile.center;

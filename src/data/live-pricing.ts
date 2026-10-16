@@ -41,7 +41,9 @@ export async function loadLivePricing(models: ModelConfig[]): Promise<PricingSna
       return {
         ...model,
         contextWindow: live.limit?.context ?? model.contextWindow,
-        maxOutput: live.limit?.output ?? model.maxOutput,
+        // Keep a provider-documented correction when an aggregate feed reports a
+        // smaller recommended/default value as though it were the hard limit.
+        maxOutput: model.maxOutputSource ? model.maxOutput : (live.limit?.output ?? model.maxOutput),
         inputPerMillion: live.cost?.input ?? model.inputPerMillion,
         cachedInputPerMillion: live.cost?.cache_read ?? model.cachedInputPerMillion,
         outputPerMillion: live.cost?.output ?? model.outputPerMillion,

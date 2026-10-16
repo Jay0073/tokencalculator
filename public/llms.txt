@@ -9,6 +9,7 @@ TokenCalculator.dev is a free, privacy-first, browser-based LLM token calculator
 - [Technical documentation](https://tokencalculator.dev/docs/)
 - [Privacy architecture for confidential LLM inputs](https://tokencalculator.dev/docs/privacy-architecture/)
 - [Token engineering blog](https://tokencalculator.dev/blog/)
+- [Gemini 4 Argon pricing, context window, and API cost](https://tokencalculator.dev/blog/gemini-4-argon-pricing-token-cost/)
 - [OpenAI Dots: what an always-on agent changes](https://tokencalculator.dev/blog/openai-dots-agent-cost/)
 - [Grok Bot: one computer, many screens](https://tokencalculator.dev/blog/grok-bot-agent-cost/)
 - [Meta Muse: the agent that meters itself in tokens](https://tokencalculator.dev/blog/meta-muse-token-cost/)
@@ -143,7 +144,7 @@ The site does not claim access to proprietary Claude, Gemini, or DeepSeek produc
 <!-- generated-pricing:start -->
 ## Model pricing snapshot
 
-Rates below are USD per one million tokens, regenerated from https://models.dev/api.json and verified 2026-10-02. The browser refreshes them from the same source at runtime. Long-context tiers and provider terms can still change a final bill.
+Rates below are USD per one million tokens, regenerated from https://models.dev/api.json and verified 2026-10-16. The browser refreshes them from the same source at runtime. Long-context tiers and provider terms can still change a final bill.
 
 | Model | Provider | Input | Cached input | Output | Context |
 | --- | --- | ---: | ---: | ---: | ---: |
@@ -154,13 +155,14 @@ Rates below are USD per one million tokens, regenerated from https://models.dev/
 | GPT-5.6 Luna | OpenAI | $0.20 | $0.02 | $1.20 | 1,050,000 |
 | GPT-5.6 Sol | OpenAI | $4.00 | $0.40 | $20.00 | 1,050,000 |
 | GPT-5.6 Terra | OpenAI | $2.00 | $0.20 | $12.00 | 1,050,000 |
-| Claude Sonnet 5.5 | Anthropic | $2.00 | $0.20 | $10.00 | 1,000,000 |
+| Claude Sonnet 5.5 | Anthropic | $2.00 | $0.10 | $10.00 | 1,000,000 |
 | Claude Opus 5.5 | Anthropic | $4.00 | $0.20 | $20.00 | 1,000,000 |
 | Claude Fable 5.1 | Anthropic | $10.00 | $0.25 | $50.00 | 1,000,000 |
 | Claude Opus 5 | Anthropic | $5.00 | $0.50 | $25.00 | 1,000,000 |
 | Claude Sonnet 5 | Anthropic | $2.00 | $0.20 | $10.00 | 1,000,000 |
 | Claude Opus 4.8 | Anthropic | $5.00 | $0.50 | $25.00 | 1,000,000 |
 | Claude Haiku 4.5 | Anthropic | $1.00 | $0.10 | $5.00 | 200,000 |
+| Gemini 4 Argon | Google | $2.00 | $0.10 | $10.00 | 1,048,576 |
 | Gemini 3.8 Flash | Google | $0.75 | $0.07 | $3.75 | 1,048,576 |
 | Gemini 3.7 Flash | Google | $0.75 | $0.07 | $3.75 | 1,048,576 |
 | Gemini 3.5 Flash Lite | Google | $0.30 | $0.03 | $2.50 | 1,048,576 |
@@ -181,21 +183,16 @@ Rates below are USD per one million tokens, regenerated from https://models.dev/
 | Grok 4.7 | xAI Grok | $2.00 | $0.50 | $6.00 | 500,000 |
 | Grok 4.6 | xAI Grok | $2.00 | $0.50 | $6.00 | 500,000 |
 | Grok 4.5 | xAI Grok | $2.00 | $0.30 | $6.00 | 500,000 |
-| Grok 4.3 | xAI Grok | $1.25 | $0.20 | $2.50 | 1,000,000 |
 | GLM-5.3-FlashX | Z.ai GLM | $0.37 | $0.07 | $1.25 | 1,000,000 |
 | GLM-5.3-Flash | Z.ai GLM | $0.15 | $0.03 | $0.50 | 1,000,000 |
 | GLM-5.3 | Z.ai GLM | $1.40 | $0.26 | $4.40 | 1,000,000 |
 | GLM-5.2 | Z.ai GLM | $1.40 | $0.26 | $4.40 | 1,000,000 |
-| GLM-5.1 | Z.ai GLM | $1.40 | $0.26 | $4.40 | 200,000 |
 | Muse Spark 1.3 | Meta | $1.25 | $0.15 | $4.25 | 1,048,576 |
 | Muse Spark 1.2 | Meta | $1.25 | $0.15 | $4.25 | 1,048,576 |
-| Muse Spark 1.1 | Meta | $1.25 | $0.15 | $4.25 | 1,048,576 |
 
-Models with a long-context tier: GPT-6.1 Sol, GPT-6 Luna, GPT-6 Sol, GPT-6 Astra, GPT-5.6 Luna, GPT-5.6 Sol, GPT-5.6 Terra, Gemini 2.5 Pro, Qwen3.7 Flash, Qwen3.7 Plus, Grok 4.7, Grok 4.6, Grok 4.5, Grok 4.3. Above the tier threshold the higher rate applies to the whole request.
+Models with a long-context tier: GPT-6.1 Sol, GPT-6 Luna, GPT-6 Sol, GPT-6 Astra, GPT-5.6 Luna, GPT-5.6 Sol, GPT-5.6 Terra, Gemini 2.5 Pro, Qwen3.7 Flash, Qwen3.7 Plus, Grok 4.7, Grok 4.6, Grok 4.5. Above the tier threshold the higher rate applies to the whole request.
 
 DeepSeek: Rates shown are DeepSeek's off-peak prices. From 01:00 to 04:00 and 06:00 to 10:00 UTC, Monday to Friday (except Chinese public holidays), DeepSeek charges double.
-
-DeepSeek V4 Pro: models.dev disagreed with the provider, so this rate is taken from the official pricing page (https://api-docs.deepseek.com/quick_start/pricing), checked 2026-09-21.
 <!-- generated-pricing:end -->
 
 Always confirm a production estimate against the model's official pricing link shown in the calculator.

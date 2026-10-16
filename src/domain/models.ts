@@ -70,6 +70,8 @@ export interface ModelConfig {
   textAccuracy: Accuracy;
   contextWindow: number;
   maxOutput: number;
+  /** Official model page used when its documented output limit differs from the feed. */
+  maxOutputSource?: string;
   inputPerMillion: number;
   cachedInputPerMillion?: number;
   /**
