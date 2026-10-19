@@ -144,7 +144,7 @@ The site does not claim access to proprietary Claude, Gemini, or DeepSeek produc
 <!-- generated-pricing:start -->
 ## Model pricing snapshot
 
-Rates below are USD per one million tokens, regenerated from https://models.dev/api.json and verified 2026-10-16. The browser refreshes them from the same source at runtime. Long-context tiers and provider terms can still change a final bill.
+Rates below are USD per one million tokens, regenerated from https://models.dev/api.json and verified 2026-10-19. The browser refreshes them from the same source at runtime. Long-context tiers and provider terms can still change a final bill.
 
 | Model | Provider | Input | Cached input | Output | Context |
 | --- | --- | ---: | ---: | ---: | ---: |
@@ -169,7 +169,7 @@ Rates below are USD per one million tokens, regenerated from https://models.dev/
 | Gemini 3.6 Flash | Google | $0.75 | $0.07 | $3.75 | 1,048,576 |
 | Gemini 3.1 Flash Lite | Google | $0.25 | $0.03 | $1.50 | 1,048,576 |
 | Gemini 2.5 Pro | Google | $1.25 | $0.13 | $10.00 | 1,048,576 |
-| DeepSeek V4.1 Flash | DeepSeek | $0.15 | $0.003 | $0.60 | 1,000,000 |
+| DeepSeek V4.1 Flash 1017 | DeepSeek | $0.15 | $0.003 | $0.60 | 1,000,000 |
 | DeepSeek V4 Pro | DeepSeek | $0.66 | $0.02 | $1.98 | 1,000,000 |
 | Qwen3.8 Flash | Qwen | $0.15 | $0.02 | $0.47 | 1,000,000 |
 | Qwen3.8 Max | Qwen | $2.00 | $0.25 | $6.00 | 1,000,000 |
@@ -179,7 +179,6 @@ Rates below are USD per one million tokens, regenerated from https://models.dev/
 | Qwen3.6 Flash | Qwen | $0.19 | - | $1.13 | 1,000,000 |
 | Kimi K3 | Moonshot Kimi | $3.00 | $0.30 | $15.00 | 1,048,576 |
 | Kimi K2.7 Code | Moonshot Kimi | $0.95 | $0.19 | $4.00 | 262,144 |
-| Kimi K2.6 | Moonshot Kimi | $0.95 | $0.16 | $4.00 | 262,144 |
 | Grok 4.7 | xAI Grok | $2.00 | $0.50 | $6.00 | 500,000 |
 | Grok 4.6 | xAI Grok | $2.00 | $0.50 | $6.00 | 500,000 |
 | Grok 4.5 | xAI Grok | $2.00 | $0.30 | $6.00 | 500,000 |

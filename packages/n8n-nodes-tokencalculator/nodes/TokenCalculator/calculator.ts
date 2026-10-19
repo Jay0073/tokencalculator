@@ -31,7 +31,7 @@ export const MODELS: readonly ModelConfig[] = [
 	{ id:'gemini-3.6-flash', name:'Gemini 3.6 Flash', provider:'google', contextWindow:1_048_576, inputPerMillion:0.75, cachedInputPerMillion:0.075, outputPerMillion:3.75, bytesPerToken:4, vision:'gemini' },
 	{ id:'gemini-3.1-flash-lite', name:'Gemini 3.1 Flash Lite', provider:'google', contextWindow:1_048_576, inputPerMillion:0.25, cachedInputPerMillion:0.025, outputPerMillion:1.5, bytesPerToken:4, vision:'gemini' },
 	{ id:'gemini-2.5-pro', name:'Gemini 2.5 Pro', provider:'google', contextWindow:1_048_576, inputPerMillion:1.25, cachedInputPerMillion:0.125, outputPerMillion:10, bytesPerToken:4, vision:'gemini' },
-	{ id:'deepseek-flash', name:'DeepSeek V4.1 Flash', provider:'deepseek', contextWindow:1_000_000, inputPerMillion:0.15, cachedInputPerMillion:0.003, outputPerMillion:0.6, bytesPerToken:3.85 },
+	{ id:'deepseek-flash', name:'DeepSeek V4.1 Flash 1017', provider:'deepseek', contextWindow:1_000_000, inputPerMillion:0.15, cachedInputPerMillion:0.003, outputPerMillion:0.6, bytesPerToken:3.85 },
 	{ id:'deepseek-v4-pro', name:'DeepSeek V4 Pro', provider:'deepseek', contextWindow:1_000_000, inputPerMillion:0.66, cachedInputPerMillion:0.022, outputPerMillion:1.98, bytesPerToken:3.85 },
 ];
 // </generated-models>
