@@ -26,6 +26,10 @@ const MOVED_PAGES = {
   // GPT-6 Sol replaced GPT-5.6 Sol at half the price on 2026-09-22.
   '/deepseek-v4-pro-vs-gpt-5-6-sol-cost': '/deepseek-v4-pro-vs-gpt-6-sol-cost/',
   '/qwen3-8-max-vs-gpt-5-6-sol-cost': '/qwen3-8-max-vs-gpt-6-sol-cost/',
+  // K3.1 Pro replaced K3 as Moonshot's flagship on 2026-10-23.
+  '/kimi-k3-vs-claude-fable-5-1-cost': '/kimi-k3-1-pro-vs-claude-fable-5-1-cost/',
+  // Google lists Nano Banana 2.1 as the replacement for Nano Banana 2.
+  '/gpt-image-2-5-vs-nano-banana-2-cost': '/gpt-image-2-5-vs-nano-banana-2-1-cost/',
 };
 
 function trailingSlashRedirects() {

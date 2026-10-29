@@ -6,7 +6,7 @@ const toc=[{id:'why',label:'Why counts differ'},{id:'same',label:'One image, six
 // Every number below comes from the same engine the calculator uses, so the article
 // cannot drift away from the code.
 const IMAGE={width:1920,height:1080};
-const ROWS=['gpt-6-astra','claude-sonnet-5-5','claude-haiku-4-5','gemini-3.8-flash','gemini-2.5-pro'].map((id)=>{
+const ROWS=['gpt-6-astra','claude-sonnet-5-5','gemini-3.8-flash','gemini-2.5-pro'].map((id)=>{
   const model=getModel(id);
   const counted=countImage(IMAGE,model);
   return {model,tokens:counted.tokens,method:counted.method,cost:(counted.tokens/1_000_000)*model.inputPerMillion};
@@ -15,7 +15,7 @@ const cheapest=ROWS.reduce((low,row)=>row.cost<low.cost?row:low,ROWS[0]);
 const dearest=ROWS.reduce((high,row)=>row.cost>high.cost?row:high,ROWS[0]);
 const usd=(value:number)=>`$${value.toFixed(5)}`;
 ---
-<KnowledgeLayout title="Image Token Calculation: OpenAI vs Claude vs Gemini" description="The three live image-token formulas, with the same 1920x1080 screenshot costed on five models. OpenAI patches, Claude patch tiers, Gemini fixed budgets." heading="Image token calculation across OpenAI, Claude, and Gemini" eyebrow="Provider analysis · Engineering guide" datePublished="2026-08-28" dateModified="2026-10-02" section="Multimodal tokenization" keywords={['image token calculator','OpenAI image tokens','Claude image tokens','Gemini media_resolution']} {toc}>
+<KnowledgeLayout title="Image Token Calculation: OpenAI vs Claude vs Gemini" description="The three live image-token formulas, with the same 1920x1080 screenshot costed on four current models. OpenAI patches, Claude patches, Gemini budgets." heading="Image token calculation across OpenAI, Claude, and Gemini" eyebrow="Provider analysis · Engineering guide" datePublished="2026-08-28" dateModified="2026-10-29" section="Multimodal tokenization" keywords={['image token calculator','OpenAI image tokens','Claude image tokens','Gemini media_resolution']} {toc}>
   <p class="knowledge-lead">The same screenshot costs {ROWS[0].tokens.toLocaleString()} tokens on one model and {ROWS.find((row)=>row.model.id==='gemini-3.8-flash')!.tokens.toLocaleString()} on another. The reason is not image quality. The three big providers now use three unrelated rules, and one of them ignores your image's dimensions completely.</p>
 
   <h2 id="why">Why image token counts differ</h2>
@@ -27,7 +27,7 @@ const usd=(value:number)=>`$${value.toFixed(5)}`;
   </ul>
   <p>Compressed file size never appears in any of the three. A 200 KB JPEG and a 2 MB PNG of the same dimensions cost the same.</p>
 
-  <h2 id="same">One image, five models</h2>
+  <h2 id="same">One image, four current models</h2>
   <p>A 1920 × 1080 screenshot—the most common thing anyone actually sends—priced at each model's standard input rate:</p>
   <div class="overflow-x-auto"><table>
     <thead><tr><th>Model</th><th>Image tokens</th><th>Cost per image</th><th>Rule</th></tr></thead>
@@ -35,7 +35,7 @@ const usd=(value:number)=>`$${value.toFixed(5)}`;
       <tr><td><strong>{row.model.name}</strong></td><td>{row.tokens.toLocaleString()}</td><td>{usd(row.cost)}</td><td class="text-xs">{row.method}</td></tr>
     ))}</tbody>
   </table></div>
-  <p>{dearest.model.name} costs {(dearest.cost/cheapest.cost).toFixed(0)} times more per image than {cheapest.model.name}. Two of these models are from the same vendor and differ by a factor of {(ROWS.find((row)=>row.model.id==='claude-sonnet-5-5')!.tokens/ROWS.find((row)=>row.model.id==='claude-haiku-4-5')!.tokens).toFixed(2)} on token count alone.</p>
+  <p>{dearest.model.name} costs {(dearest.cost/cheapest.cost).toFixed(0)} times more per image than {cheapest.model.name}. The token formula and the per-million input rate both contribute to that spread, so comparing only provider price tables misses part of the bill.</p>
 
   <h2 id="openai">OpenAI: 32-pixel patches with a cap</h2>
   <p>The current rule has three steps. Count raw patches as <code>ceil(width / 32) × ceil(height / 32)</code>. If that is above 2,500, shrink the image to fit the budget and recount. Multiply the patch count by 1.2 and round up.</p>
@@ -45,8 +45,8 @@ const usd=(value:number)=>`$${value.toFixed(5)}`;
 
   <h2 id="claude">Claude: 28-pixel patches in two tiers</h2>
   <p>Anthropic counts <code>ceil(width / 28) × ceil(height / 28)</code> after resizing the image to fit two limits at once: a maximum edge and a maximum token count. Claude 4.7 and later get the larger limits—2,576 pixels and 4,784 tokens—while Claude 4.6 and earlier are held to 1,568 of each.</p>
-  <p>The old approximation <code>width × height ÷ 750</code> still circulates widely. It is close for small images and wrong for large ones, because it has no cap in it. For the 1920 × 1080 screenshot above it predicts 2,765 tokens: about 3 percent off for Claude Sonnet 5.5, and 77 percent too high for Claude Haiku 4.5.</p>
-  <p>The tier split has a real consequence for migration. Moving a screenshot-heavy workload from Haiku 4.5 to Sonnet 5.5 raises the image token count by three quarters, on top of the roughly 30 percent more text tokens the newer Claude tokenizer produces. Both effects point the same way, and neither shows up on a price-per-million comparison.</p>
+  <p>The old approximation <code>width × height ÷ 750</code> still circulates widely. It is close for small images and wrong for large ones, because it has no cap in it. For the 1920 × 1080 screenshot above it predicts 2,765 tokens, about 3 percent above the current Claude patch calculation.</p>
+  <p>The tier split still matters during a legacy migration. Claude 4.6 and earlier used the lower 1,568-token cap; Claude 4.7 and later use the larger limits. Moving a screenshot-heavy workload from a legacy endpoint can therefore raise image-token count even when the pixel dimensions do not change.</p>
 
   <h2 id="gemini">Gemini: a flat budget per image</h2>
   <p>Gemini 3 does not look at your dimensions. Each image spends a fixed budget: 280 tokens at <code>media_resolution low</code>, 560 at medium, 1,120 at high and by default, and 2,240 at ultra-high. A thumbnail and a 4K frame cost the same.</p>
@@ -63,7 +63,7 @@ const usd=(value:number)=>`$${value.toFixed(5)}`;
   </ol>
   <p>The full formulas, including the published verification tables, are in the <a href="/docs/images/">vision-token documentation</a>. For the other non-text inputs, see <a href="/docs/audio-video-pdf-tokens/">audio, video, and PDF tokens</a>.</p>
 
-  <div class="source-ledger"><h2>Primary sources</h2><p><strong>Reviewed:</strong> 2 October 2026 · Image rules change with model generations, more often than prices do.</p><ul>
+  <div class="source-ledger"><h2>Primary sources</h2><p><strong>Reviewed:</strong> 29 October 2026 · Image rules change with model generations, more often than prices do.</p><ul>
     <li><a href="https://developers.openai.com/api/docs/guides/images-vision">OpenAI images and vision guide</a>, including the patch worked examples</li>
     <li><a href="https://platform.claude.com/docs/en/build-with-claude/vision">Anthropic vision guide</a> and its published dimension table</li>
     <li><a href="https://ai.google.dev/gemini-api/docs/media-resolution">Gemini media resolution reference</a></li>

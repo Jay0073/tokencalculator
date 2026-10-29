@@ -9,6 +9,7 @@ TokenCalculator.dev is a free, privacy-first, browser-based LLM token calculator
 - [Technical documentation](https://tokencalculator.dev/docs/)
 - [Privacy architecture for confidential LLM inputs](https://tokencalculator.dev/docs/privacy-architecture/)
 - [Token engineering blog](https://tokencalculator.dev/blog/)
+- [Kimi K3.1 Pro pricing, context window, and K2 migration](https://tokencalculator.dev/blog/kimi-k3-1-pro-pricing-k2-retirement/)
 - [Gemini 4 Argon pricing, context window, and API cost](https://tokencalculator.dev/blog/gemini-4-argon-pricing-token-cost/)
 - [OpenAI Dots: what an always-on agent changes](https://tokencalculator.dev/blog/openai-dots-agent-cost/)
 - [Grok Bot: one computer, many screens](https://tokencalculator.dev/blog/grok-bot-agent-cost/)
@@ -50,7 +51,7 @@ Every comparison lists both models' current rates and prices the same prompt on 
 - [Muse Spark 1.3 vs DeepSeek V4.1 Flash cost comparison](https://tokencalculator.dev/muse-spark-1-3-vs-deepseek-v4-1-flash-cost/)
 - [DeepSeek V4 Pro vs GPT-6 Sol cost comparison](https://tokencalculator.dev/deepseek-v4-pro-vs-gpt-6-sol-cost/)
 - [Qwen3.8 Max vs GPT-6 Sol cost comparison](https://tokencalculator.dev/qwen3-8-max-vs-gpt-6-sol-cost/)
-- [Kimi K3 vs Claude Fable 5.1 cost comparison](https://tokencalculator.dev/kimi-k3-vs-claude-fable-5-1-cost/)
+- [Kimi K3.1 Pro vs Claude Fable 5.1 cost comparison](https://tokencalculator.dev/kimi-k3-1-pro-vs-claude-fable-5-1-cost/)
 - [GLM-5.3 vs DeepSeek V4 Pro cost comparison](https://tokencalculator.dev/glm-5-3-vs-deepseek-v4-pro-pricing/)
 - [Claude vs GPT token cost cost comparison](https://tokencalculator.dev/claude-vs-gpt4o-token-cost/)
 - [DeepSeek vs OpenAI reasoning cost cost comparison](https://tokencalculator.dev/deepseek-r1-vs-openai-o1-cost-calculator/)
@@ -61,7 +62,7 @@ Every comparison lists both models' current rates and prices the same prompt on 
 Image APIs bill per image or per image token. Prices are checked against each provider's pricing page and dated.
 
 - [Image generation API pricing: cost per image for GPT Image 2.5, Nano Banana, Grok Imagine, Seedream 5.0 and MAI-Image-2.6](https://tokencalculator.dev/image-generation-api-pricing/)
-- [GPT Image 2.5 vs Nano Banana 2 cost per image](https://tokencalculator.dev/gpt-image-2-5-vs-nano-banana-2-cost/)
+- [GPT Image 2.5 vs Nano Banana 2.1 cost per image](https://tokencalculator.dev/gpt-image-2-5-vs-nano-banana-2-1-cost/)
 - [GPT Image 2.5 vs Grok Imagine Image 2.0 cost per image](https://tokencalculator.dev/gpt-image-2-5-vs-grok-imagine-image-2-cost/)
 
 ## Cost guides
@@ -144,10 +145,11 @@ The site does not claim access to proprietary Claude, Gemini, or DeepSeek produc
 <!-- generated-pricing:start -->
 ## Model pricing snapshot
 
-Rates below are USD per one million tokens, regenerated from https://models.dev/api.json and verified 2026-10-19. The browser refreshes them from the same source at runtime. Long-context tiers and provider terms can still change a final bill.
+Rates below are USD per one million tokens, regenerated from https://models.dev/api.json and verified 2026-10-29. The browser refreshes them from the same source at runtime. Long-context tiers and provider terms can still change a final bill.
 
 | Model | Provider | Input | Cached input | Output | Context |
 | --- | --- | ---: | ---: | ---: | ---: |
+| GPT-6.1 Terra | OpenAI | $1.00 | $0.05 | $5.00 | 1,050,000 |
 | GPT-6.1 Sol | OpenAI | $2.00 | $0.10 | $10.00 | 1,050,000 |
 | GPT-6 Luna | OpenAI | $0.10 | $0.01 | $0.50 | 1,050,000 |
 | GPT-6 Sol | OpenAI | $2.00 | $0.20 | $10.00 | 1,050,000 |
@@ -155,30 +157,28 @@ Rates below are USD per one million tokens, regenerated from https://models.dev/
 | GPT-5.6 Luna | OpenAI | $0.20 | $0.02 | $1.20 | 1,050,000 |
 | GPT-5.6 Sol | OpenAI | $4.00 | $0.40 | $20.00 | 1,050,000 |
 | GPT-5.6 Terra | OpenAI | $2.00 | $0.20 | $12.00 | 1,050,000 |
+| Claude Haiku 5.5 | Anthropic | $0.10 | $0.01 | $0.50 | 1,000,000 |
 | Claude Sonnet 5.5 | Anthropic | $2.00 | $0.10 | $10.00 | 1,000,000 |
 | Claude Opus 5.5 | Anthropic | $4.00 | $0.20 | $20.00 | 1,000,000 |
 | Claude Fable 5.1 | Anthropic | $10.00 | $0.25 | $50.00 | 1,000,000 |
 | Claude Opus 5 | Anthropic | $5.00 | $0.50 | $25.00 | 1,000,000 |
 | Claude Sonnet 5 | Anthropic | $2.00 | $0.20 | $10.00 | 1,000,000 |
-| Claude Opus 4.8 | Anthropic | $5.00 | $0.50 | $25.00 | 1,000,000 |
-| Claude Haiku 4.5 | Anthropic | $1.00 | $0.10 | $5.00 | 200,000 |
+| Claude Fable 5 | Anthropic | $10.00 | $1.00 | $50.00 | 1,000,000 |
 | Gemini 4 Argon | Google | $2.00 | $0.10 | $10.00 | 1,048,576 |
 | Gemini 3.8 Flash | Google | $0.75 | $0.07 | $3.75 | 1,048,576 |
-| Gemini 3.7 Flash | Google | $0.75 | $0.07 | $3.75 | 1,048,576 |
 | Gemini 3.5 Flash Lite | Google | $0.30 | $0.03 | $2.50 | 1,048,576 |
 | Gemini 3.6 Flash | Google | $0.75 | $0.07 | $3.75 | 1,048,576 |
 | Gemini 3.1 Flash Lite | Google | $0.25 | $0.03 | $1.50 | 1,048,576 |
 | Gemini 2.5 Pro | Google | $1.25 | $0.13 | $10.00 | 1,048,576 |
-| DeepSeek V4.1 Flash 1017 | DeepSeek | $0.15 | $0.003 | $0.60 | 1,000,000 |
-| DeepSeek V4 Pro | DeepSeek | $0.66 | $0.02 | $1.98 | 1,000,000 |
+| DeepSeek V4.1 Flash 1017 | DeepSeek | $0.15 | $0.003 | $0.60 | 1,048,576 |
+| DeepSeek V4 Pro | DeepSeek | $0.66 | $0.02 | $1.98 | 1,048,576 |
 | Qwen3.8 Flash | Qwen | $0.15 | $0.02 | $0.47 | 1,000,000 |
 | Qwen3.8 Max | Qwen | $2.00 | $0.25 | $6.00 | 1,000,000 |
-| Qwen3.7 Flash | Qwen | $0.03 | $0.003 | $0.13 | 1,000,000 |
-| Qwen3.7 Plus | Qwen | $0.40 | $0.04 | $1.60 | 1,000,000 |
+| Qwen3.7 Flash | Qwen | $0.03 | $0.006 | $0.13 | 1,000,000 |
+| Qwen3.7 Plus | Qwen | $0.40 | $0.08 | $1.60 | 1,000,000 |
 | Qwen3.7 Max | Qwen | $2.50 | $0.50 | $7.50 | 1,000,000 |
-| Qwen3.6 Flash | Qwen | $0.19 | - | $1.13 | 1,000,000 |
+| Kimi K3.1 Pro | Moonshot Kimi | $2.00 | $0.20 | $10.00 | 1,048,576 |
 | Kimi K3 | Moonshot Kimi | $3.00 | $0.30 | $15.00 | 1,048,576 |
-| Kimi K2.7 Code | Moonshot Kimi | $0.95 | $0.19 | $4.00 | 262,144 |
 | Grok 4.7 | xAI Grok | $2.00 | $0.50 | $6.00 | 500,000 |
 | Grok 4.6 | xAI Grok | $2.00 | $0.50 | $6.00 | 500,000 |
 | Grok 4.5 | xAI Grok | $2.00 | $0.30 | $6.00 | 500,000 |
@@ -186,10 +186,10 @@ Rates below are USD per one million tokens, regenerated from https://models.dev/
 | GLM-5.3-Flash | Z.ai GLM | $0.15 | $0.03 | $0.50 | 1,000,000 |
 | GLM-5.3 | Z.ai GLM | $1.40 | $0.26 | $4.40 | 1,000,000 |
 | GLM-5.2 | Z.ai GLM | $1.40 | $0.26 | $4.40 | 1,000,000 |
+| Muse Wonder | Meta | $4.00 | $0.20 | $20.00 | 1,048,576 |
 | Muse Spark 1.3 | Meta | $1.25 | $0.15 | $4.25 | 1,048,576 |
-| Muse Spark 1.2 | Meta | $1.25 | $0.15 | $4.25 | 1,048,576 |
 
-Models with a long-context tier: GPT-6.1 Sol, GPT-6 Luna, GPT-6 Sol, GPT-6 Astra, GPT-5.6 Luna, GPT-5.6 Sol, GPT-5.6 Terra, Gemini 2.5 Pro, Qwen3.7 Flash, Qwen3.7 Plus, Grok 4.7, Grok 4.6, Grok 4.5. Above the tier threshold the higher rate applies to the whole request.
+Models with a long-context tier: GPT-6.1 Terra, GPT-6.1 Sol, GPT-6 Luna, GPT-6 Sol, GPT-6 Astra, GPT-5.6 Luna, GPT-5.6 Sol, GPT-5.6 Terra, Claude Haiku 5.5, Gemini 2.5 Pro, Qwen3.7 Flash, Qwen3.7 Plus, Grok 4.7, Grok 4.6, Grok 4.5. Above the tier threshold the higher rate applies to the whole request.
 
 DeepSeek: Rates shown are DeepSeek's off-peak prices. From 01:00 to 04:00 and 06:00 to 10:00 UTC, Monday to Friday (except Chinese public holidays), DeepSeek charges double.
 <!-- generated-pricing:end -->

@@ -1,0 +1,112 @@
+---
+import KnowledgeLayout from '../../layouts/KnowledgeLayout.astro';
+import FAQ from '../../components/seo/FAQ.astro';
+import { MODELS } from '../../data/models';
+
+const k31 = MODELS.find((model) => model.id === 'kimi-k3.1-pro');
+const k3 = MODELS.find((model) => model.id === 'kimi-k3');
+if (!k31 || !k3) throw new Error('Kimi K3.1 Pro and K3 must be present in the model catalogue.');
+
+const money = (value:number) => `$${value.toLocaleString('en-US', { minimumFractionDigits:2, maximumFractionDigits:2 })}`;
+const monthlyInput = 500;
+const monthlyOutput = 100;
+const k31Example = monthlyInput * k31.inputPerMillion + monthlyOutput * k31.outputPerMillion;
+const k3Example = monthlyInput * k3.inputPerMillion + monthlyOutput * k3.outputPerMillion;
+const highspeedExample = monthlyInput * 4 + monthlyOutput * 20;
+const saving = Math.round((1 - k31Example / k3Example) * 100);
+
+const faq = [
+  { question:'How much does Kimi K3.1 Pro cost?', answer:'Kimi K3.1 Pro costs $2 per million uncached input tokens, $0.20 per million cache-hit tokens, $2 per million cache-write tokens, and $10 per million output tokens. Prices exclude applicable taxes.' },
+  { question:'What is the Kimi K3.1 Pro context window?', answer:'Kimi K3.1 Pro supports a 1,048,576-token context window. max_completion_tokens defaults to 131,072 and can be set as high as 1,048,576.' },
+  { question:'Is Kimi K3.1 Pro cheaper than Kimi K3?', answer:'Yes. K3.1 Pro is one-third cheaper at every listed standard rate: $2/$10 input/output versus K3 at $3/$15, with cache hits at $0.20 versus $0.30 per million tokens.' },
+  { question:'When will Kimi K2 models retire?', answer:'Kimi says K2 series models stop being available to newly registered users on October 31, 2026. Existing users are not affected immediately, but Moonshot plans to retire the full K2 series by the end of December 2026.' },
+  { question:'What is Kimi K3.1 Pro Highspeed?', answer:'Kimi K3.1 Pro Highspeed uses the same intelligence and 1M-token context at roughly three times the speed. It costs $4 per million input tokens and $20 per million output tokens; cache writes cost $4 and cache hits $0.20.' },
+];
+const toc = [
+  { id:'answer', label:'Price at a glance' },
+  { id:'costs', label:'Worked costs' },
+  { id:'context', label:'Context and output' },
+  { id:'caching', label:'Cache billing' },
+  { id:'k2', label:'K2 retirement' },
+  { id:'migration', label:'Migration checklist' },
+];
+---
+<KnowledgeLayout
+  title="Kimi K3.1 Pro Pricing & K2 Retirement Guide"
+  description="Kimi K3.1 Pro costs $2 input and $10 output per million tokens. Compare K3, Highspeed, cache rates, 1M context, and the K2 retirement timeline."
+  heading="Kimi K3.1 Pro pricing, context window, and K2 migration"
+  eyebrow="Model analysis · Released 23 October 2026"
+  datePublished="2026-10-29"
+  dateModified="2026-10-29"
+  section="LLM API cost"
+  keywords={['Kimi K3.1 Pro pricing','Kimi K3.1 Pro API cost','Kimi K3.1 Pro context window','kimi-k3.1-pro','Kimi K2 retirement']}
+  {toc}
+  {faq}
+>
+  <p class="knowledge-lead"><strong>Kimi K3.1 Pro costs $2 per million input tokens and $10 per million output tokens.</strong> Cache hits cost $0.20 per million and cache writes $2 per million. That makes every standard rate one-third lower than Kimi K3, while retaining a 1,048,576-token context window.</p>
+
+  <aside class="callout"><strong>Migration deadline:</strong> Kimi says new accounts lose access to K2-series models on 31 October 2026 and plans to retire the K2 series completely by the end of December. Existing K2 users should validate K3.1 Pro now rather than treating December as a guaranteed final date.</aside>
+
+  <h2 id="answer">Kimi K3.1 Pro price at a glance</h2>
+  <div class="overflow-x-auto" role="region" aria-label="Kimi K3.1 Pro API pricing" tabindex="0"><table>
+    <thead><tr><th>Per 1M tokens</th><th>K3.1 Pro</th><th>K3.1 Pro Highspeed</th><th>K3</th></tr></thead>
+    <tbody>
+      <tr><td>Input, cache miss</td><td>$2.00</td><td>$4.00</td><td>$3.00</td></tr>
+      <tr><td>Cache write</td><td>$2.00</td><td>$4.00</td><td>$3.00</td></tr>
+      <tr><td>Cache hit</td><td>$0.20</td><td>$0.20</td><td>$0.30</td></tr>
+      <tr><td>Output</td><td>$10.00</td><td>$20.00</td><td>$15.00</td></tr>
+    </tbody>
+  </table></div>
+  <p>The standard API model ID is <code>kimi-k3.1-pro</code>. The faster variant is <code>kimi-k3.1-pro-highspeed</code>; Moonshot describes it as the same intelligence at roughly two to three times the speed. The Highspeed premium is entirely on cache misses, cache writes, and output—its cache-hit rate matches standard K3.1 Pro.</p>
+
+  <h2 id="costs">Worked Kimi K3.1 Pro costs</h2>
+  <p>These examples separate input and output because output is five times the input rate. They exclude taxes, tools, retries, and cache writes.</p>
+  <div class="overflow-x-auto" role="region" aria-label="Kimi K3.1 Pro workload cost examples" tabindex="0"><table>
+    <thead><tr><th>Workload</th><th>Calculation</th><th>Cost</th></tr></thead>
+    <tbody>
+      <tr><td>One request: 100K input + 10K output</td><td>0.1 × $2 + 0.01 × $10</td><td><strong>$0.30</strong></td></tr>
+      <tr><td>100K requests: 5K input + 1K output each</td><td>500M input + 100M output</td><td><strong>{money(k31Example)}</strong></td></tr>
+      <tr><td>The same workload on K3</td><td>500M × $3 + 100M × $15</td><td><strong>{money(k3Example)}</strong></td></tr>
+      <tr><td>The same workload on Highspeed</td><td>500M × $4 + 100M × $20</td><td><strong>{money(highspeedExample)}</strong></td></tr>
+    </tbody>
+  </table></div>
+  <p>K3.1 Pro saves {saving}% against K3 on that workload: {money(k3Example - k31Example)} a month. Highspeed doubles the standard K3.1 Pro token bill, so buy it only where latency has measurable product value. For your own prompts and files, select Kimi K3.1 Pro in the <a href="/">token and API cost calculator</a>.</p>
+
+  <h2 id="context">A 1,048,576-token context and always-on thinking</h2>
+  <p>K3.1 Pro accepts text, images, and video and has a 1,048,576-token context window. Moonshot documents a default <code>max_completion_tokens</code> of 131,072 and permits a maximum of 1,048,576. A large ceiling is not a free allowance: reasoning and answer tokens are output and bill at $10 per million on standard K3.1 Pro.</p>
+  <p>Thinking cannot be disabled. The <code>reasoning_effort</code> field accepts <code>low</code>, <code>high</code>, and <code>max</code>, with <code>max</code> as the default. Test a lower setting on latency-sensitive tasks and log total output usage; a short visible answer can still include substantial billed reasoning.</p>
+
+  <h2 id="caching">How Kimi context caching is billed</h2>
+  <p>Context caching is automatic for repeated prefixes. The default time to live is five minutes, and a one-hour option is available. An eligible prefix is billed once at the cache-write rate and later hits at $0.20 per million tokens. Partial blocks that do not fill a cache block cannot be written and are billed as misses.</p>
+  <p>Do not apply the 90% cache-hit discount to all repeated text in a forecast. Measure the cache-hit and cache-write fields returned by the API, then reconcile them separately. Workloads with gaps longer than five minutes should evaluate the one-hour TTL against repeated write charges.</p>
+
+  <h2 id="k2">K2 retirement timeline</h2>
+  <div class="overflow-x-auto" role="region" aria-label="Kimi K2 retirement timeline" tabindex="0"><table>
+    <thead><tr><th>Date</th><th>Change</th><th>Who is affected</th></tr></thead>
+    <tbody>
+      <tr><td>31 Oct 2026</td><td>K2 series unavailable to newly registered users</td><td>New Kimi API accounts</td></tr>
+      <tr><td>By end of Dec 2026</td><td>Moonshot plans to retire all K2-series models</td><td>Existing K2 workloads</td></tr>
+    </tbody>
+  </table></div>
+  <p>K2 models have a 262,144-token context; K3-series models support 1,048,576. That larger window can change memory usage, output ceilings, and cost controls, so a migration should not be only a model-name substitution.</p>
+
+  <h2 id="migration">K3.1 Pro migration checklist</h2>
+  <ol>
+    <li>Change the model ID to <code>kimi-k3.1-pro</code> and keep the OpenAI-compatible base URL <code>https://api.moonshot.ai/v1</code>.</li>
+    <li>Set <code>reasoning_effort</code> explicitly. K3.1 Pro always thinks and defaults to <code>max</code>.</li>
+    <li>Return the complete assistant message in multi-turn conversations and tool loops; do not retain only its visible <code>content</code>.</li>
+    <li>Remove unsupported sampling overrides. Moonshot fixes temperature, top-p, penalties, and <code>n</code> for this model.</li>
+    <li>Send vision input as base64 or a Moonshot file ID. Public image URLs are not supported.</li>
+    <li>Cap <code>max_completion_tokens</code> to the smallest safe value and measure reasoning output, cache writes, and cache hits separately.</li>
+    <li>Run held-out task and tool-call evaluations before moving production traffic; provider benchmarks do not prove parity on your workflow.</li>
+  </ol>
+
+  <FAQ items={faq}/>
+
+  <div class="source-ledger"><h2>Evidence ledger</h2><p><strong>Reviewed:</strong> 29 October 2026. Retirement language is reported as Moonshot's current plan, not a guaranteed shutdown timestamp.</p><ul>
+    <li><a href="https://forum.moonshot.ai/t/kimi-k3-1-pro-has-launched-start-exploring-now/629" target="_blank" rel="noreferrer">Moonshot: Kimi K3.1 Pro launch announcement</a></li>
+    <li><a href="https://platform.kimi.ai/docs/guide/kimi-k3-1-pro-quickstart" target="_blank" rel="noreferrer">Kimi API: K3.1 Pro model and implementation guide</a></li>
+    <li><a href="https://platform.kimi.ai/" target="_blank" rel="noreferrer">Kimi API: current K3.1 Pro, Highspeed, and K3 prices</a></li>
+    <li><a href="https://platform.kimi.ai/docs/pricing/chat" target="_blank" rel="noreferrer">Kimi API: billing rules and K2 retirement notice</a></li>
+  </ul></div>
+</KnowledgeLayout>

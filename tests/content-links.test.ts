@@ -25,7 +25,7 @@ describe('llms.txt coverage', () => {
   });
 
   it('no longer links retired comparison pages', () => {
-    for (const slug of ['gpt-5-6-sol-vs-claude-opus-4-8-cost', 'deepseek-v4-flash-vs-gpt-5-6-luna-pricing', 'gemini-3-1-flash-lite-vs-gpt-5-6-luna-cost']) {
+    for (const slug of ['gpt-5-6-sol-vs-claude-opus-4-8-cost', 'deepseek-v4-flash-vs-gpt-5-6-luna-pricing', 'gemini-3-1-flash-lite-vs-gpt-5-6-luna-cost', 'kimi-k3-vs-claude-fable-5-1-cost', 'gpt-image-2-5-vs-nano-banana-2-cost']) {
       expect(llms, `llms.txt still links retired /${slug}/`).not.toContain(`/${slug}/`);
     }
   });

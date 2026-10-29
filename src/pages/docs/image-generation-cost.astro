@@ -3,10 +3,10 @@ import KnowledgeLayout from '../../layouts/KnowledgeLayout.astro';
 import { IMAGE_MODELS, IMAGE_PRICES_CHECKED, imageUsd } from '../../data/image-models';
 const toc=[{id:'models',label:'Two billing models'},{id:'per-token',label:'Per-token billing'},{id:'per-image',label:'Per-image billing'},{id:'inputs',label:'Input and edit costs'},{id:'batch',label:'Batch discounts'},{id:'missed',label:'Costs that are easy to miss'},{id:'estimate',label:'Estimate a monthly bill'}];
 const OPENAI_TOKENS=[['low',196],['medium',439],['high',1756],['xhigh',3122],['max',7024]] as const;
-const GOOGLE_TOKENS=[['0.5K (512×512)',747],['1K (1024×1024)',1120],['2K (2048×2048)',1680],['4K (4096×4096)',2520]] as const;
+const GOOGLE_TOKENS=[['1K (1024×1024)',1120],['2K (2048×2048)',1680],['4K (4096×4096)',3780]] as const;
 const perImage=IMAGE_MODELS.filter((model)=>model.billing.startsWith('Flat'));
 ---
-<KnowledgeLayout title="How Image Generation APIs Bill: Per Image vs Per Token" description="How OpenAI, Google, xAI, ByteDance and Microsoft bill image generation: per-image prices, per-token formulas, input images, batch discounts and hidden costs." heading="How image generation APIs bill" eyebrow="Docs · Image generation cost" datePublished="2026-09-21" dateModified="2026-09-21" section="Documentation" type="TechArticle" keywords={['image generation API pricing','cost per image','image output tokens','GPT Image 2.5 pricing','Nano Banana pricing']} {toc}>
+<KnowledgeLayout title="How Image Generation APIs Bill: Per Image vs Per Token" description="How OpenAI, Google, xAI, ByteDance and Microsoft bill image generation: per-image prices, per-token formulas, input images, batch discounts and hidden costs." heading="How image generation APIs bill" eyebrow="Docs · Image generation cost" datePublished="2026-09-21" dateModified="2026-10-29" section="Documentation" type="TechArticle" keywords={['image generation API pricing','cost per image','image output tokens','GPT Image 2.5 pricing','Nano Banana 2.1 pricing']} {toc}>
   <p class="knowledge-lead">Image generation APIs use one of two billing models. Some charge a flat price per image. Others charge per output token and turn each image into a token count. The same 1024×1024 image can cost from under one cent to about 21 cents, depending on the model and the quality setting you choose.</p>
   <div class="technical-callout"><span>Cost of one generated image</span><code>C = T<sub>image-out</sub>P<sub>image-out</sub> + T<sub>text-in</sub>P<sub>text-in</sub> + T<sub>image-in</sub>P<sub>image-in</sub></code></div>
 
@@ -24,12 +24,12 @@ const perImage=IMAGE_MODELS.filter((model)=>model.billing.startsWith('Flat'));
   </table></div>
   <p>Moving from medium to high quadruples the cost of the same image. Choose the quality per use case: a thumbnail or a draft rarely needs more than medium.</p>
   <h3>Google Nano Banana</h3>
-  <p>Google publishes a fixed token count for each resolution. Nano Banana 2 (<code>gemini-3.1-flash-image</code>) bills those tokens at $60 per million:</p>
+  <p>Google publishes a fixed image-output token count for each resolution. Nano Banana 2.1 (<code>gemini-nano-banana-2.1</code>) bills those tokens at $30 per million:</p>
   <div class="overflow-x-auto"><table>
     <thead><tr><th>Resolution</th><th>Output tokens</th><th>Cost per image</th></tr></thead>
-    <tbody>{GOOGLE_TOKENS.map(([size,tokens])=><tr><td>{size}</td><td>{tokens.toLocaleString('en-US')}</td><td>{imageUsd(Math.round(tokens*60/1e6*1e3)/1e3)}</td></tr>)}</tbody>
+    <tbody>{GOOGLE_TOKENS.map(([size,tokens])=><tr><td>{size}</td><td>{tokens.toLocaleString('en-US')}</td><td>{imageUsd(Math.round(tokens*30/1e6*1e4)/1e4)}</td></tr>)}</tbody>
   </table></div>
-  <p>Nano Banana Pro (<code>gemini-3-pro-image</code>) doubles the rate to $120 per million: $0.134 for a 1K or 2K image and $0.24 at 4K. Nano Banana 2 Lite halves it to $30 per million and makes only 1K images, at $0.0336 each.</p>
+  <p>Nano Banana Pro (<code>gemini-3-pro-image</code>) charges $120 per million image-output tokens: $0.134 for a 1K or 2K image and $0.24 at 4K. Nano Banana 2 Lite also charges $30 per million but makes only 1K images, at $0.0336 each.</p>
   <h3>Microsoft MAI-Image-2.6</h3>
   <p>Microsoft also bills per token, but it does not publish how many tokens one image uses. The cost per image therefore cannot be calculated from official figures. Third-party trackers report about $0.039 per image for MAI-Image-2.6 and $0.0195 for MAI-Image-2.6-Flash. Treat both as estimates until Microsoft publishes a token count.</p>
 
@@ -47,7 +47,7 @@ const perImage=IMAGE_MODELS.filter((model)=>model.billing.startsWith('Flat'));
   </ul>
 
   <h2 id="batch">Batch discounts</h2>
-  <p>Google halves image prices through its Batch API: a 1K Nano Banana 2 image drops from $0.067 to $0.034. OpenAI does not offer batch for GPT Image 2.5. xAI accepts image requests in its Batch API but bills them at the standard rate. We found no batch discount for Seedream 5.0 Pro or the MAI models.</p>
+  <p>Google halves image prices through its Batch API: a 1K Nano Banana 2.1 image drops from $0.0336 to $0.0168. OpenAI does not offer batch for GPT Image 2.5. xAI accepts image requests in its Batch API but bills them at the standard rate. We found no batch discount for Seedream 5.0 Pro or the MAI models.</p>
   <p>If your images do not have to be ready within seconds, such as catalogue images or overnight asset generation, batch pricing is the largest single saving available.</p>
 
   <h2 id="missed">Costs that are easy to miss</h2>
@@ -59,7 +59,7 @@ const perImage=IMAGE_MODELS.filter((model)=>model.billing.startsWith('Flat'));
   </ul>
 
   <h2 id="estimate">Estimate a monthly bill</h2>
-  <p>Multiply the images you generate each month by the price per image at the size and quality you will really use. Add your retry rate and any edits. For example, 20,000 images a month at 1K costs about $1,340 on Nano Banana 2, $680 through its batch API, and $1,054 on GPT Image 2.5 at high quality.</p>
+  <p>Multiply the images you generate each month by the price per image at the size and quality you will really use. Add your retry rate and any edits. For example, 20,000 images a month at 1K costs about $672 on Nano Banana 2.1, $336 through its Batch API, and $1,054 on GPT Image 2.5 at high quality.</p>
   <p>The <a href="/image-generation-api-pricing/">image generation API pricing page</a> does this calculation for every model at once. For text and vision input tokens, use the <a href="/">token calculator</a> and the <a href="/docs/images/">image token documentation</a>.</p>
 
   <div class="source-ledger"><h2>Evidence ledger</h2><p><strong>Reviewed:</strong> {new Intl.DateTimeFormat('en-GB',{day:'numeric',month:'long',year:'numeric'}).format(new Date(`${IMAGE_PRICES_CHECKED}T00:00:00Z`))} · Image prices change often. Provider pricing pages remain authoritative.</p><ul>

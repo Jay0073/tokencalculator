@@ -38,7 +38,7 @@ describe('pricing and context', () => {
 
   it('marks context overflow', () => {
     const model = getModel('deepseek-flash');
-    expect(calculateResult(1_000_001, model, 'estimated', 'test').overContext).toBe(true);
+    expect(calculateResult(model.contextWindow + 1, model, 'estimated', 'test').overContext).toBe(true);
   });
 
   it('applies OpenAI long-context rates only above 272K input tokens', () => {
@@ -111,7 +111,7 @@ describe('published image formulas', () => {
   // Anthropic publishes a table of dimensions against tokens, for both image budgets:
   // platform.claude.com/docs/en/build-with-claude/vision
   it('reproduces Anthropic\u2019s published table on both tiers', () => {
-    const standard = getModel('claude-haiku-4-5'); // Claude 4.6 and earlier: 1,568 tokens
+    const standard = { ...getModel('claude-haiku-5-5'), tokenizer: 'claude-estimate' as const }; // Claude 4.6 and earlier: 1,568 tokens
     const large = getModel('claude-sonnet-5-5'); // Claude 4.7 and later: 4,784 tokens
     const rows: [number, number, number, number][] = [
       // width, height, standard tier, large tier

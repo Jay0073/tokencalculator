@@ -1,0 +1,50 @@
+---
+import ImagePair from '../components/seo/ImagePair.astro';
+---
+<ImagePair
+  slug="gpt-image-2-5-vs-nano-banana-2-1-cost"
+  leftId="gpt-image-2.5"
+  rightId="nano-banana-2.1"
+  title="GPT Image 2.5 vs Nano Banana 2.1 Cost (2026)"
+  description="Compare GPT Image 2.5 and Nano Banana 2.1 API pricing by resolution, quality, and batch usage, with exact costs for 1K, 2K, and 4K images."
+  crumb="GPT Image 2.5 vs Nano Banana 2.1"
+  heading="GPT Image 2.5 vs Nano Banana 2.1 cost."
+  intro="Both APIs bill image output by the token, but OpenAI changes the token count with quality while Google fixes it by resolution. The cheapest choice therefore depends on the quality tier and whether the job can run in batch."
+  decision="Use GPT Image 2.5 medium when a low interactive unit price matters: a 1K image is about $0.0132. Use Nano Banana 2.1 when Google's fixed quality is sufficient and especially for asynchronous jobs: 1K costs $0.0336 standard or $0.0168 in batch. Test the same production prompts before choosing on price alone."
+  analysis={[
+    {
+      heading: 'At 1K, GPT Image wins at medium; Nano Banana wins against high',
+      body: [
+        'GPT Image 2.5 costs about $0.0132 for a 1024×1024 image at medium quality and $0.0527 at high. Nano Banana 2.1 has one published 1K image price: $0.0336. OpenAI is cheaper at medium, while Google is cheaper than OpenAI high.',
+        'That is not a claim that the outputs have equal quality. The settings are provider-specific, so the useful comparison is the cheapest tier that passes the same prompt and review set in your application.',
+      ],
+    },
+    {
+      heading: 'Batch makes Nano Banana 2.1 competitive with OpenAI medium',
+      body: [
+        'Google halves image output pricing through the Batch API. A 1K Nano Banana 2.1 image falls to $0.0168, close to GPT Image 2.5 medium at $0.0132 and far below GPT Image 2.5 high at $0.0527.',
+        'OpenAI does not list a batch discount for GPT Image 2.5. For catalogue generation, offline creative variants, or any queue that can wait, Google\'s batch rate is the most important cost difference.',
+      ],
+    },
+    {
+      heading: 'Do not compare 4K labels without checking the pixel count',
+      body: [
+        'Nano Banana 2.1 costs $0.0504 at 2K and $0.113 at 4K, or $0.0252 and $0.0567 in batch. Its 4K price refers to a 4096×4096 output.',
+        'GPT Image 2.5 publishes several aspect ratios and quality levels. For example, 3840×2160 costs about $0.10 at high and $0.40 at max. A square 4096×4096 image contains roughly twice as many pixels as 3840×2160, so the two 4K labels are not equivalent workloads.',
+      ],
+    },
+    {
+      heading: 'Nano Banana 2.1 also meters text and thinking output',
+      body: [
+        'Google charges $1.50 per million input tokens and $7.50 per million text or thinking output tokens in addition to image output. Image output is $30 per million tokens. Search grounding can become a separate charge after the shared monthly allowance.',
+        'Prompt tokens are usually small beside an image-output bill, but multi-turn editing, many reference images, long thinking, and grounded generation can make them material. Price the whole response rather than multiplying only the image count.',
+      ],
+    },
+  ]}
+  faq={[
+    { question: 'Which is cheaper, GPT Image 2.5 or Nano Banana 2.1?', answer: 'For a 1K image, GPT Image 2.5 medium is about $0.0132, versus $0.0336 for Nano Banana 2.1 standard. Nano Banana 2.1 is cheaper than GPT Image 2.5 high ($0.0527), and its batch price falls to $0.0168.' },
+    { question: 'How much does Nano Banana 2.1 cost per image?', answer: 'Google lists $0.0336 at 1K, $0.0504 at 2K, and $0.113 at 4K. Batch prices are $0.0168, $0.0252, and $0.0567 respectively.' },
+    { question: 'What is the Nano Banana 2.1 API model ID?', answer: 'The stable Gemini API model ID is gemini-nano-banana-2.1. It replaces Gemini 3.1 Flash Image, also called Nano Banana 2.' },
+    { question: 'Does GPT Image 2.5 have a batch discount?', answer: 'No. OpenAI does not list batch pricing for GPT Image 2.5. Google supports Nano Banana 2.1 in the Batch API at half the standard rate.' },
+  ]}
+/>

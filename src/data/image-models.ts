@@ -44,7 +44,7 @@ export interface ImageModel {
   checked: string;
 }
 
-export const IMAGE_PRICES_CHECKED = '2026-09-21';
+export const IMAGE_PRICES_CHECKED = '2026-10-29';
 
 export const IMAGE_MODELS: ImageModel[] = [
   {
@@ -79,27 +79,30 @@ export const IMAGE_MODELS: ImageModel[] = [
     checked: '2026-09-21',
   },
   {
-    id: 'nano-banana-2',
-    name: 'Nano Banana 2',
+    id: 'nano-banana-2.1',
+    name: 'Nano Banana 2.1',
     lab: 'Google',
-    apiId: 'gemini-3.1-flash-image',
+    apiId: 'gemini-nano-banana-2.1',
+    released: '2026-10-06',
     status: 'Generally available',
-    billing: 'Per token: $60 per 1M image output tokens, with a fixed token count for each resolution (1,120 tokens at 1K).',
-    standard: [{ label: '1K (1024×1024)', usd: 0.067, batchUsd: 0.034 }],
-    best: { label: '4K (4096×4096)', usd: 0.151, batchUsd: 0.076 },
+    billing: 'Per token: $30 per 1M image output tokens, with a fixed token count for each resolution (1,120 tokens at 1K).',
+    standard: [{ label: '1K (1024×1024)', usd: 0.0336, batchUsd: 0.0168 }],
+    best: { label: '4K (4096×4096)', usd: 0.113, batchUsd: 0.0567 },
     prices: [
-      { label: '0.5K (512×512)', usd: 0.045, batchUsd: 0.022 },
-      { label: '1K (1024×1024)', usd: 0.067, batchUsd: 0.034 },
-      { label: '2K (2048×2048)', usd: 0.101, batchUsd: 0.05 },
-      { label: '4K (4096×4096)', usd: 0.151, batchUsd: 0.076 },
+      { label: '1K (1024×1024)', usd: 0.0336, batchUsd: 0.0168 },
+      { label: '2K (2048×2048)', usd: 0.0504, batchUsd: 0.0252 },
+      { label: '4K (4096×4096)', usd: 0.113, batchUsd: 0.0567 },
     ],
     priceBasis: 'published',
     basisNote: 'Google publishes the token count and price for each resolution.',
     batch: 'Half price through the Batch API.',
     maxOutput: '4K (4096×4096).',
-    editing: 'Input images bill at $0.50 per 1M tokens, a fraction of a cent per image.',
-    sources: [{ label: 'Gemini API pricing', url: 'https://ai.google.dev/gemini-api/docs/pricing' }],
-    checked: '2026-09-21',
+    editing: 'Text, image, and video input bill at $1.50 per 1M tokens. Google does not publish one fixed input-image token count for every edit.',
+    sources: [
+      { label: 'Gemini Nano Banana 2.1 model page', url: 'https://ai.google.dev/gemini-api/docs/models/gemini-nano-banana-2.1' },
+      { label: 'Gemini API pricing', url: 'https://ai.google.dev/gemini-api/docs/pricing' },
+    ],
+    checked: '2026-10-29',
   },
   {
     id: 'nano-banana-2-lite',
@@ -245,6 +248,6 @@ export const BASIS_LABEL: Record<ImageModel['priceBasis'], string> = {
 /** Image pages, listed on the /compare/ hub and in llms.txt. */
 export const IMAGE_PAGES = [
   { href: '/image-generation-api-pricing/', title: 'Image generation API pricing', detail: 'Cost per image for GPT Image 2.5, Nano Banana, Grok Imagine, Seedream and MAI-Image' },
-  { href: '/gpt-image-2-5-vs-nano-banana-2-cost/', title: 'GPT Image 2.5 vs Nano Banana 2', detail: 'Per-token image billing from OpenAI and Google, priced per image' },
+  { href: '/gpt-image-2-5-vs-nano-banana-2-1-cost/', title: 'GPT Image 2.5 vs Nano Banana 2.1', detail: 'OpenAI quality tiers against Google\'s $0.0336 standard and $0.0168 batch 1K image price' },
   { href: '/gpt-image-2-5-vs-grok-imagine-image-2-cost/', title: 'GPT Image 2.5 vs Grok Imagine Image 2.0', detail: 'Quality tiers against a flat $0.04 per image' },
 ];

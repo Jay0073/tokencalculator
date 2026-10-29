@@ -83,7 +83,7 @@ describe('developer API worker', () => {
       request: { input: { text: 'Compare this payload.' }, output_tokens: 50 },
     });
     const comparisonBody = await comparison.json() as any;
-    expect(comparisonBody.data.map((item: any) => item.model.id)).toEqual(['gpt-5.6-terra', 'claude-opus-4-8']);
+    expect(comparisonBody.data.map((item: any) => item.model.id)).toEqual(['gpt-5.6-terra', 'claude-opus-5']);
   });
 
   it('returns RFC 9457 problem details for invalid requests', async () => {

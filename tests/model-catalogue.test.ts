@@ -83,7 +83,8 @@ describe('generated model catalogue', () => {
 
   it('resolves ids case-insensitively and in dashed form', () => {
     expect(resolveModelId('GPT-5.6-Terra')).toBe('gpt-5.6-terra');
-    expect(resolveModelId('claude-opus-4-8')).toBe('claude-opus-4-8');
+    expect(resolveModelId('claude-opus-4-8')).toBe('claude-opus-5');
+    expect(resolveModelId('claude-haiku-4-5')).toBe('claude-haiku-5-5');
     expect(resolveModelId('not-a-model')).toBeUndefined();
   });
 
@@ -123,15 +124,13 @@ describe('generated model catalogue', () => {
     }
   });
 
-  it('splits Claude into the pre-4.7 and 4.7-and-later tokenizers', () => {
+  it('retains the legacy Claude tokenizer while publishing current models on the 4.7+ tokenizer', () => {
     // Anthropic documents ~30% more tokens for the same text on Claude 4.7 and later.
     const ratio = SITE_BYTES['claude-estimate'] / SITE_BYTES['claude-47-estimate'];
     expect(ratio).toBeGreaterThan(1.28);
     expect(ratio).toBeLessThan(1.32);
-    const tokenizerOf = (id: string) => SITE_MODELS.find((model) => model.id === id)?.tokenizer;
-    expect(tokenizerOf('claude-haiku-4-5'), 'Haiku 4.5 predates Claude Opus 4.7').toBe('claude-estimate');
-    for (const id of ['claude-opus-4-8', 'claude-sonnet-5', 'claude-opus-5', 'claude-fable-5-1', 'claude-opus-5-5', 'claude-sonnet-5-5']) {
-      expect(tokenizerOf(id), id).toBe('claude-47-estimate');
+    for (const model of SITE_MODELS.filter((entry) => entry.provider === 'anthropic')) {
+      expect(model.tokenizer, model.id).toBe('claude-47-estimate');
     }
   });
 
