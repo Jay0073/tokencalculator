@@ -2,7 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Breadcrumbs from './Breadcrumbs.astro';
 import FAQ from './FAQ.astro';
-import { BASIS_LABEL, IMAGE_PAGES, IMAGE_PRICES_CHECKED, getImageModel, imageUsd } from '../../data/image-models';
+import { BASIS_LABEL, IMAGE_PAGES, getImageModel, imageUsd } from '../../data/image-models';
 
 // Shared template for image-model comparison pages. Image APIs bill per image or per
 // image token, so these pages cannot reuse the text-token calculator; they price images.
@@ -25,7 +25,8 @@ const canonical = `/${props.slug}/`;
 const breadcrumbs = [{ label: 'Token calculator', href: '/' }, { label: 'Compare models', href: '/compare/' }, { label: props.crumb }];
 const VOLUME = 10000;
 const others = IMAGE_PAGES.filter((page) => page.href !== canonical);
-const checked = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(`${IMAGE_PRICES_CHECKED}T00:00:00Z`));
+const formatChecked = (date: string) => new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(`${date}T00:00:00Z`));
+const checked = formatChecked(pair.map((model) => model.checked).sort().at(-1) ?? '');
 ---
 <BaseLayout title={props.title} description={props.description} {canonical} faq={props.faq} {breadcrumbs}>
   <Breadcrumbs items={breadcrumbs} />
@@ -42,7 +43,7 @@ const checked = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'long'
         {pair.map((model) => (
           <div>
             <h3 class="m-0 text-lg">{model.name} <span class="muted font-normal text-sm">· {model.lab}</span></h3>
-            <p class="muted text-xs mt-1 mb-3"><code>{model.apiId}</code> · {model.status} · {BASIS_LABEL[model.priceBasis]}</p>
+            <p class="muted text-xs mt-1 mb-3"><code>{model.apiId}</code> · {model.status} · {BASIS_LABEL[model.priceBasis]} · checked {formatChecked(model.checked)}</p>
             <table class="w-full text-left text-sm">
               <thead><tr class="muted"><th class="pb-2 font-normal">Size and quality</th><th class="pb-2 font-normal text-right">Per image</th><th class="pb-2 font-normal text-right">Batch</th></tr></thead>
               <tbody>{model.prices.map((price) => <tr class="border-t hairline"><td class="py-2 pr-3">{price.label}</td><td class="py-2 text-right mono">{imageUsd(price.usd)}</td><td class="py-2 text-right mono">{price.batchUsd === undefined ? '—' : imageUsd(price.batchUsd)}</td></tr>)}</tbody>
@@ -94,7 +95,7 @@ const checked = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'long'
   <FAQ items={props.faq} />
 
   <section class="shell mt-12 mb-8 relative z-10">
-    <div class="source-ledger mt-0"><h2>Sources</h2><p><strong>Prices checked:</strong> {checked}. Image prices change often; provider pricing pages remain authoritative.</p><ul>
+    <div class="source-ledger mt-0"><h2>Sources</h2><p><strong>Latest source check for this pair:</strong> {checked}. Individual model check dates appear above; provider pricing pages remain authoritative.</p><ul>
       {pair.flatMap((model) => model.sources).filter((source, index, all) => all.findIndex((other) => other.url === source.url) === index).map((source) => <li><a href={source.url} target="_blank" rel="noreferrer">{source.label}</a></li>)}
       <li><a href="https://arena.ai/leaderboard/text-to-image" target="_blank" rel="noreferrer">Arena text-to-image leaderboard</a> (updated 7 September 2026)</li>
     </ul></div>

@@ -9,22 +9,23 @@ import { BASIS_LABEL, IMAGE_MODELS, IMAGE_PAGES, IMAGE_PRICES_CHECKED, imageUsd 
 const canonical = '/image-generation-api-pricing/';
 const breadcrumbs = [{ label: 'Token calculator', href: '/' }, { label: 'Compare models', href: '/compare/' }, { label: 'Image generation API pricing' }];
 const VOLUME = 10000;
-const checked = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(`${IMAGE_PRICES_CHECKED}T00:00:00Z`));
+const formatChecked = (date: string) => new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(`${date}T00:00:00Z`));
+const checked = formatChecked(IMAGE_PRICES_CHECKED);
 const pairs = IMAGE_PAGES.filter((page) => page.href !== canonical);
 const faq = [
-  { question: 'What is the cheapest image generation API?', answer: 'At about 1024×1024, GPT Image 2.5 at low quality costs about $0.0059 per image. Nano Banana 2.1 and Nano Banana 2 Lite cost $0.0336, or $0.0168 through Google\'s Batch API. Among flat-price models, Grok Imagine Image 2.0 costs $0.04 and Seedream 5.0 Pro costs $0.045.' },
+  { question: 'What is the cheapest image generation API?', answer: 'At about 1024×1024, GPT Image 2.5 at low quality costs about $0.0059 per image at the standard rate, or $0.0029 through Batch, excluding input tokens. Nano Banana 2.1 and Nano Banana 2 Lite cost $0.0336 standard or $0.0168 through Batch. Grok Imagine Image 2.0 starts at $0.04 for 1K low quality.' },
   { question: 'How much does GPT Image 2.5 cost per image?', answer: 'For 1024×1024: about $0.0059 at low, $0.013 at medium, $0.053 at high, $0.094 at xhigh and $0.21 at max quality. The largest size, 2880×2880 at max, costs about $0.71. Flare and Sunburst cost the same.' },
   { question: 'How much does Nano Banana 2.1 cost per image?', answer: '$0.0336 at 1K, $0.0504 at 2K and $0.113 at 4K. The Batch API halves each price to $0.0168, $0.0252 and $0.0567. Nano Banana Pro costs $0.134 at 1K or 2K and $0.24 at 4K.' },
   { question: 'Why is MAI-Image-2.6 marked as an estimate?', answer: 'Microsoft bills MAI-Image-2.6 per token but does not publish how many tokens one image uses, so its cost per image cannot be calculated from official figures. The figure shown, about $0.039 per image, comes from third-party trackers.' },
-  { question: 'Do image generation APIs offer batch discounts?', answer: 'Google halves Nano Banana prices through its Batch API. OpenAI has no batch pricing for GPT Image 2.5. xAI accepts image requests in its Batch API but bills them at the standard rate.' },
+  { question: 'Do image generation APIs offer batch discounts?', answer: 'Google halves Nano Banana prices through its Batch API. OpenAI also halves GPT Image 2.5 image-output token rates through Batch. xAI accepts Grok Imagine image requests in Batch but lists no discount.' },
 ];
 ---
-<BaseLayout title="AI Image Generation API Pricing Compared (2026)" description="Compare cost per image for GPT Image 2.5, Nano Banana 2.1, Grok Imagine, Seedream 5.0 and MAI-Image-2.6 by size, quality, and monthly volume." {canonical} {faq} {breadcrumbs}>
+<BaseLayout title="AI Image Generation API Pricing Compared (2026)" description="Compare cost per image for GPT Image 2.5 and 2.6, Nano Banana 2.1, Grok Imagine, Seedream 5.0 and MAI-Image-2.6 by size, quality, and monthly volume." {canonical} {faq} {breadcrumbs}>
   <Breadcrumbs items={breadcrumbs} />
   <section class="shell max-w-4xl pt-12 sm:pt-16 pb-8 relative z-10">
     <span class="eyebrow">Image model comparison</span>
     <h1 class="m-0 mt-4 text-[clamp(2.25rem,5vw,3.75rem)] leading-[1.02] tracking-[-.055em] max-w-4xl">Image generation API pricing, compared.</h1>
-    <p class="muted text-[16px] sm:text-[17px] mt-4 mb-0 max-w-3xl">At about 1024×1024, Nano Banana 2.1 costs $0.0336 per image, Grok Imagine Image 2.0 costs a flat $0.04 and Seedream 5.0 Pro $0.045. GPT Image 2.5 ranges from about $0.006 at low quality to $0.21 at max. Prices below were checked on {checked} against each provider's pricing page.</p>
+    <p class="muted text-[16px] sm:text-[17px] mt-4 mb-0 max-w-3xl">At about 1024×1024, GPT Image 2.5 starts near $0.006 at low quality, GPT Image 2.6 near $0.025, Nano Banana 2.1 at $0.0336 and Grok Imagine Image 2.0 at $0.04 for 1K low. Size and quality change the bill. The latest provider price check was {checked}; each model's check date appears below.</p>
   </section>
 
   <section class="shell relative z-10 mb-10" aria-labelledby="table-title">
@@ -40,7 +41,7 @@ const faq = [
           <tbody>
             {IMAGE_MODELS.flatMap((model) => model.standard.map((price, index) => (
               <tr class="border-t hairline">
-                <th class="py-3 pr-4 font-semibold">{index === 0 ? <>{model.name}<span class="block muted text-xs font-normal">{model.lab} · {model.status}</span></> : ''}</th>
+                <th class="py-3 pr-4 font-semibold">{index === 0 ? <>{model.name}<span class="block muted text-xs font-normal">{model.lab} · {model.status} · checked {formatChecked(model.checked)}</span></> : ''}</th>
                 <td class="py-3 pr-4">{price.label}{price.batchUsd !== undefined && <span class="block muted text-xs">Batch {imageUsd(price.batchUsd)}</span>}</td>
                 <td class="py-3 text-right mono">{imageUsd(price.usd)}</td>
                 <td class="py-3 text-right mono" data-image-price={price.usd}>${(price.usd * VOLUME).toLocaleString('en-US', { maximumFractionDigits: 0 })}</td>
@@ -59,7 +60,7 @@ const faq = [
     <div><h2 class="section-title m-0">On per-token APIs, quality matters more than the model</h2></div>
     <div class="muted">
       <p>OpenAI, Google and Microsoft bill image output by the token. On GPT Image 2.5 the quality setting changes the token count so much that the same 1024×1024 image costs 36 times more at max than at low.</p>
-      <p>Google fixes the image-output token count per resolution instead, so a Nano Banana 2.1 image costs the same whatever the prompt: $0.0336 at 1K. Text, thinking, and grounded search can still add separate usage. xAI and ByteDance skip output tokens entirely and charge a flat price per image.</p>
+      <p>Google fixes the image-output token count per resolution instead, so a Nano Banana 2.1 image costs the same whatever the prompt: $0.0336 at 1K. Text, thinking, and grounded search can still add separate usage. xAI and ByteDance publish per-image tiers; xAI's price changes with size and quality, while Seedream's changes with pixel count.</p>
       <p>The practical rule: decide the size and quality your product needs first, then compare prices at that tier. Comparing default settings compares the wrong numbers.</p>
     </div>
   </section>
@@ -75,7 +76,7 @@ const faq = [
   <section class="shell mt-16 grid md:grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)] gap-8 md:gap-16 relative z-10">
     <div><h2 class="section-title m-0">Batch and editing change the answer</h2></div>
     <div class="muted">
-      <p>Google halves Nano Banana prices through its Batch API, which makes both Nano Banana 2.1 and Nano Banana 2 Lite $0.0168 per 1K image. OpenAI has no batch pricing for GPT Image 2.5, and xAI bills batch images at the standard rate.</p>
+      <p>Google halves Nano Banana prices through its Batch API, which makes both Nano Banana 2.1 and Nano Banana 2 Lite $0.0168 per 1K image. OpenAI halves GPT Image 2.5 image-output token rates in Batch; its 1024×1024 medium example falls from about $0.0132 to $0.0066 before input tokens. xAI lists no Batch discount for Grok Imagine Image 2.0.</p>
       <p>Editing adds input images. Google charges a fraction of a cent for each; ByteDance makes the first Seedream reference image free and charges $0.003 for each extra one; OpenAI bills input images at $8 per million tokens without publishing a fixed count per image. The <a class="text-[var(--accent)]" href="/docs/image-generation-cost/">image cost documentation</a> explains each billing model.</p>
     </div>
   </section>
@@ -90,7 +91,7 @@ const faq = [
   <FAQ items={faq} />
 
   <section class="shell mt-12 mb-8 relative z-10">
-    <div class="source-ledger mt-0"><h2>Sources</h2><p><strong>Prices checked:</strong> {checked}. Image prices change often; provider pricing pages remain authoritative.</p><ul>
+    <div class="source-ledger mt-0"><h2>Sources</h2><p><strong>Latest provider price check:</strong> {checked}. Individual model check dates appear in the table; provider pricing pages remain authoritative.</p><ul>
       {IMAGE_MODELS.flatMap((model) => model.sources).filter((source, index, all) => all.findIndex((other) => other.url === source.url) === index).map((source) => <li><a href={source.url} target="_blank" rel="noreferrer">{source.label}</a></li>)}
     </ul></div>
   </section>

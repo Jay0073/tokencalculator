@@ -44,8 +44,6 @@ export interface ImageModel {
   checked: string;
 }
 
-export const IMAGE_PRICES_CHECKED = '2026-10-29';
-
 export const IMAGE_MODELS: ImageModel[] = [
   {
     id: 'gpt-image-2.5',
@@ -55,28 +53,56 @@ export const IMAGE_MODELS: ImageModel[] = [
     released: '2026-09-08',
     status: 'Generally available',
     billing: 'Per token: $30 per 1M image output tokens, $5 per 1M text input, $8 per 1M image input. Flare and Sunburst cost the same.',
-    standard: [{ label: '1024×1024 · medium', usd: 0.0132 }, { label: '1024×1024 · high', usd: 0.0527 }],
-    best: { label: '2880×2880 · max', usd: 0.712 },
+    standard: [{ label: '1024×1024 · medium', usd: 0.01317, batchUsd: 0.006585 }, { label: '1024×1024 · high', usd: 0.05268, batchUsd: 0.02634 }],
+    best: { label: '2880×2880 · max', usd: 0.712, batchUsd: 0.356 },
     prices: [
-      { label: '1024×1024 · low', usd: 0.0059 },
-      { label: '1024×1024 · medium', usd: 0.0132 },
-      { label: '1024×1024 · high', usd: 0.0527 },
-      { label: '1024×1024 · xhigh', usd: 0.0937 },
-      { label: '1024×1024 · max', usd: 0.2107 },
-      { label: '3840×2160 · high', usd: 0.1 },
-      { label: '3840×2160 · max', usd: 0.4 },
-      { label: '2880×2880 · max', usd: 0.712 },
+      { label: '1024×1024 · low', usd: 0.00588, batchUsd: 0.00294 },
+      { label: '1024×1024 · medium', usd: 0.01317, batchUsd: 0.006585 },
+      { label: '1024×1024 · high', usd: 0.05268, batchUsd: 0.02634 },
+      { label: '1024×1024 · xhigh', usd: 0.09366, batchUsd: 0.04683 },
+      { label: '1024×1024 · max', usd: 0.21072, batchUsd: 0.10536 },
+      { label: '3840×2160 · high', usd: 0.1, batchUsd: 0.05 },
+      { label: '3840×2160 · max', usd: 0.4, batchUsd: 0.2 },
+      { label: '2880×2880 · max', usd: 0.712, batchUsd: 0.356 },
     ],
     priceBasis: 'calculated',
     basisNote: 'OpenAI bills image output by the token. Per-image costs use the token counts from OpenAI\'s own image cost calculator, multiplied by $30 per million.',
-    batch: 'Not available for GPT Image 2.5.',
+    batch: 'The Batch API halves image-output token rates from $30 to $15 per million tokens.',
     maxOutput: '3840 px on the longest edge. OpenAI marks sizes above 2560×1440 as experimental.',
     editing: 'Input images bill at $8 per 1M tokens. OpenAI does not publish a fixed token count per input image, so read the usage field of each response.',
     sources: [
       { label: 'OpenAI API pricing', url: 'https://developers.openai.com/api/docs/pricing' },
       { label: 'OpenAI image generation guide', url: 'https://developers.openai.com/api/docs/guides/image-generation' },
     ],
-    checked: '2026-09-21',
+    checked: '2026-11-13',
+  },
+  {
+    id: 'gpt-image-2.6',
+    name: 'GPT Image 2.6',
+    lab: 'OpenAI',
+    apiId: 'gpt-image-2.6-flare, gpt-image-2.6-sunburst',
+    status: 'Generally available',
+    billing: 'Per token: $30 per 1M image output tokens. Size, quality, and model variant affect the token count.',
+    standard: [{ label: '1024×1024 · medium', usd: 0.04347 }, { label: '1024×1024 · high', usd: 0.05268 }],
+    best: { label: '2880×2880 · max', usd: 0.71157 },
+    prices: [
+      { label: '1024×1024 · low', usd: 0.02469 },
+      { label: '1024×1024 · medium', usd: 0.04347 },
+      { label: '1024×1024 · high', usd: 0.05268 },
+      { label: '1024×1024 · xhigh', usd: 0.09366 },
+      { label: '1024×1024 · max', usd: 0.21072 },
+      { label: '2880×2880 · max', usd: 0.71157 },
+    ],
+    priceBasis: 'calculated',
+    basisNote: 'Per-image output costs come from OpenAI’s image cost calculator with explicit size and quality settings. Text and image inputs cost extra.',
+    batch: 'No GPT Image 2.6 Batch rate is listed on the current pricing page.',
+    maxOutput: 'See the OpenAI image generation guide for supported dimensions and formats.',
+    editing: 'Input images bill at $8 per 1M tokens. Markup-guided edits use the same token rates as other edits.',
+    sources: [
+      { label: 'GPT Image 2.6 model page', url: 'https://developers.openai.com/api/docs/models/gpt-image-2.6-sunburst' },
+      { label: 'OpenAI image generation guide', url: 'https://developers.openai.com/api/docs/guides/image-generation' },
+    ],
+    checked: '2026-11-13',
   },
   {
     id: 'nano-banana-2.1',
@@ -149,20 +175,27 @@ export const IMAGE_MODELS: ImageModel[] = [
     lab: 'xAI',
     apiId: 'grok-imagine-image-2.0',
     status: 'Generally available',
-    billing: 'Flat price per generated image.',
-    standard: [{ label: 'Per image', usd: 0.04 }],
-    best: { label: 'Per image', usd: 0.04 },
-    prices: [{ label: 'Per image (list price)', usd: 0.04 }],
+    billing: 'Flat per-image price within each output size and quality tier.',
+    standard: [{ label: '1K · low', usd: 0.04 }, { label: '1K · medium', usd: 0.06 }],
+    best: { label: '2K · medium', usd: 0.08 },
+    prices: [
+      { label: '1K · low', usd: 0.04 },
+      { label: '1.5K · low', usd: 0.05 },
+      { label: '2K · low', usd: 0.06 },
+      { label: '1K · medium', usd: 0.06 },
+      { label: '1.5K · medium', usd: 0.07 },
+      { label: '2K · medium', usd: 0.08 },
+    ],
     priceBasis: 'published',
-    basisNote: 'xAI lists $0.04 per image for grok-imagine-image-2.0.',
-    batch: 'Supported through the Batch API, billed at the standard rate.',
-    maxOutput: 'Not stated on the pricing page.',
-    editing: 'Supported. Check xAI\'s pricing page for input-image charges before costing an editing pipeline.',
+    basisNote: 'xAI publishes per-image prices by resolution and quality, from $0.04 for 1K low to $0.08 for 2K medium.',
+    batch: 'Supported through the Batch API; no discounted image rate is listed.',
+    maxOutput: '2K in the published pricing tiers.',
+    editing: 'An input image costs $0.01 each, in addition to the output image price.',
     sources: [
       { label: 'xAI API pricing', url: 'https://docs.x.ai/developers/pricing' },
       { label: 'xAI model page', url: 'https://docs.x.ai/developers/models/grok-imagine-image-2.0' },
     ],
-    checked: '2026-09-21',
+    checked: '2026-11-13',
   },
   {
     id: 'seedream-5-pro',
@@ -230,14 +263,17 @@ export const IMAGE_MODELS: ImageModel[] = [
   },
 ];
 
+/** Most recent individual model price check; older model dates remain visible in the tables. */
+export const IMAGE_PRICES_CHECKED = IMAGE_MODELS.map((model) => model.checked).sort().at(-1) ?? '';
+
 export const getImageModel = (id: string) => {
   const model = IMAGE_MODELS.find((candidate) => candidate.id === id);
   if (!model) throw new Error(`Unknown image model: ${id}`);
   return model;
 };
 
-/** Exact list price, never rounded away: $0.0527, $0.04, $0.712. */
-export const imageUsd = (value: number) => `$${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 4 })}`;
+/** Keep small per-image and Batch rates visible without hiding meaningful digits. */
+export const imageUsd = (value: number) => `$${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 6 })}`;
 
 export const BASIS_LABEL: Record<ImageModel['priceBasis'], string> = {
   published: 'Published per-image price',
@@ -247,7 +283,7 @@ export const BASIS_LABEL: Record<ImageModel['priceBasis'], string> = {
 
 /** Image pages, listed on the /compare/ hub and in llms.txt. */
 export const IMAGE_PAGES = [
-  { href: '/image-generation-api-pricing/', title: 'Image generation API pricing', detail: 'Cost per image for GPT Image 2.5, Nano Banana, Grok Imagine, Seedream and MAI-Image' },
+  { href: '/image-generation-api-pricing/', title: 'Image generation API pricing', detail: 'Cost per image for GPT Image 2.5 and 2.6, Nano Banana, Grok Imagine, Seedream and MAI-Image' },
   { href: '/gpt-image-2-5-vs-nano-banana-2-1-cost/', title: 'GPT Image 2.5 vs Nano Banana 2.1', detail: 'OpenAI quality tiers against Google\'s $0.0336 standard and $0.0168 batch 1K image price' },
-  { href: '/gpt-image-2-5-vs-grok-imagine-image-2-cost/', title: 'GPT Image 2.5 vs Grok Imagine Image 2.0', detail: 'Quality tiers against a flat $0.04 per image' },
+  { href: '/gpt-image-2-5-vs-grok-imagine-image-2-cost/', title: 'GPT Image 2.5 vs Grok Imagine Image 2.0', detail: 'OpenAI token billing against xAI’s $0.04–$0.08 image tiers' },
 ];

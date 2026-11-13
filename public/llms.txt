@@ -61,7 +61,7 @@ Every comparison lists both models' current rates and prices the same prompt on 
 
 Image APIs bill per image or per image token. Prices are checked against each provider's pricing page and dated.
 
-- [Image generation API pricing: cost per image for GPT Image 2.5, Nano Banana, Grok Imagine, Seedream 5.0 and MAI-Image-2.6](https://tokencalculator.dev/image-generation-api-pricing/)
+- [Image generation API pricing: cost per image for GPT Image 2.5 and 2.6, Nano Banana, Grok Imagine, Seedream 5.0 and MAI-Image-2.6](https://tokencalculator.dev/image-generation-api-pricing/)
 - [GPT Image 2.5 vs Nano Banana 2.1 cost per image](https://tokencalculator.dev/gpt-image-2-5-vs-nano-banana-2-1-cost/)
 - [GPT Image 2.5 vs Grok Imagine Image 2.0 cost per image](https://tokencalculator.dev/gpt-image-2-5-vs-grok-imagine-image-2-cost/)
 
