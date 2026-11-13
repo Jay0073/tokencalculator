@@ -57,8 +57,9 @@ const faq = [
   </section>
 
   <section class="shell mt-16 grid md:grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)] gap-8 md:gap-16 relative z-10">
-    <div><h2 class="section-title m-0">On per-token APIs, quality matters more than the model</h2></div>
+    <div><h2 class="section-title m-0">How to find the cheapest image generation API</h2></div>
     <div class="muted">
+      <p>Among the listed 1K output tiers, GPT Image 2.5 low has the lowest output cost: $0.00588 at the standard rate or $0.00294 in Batch. Nano Banana 2.1 costs $0.0336 at 1K, Grok Imagine Image 2.0 starts at $0.04 for 1K low, and Seedream 5.0 Pro costs $0.045 up to 2.61 megapixels. These tiers do not promise equal visual quality, and input or retry costs can add to the bill.</p>
       <p>OpenAI, Google and Microsoft bill image output by the token. On GPT Image 2.5 the quality setting changes the token count so much that the same 1024×1024 image costs 36 times more at max than at low.</p>
       <p>Google fixes the image-output token count per resolution instead, so a Nano Banana 2.1 image costs the same whatever the prompt: $0.0336 at 1K. Text, thinking, and grounded search can still add separate usage. xAI and ByteDance publish per-image tiers; xAI's price changes with size and quality, while Seedream's changes with pixel count.</p>
       <p>The practical rule: decide the size and quality your product needs first, then compare prices at that tier. Comparing default settings compares the wrong numbers.</p>
