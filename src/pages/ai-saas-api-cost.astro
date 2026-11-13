@@ -99,10 +99,38 @@ const faq = [
     <div><h2 class="section-title m-0">Include the rest of the launch budget</h2></div>
     <div class="muted">
       <p>API tokens are only one line. Add the builder or coding tool, hosting, database, email, monitoring, payment fees and the time needed to support customers. Some builder plans bundle hosting or model usage; check the allowance and what happens when it runs out.</p>
-      <p>For the wider path from validating an idea to an MVP, payments and first customers, read <a href="https://jobbit.uk/en/blog/how-to-build-a-saas-with-ai-2026" class="text-[var(--accent)]">Jobbit's guide, “How to Build a SaaS With AI in 2026: From Idea to Paying Customers”</a>. Its launch checklist complements the per-customer API budget above.</p>
+      <p>For the wider path from validating an idea to an MVP, payments and first customers, read Jobbit's launch guide:</p>
+      <a href="https://jobbit.uk/en/blog/how-to-build-a-saas-with-ai-2026" class="partner-guide-link">
+        <span class="partner-guide-copy">
+          <span class="partner-guide-kicker">Read on Jobbit.uk</span>
+          <strong>How to Build a SaaS With AI in 2026: From Idea to Paying Customers</strong>
+        </span>
+        <span class="partner-guide-arrow" aria-hidden="true">↗</span>
+      </a>
+      <p>Its launch checklist complements the per-customer API budget above.</p>
     </div>
   </section>
 
   <ProviderLinks current="/ai-saas-api-cost/" limit={4} />
   <FAQ items={faq} />
 </BaseLayout>
+
+<style>
+  .partner-guide-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.15rem;
+    border: 1px solid var(--line-strong);
+    border-radius: .75rem;
+    background: var(--panel);
+    color: var(--accent);
+    text-decoration: none;
+  }
+  .partner-guide-link:hover { border-color: var(--accent); background: var(--accent-soft); }
+  .partner-guide-copy { display: grid; gap: .35rem; }
+  .partner-guide-kicker { font: 600 .7rem/1.2 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; }
+  .partner-guide-copy strong { color: var(--accent); line-height: 1.35; text-decoration: underline; text-underline-offset: .2em; }
+  .partner-guide-arrow { flex: none; font-size: 1.25rem; line-height: 1; }
+</style>
