@@ -67,6 +67,7 @@ Image APIs bill per image or per image token. Prices are checked against each pr
 
 ## Cost guides
 
+- [AI SaaS API cost: budget model calls per active user before launch](https://tokencalculator.dev/ai-saas-api-cost/)
 - [The same model at five prices: batch, flex, fast, ultrafast and peak-hour tiers](https://tokencalculator.dev/llm-api-price-tiers/)
 - [Prompt caching cost: cached vs uncached on a 20-turn agent loop](https://tokencalculator.dev/prompt-caching-cost/)
 - [Long context vs RAG cost per query](https://tokencalculator.dev/long-context-vs-rag-cost/)
@@ -145,7 +146,7 @@ The site does not claim access to proprietary Claude, Gemini, or DeepSeek produc
 <!-- generated-pricing:start -->
 ## Model pricing snapshot
 
-Rates below are USD per one million tokens, regenerated from https://models.dev/api.json and verified 2026-10-29. The browser refreshes them from the same source at runtime. Long-context tiers and provider terms can still change a final bill.
+Rates below are USD per one million tokens, regenerated from https://models.dev/api.json and verified 2026-11-13. The browser refreshes them from the same source at runtime. Long-context tiers and provider terms can still change a final bill.
 
 | Model | Provider | Input | Cached input | Output | Context |
 | --- | --- | ---: | ---: | ---: | ---: |
@@ -157,17 +158,18 @@ Rates below are USD per one million tokens, regenerated from https://models.dev/
 | GPT-5.6 Luna | OpenAI | $0.20 | $0.02 | $1.20 | 1,050,000 |
 | GPT-5.6 Sol | OpenAI | $4.00 | $0.40 | $20.00 | 1,050,000 |
 | GPT-5.6 Terra | OpenAI | $2.00 | $0.20 | $12.00 | 1,050,000 |
+| Claude Fable 5.2 | Anthropic | $8.00 | $0.20 | $40.00 | 1,000,000 |
 | Claude Haiku 5.5 | Anthropic | $0.10 | $0.01 | $0.50 | 1,000,000 |
 | Claude Sonnet 5.5 | Anthropic | $2.00 | $0.10 | $10.00 | 1,000,000 |
 | Claude Opus 5.5 | Anthropic | $4.00 | $0.20 | $20.00 | 1,000,000 |
 | Claude Fable 5.1 | Anthropic | $10.00 | $0.25 | $50.00 | 1,000,000 |
 | Claude Opus 5 | Anthropic | $5.00 | $0.50 | $25.00 | 1,000,000 |
 | Claude Sonnet 5 | Anthropic | $2.00 | $0.20 | $10.00 | 1,000,000 |
-| Claude Fable 5 | Anthropic | $10.00 | $1.00 | $50.00 | 1,000,000 |
+| Gemini 4 Hydrogen | Google | $1.50 | $0.07 | $7.50 | 1,048,576 |
+| Gemini 4 Carbon | Google | $2.00 | $0.10 | $10.00 | 1,048,576 |
 | Gemini 4 Argon | Google | $2.00 | $0.10 | $10.00 | 1,048,576 |
 | Gemini 3.8 Flash | Google | $0.75 | $0.07 | $3.75 | 1,048,576 |
 | Gemini 3.5 Flash Lite | Google | $0.30 | $0.03 | $2.50 | 1,048,576 |
-| Gemini 3.6 Flash | Google | $0.75 | $0.07 | $3.75 | 1,048,576 |
 | Gemini 3.1 Flash Lite | Google | $0.25 | $0.03 | $1.50 | 1,048,576 |
 | Gemini 2.5 Pro | Google | $1.25 | $0.13 | $10.00 | 1,048,576 |
 | DeepSeek V4.1 Flash 1017 | DeepSeek | $0.15 | $0.003 | $0.60 | 1,048,576 |
@@ -186,10 +188,13 @@ Rates below are USD per one million tokens, regenerated from https://models.dev/
 | GLM-5.3-Flash | Z.ai GLM | $0.15 | $0.03 | $0.50 | 1,000,000 |
 | GLM-5.3 | Z.ai GLM | $1.40 | $0.26 | $4.40 | 1,000,000 |
 | GLM-5.2 | Z.ai GLM | $1.40 | $0.26 | $4.40 | 1,000,000 |
+| Muse Ember | Meta | $0.10 | $0.004 | $0.50 | 1,048,576 |
 | Muse Wonder | Meta | $4.00 | $0.20 | $20.00 | 1,048,576 |
 | Muse Spark 1.3 | Meta | $1.25 | $0.15 | $4.25 | 1,048,576 |
 
-Models with a long-context tier: GPT-6.1 Terra, GPT-6.1 Sol, GPT-6 Luna, GPT-6 Sol, GPT-6 Astra, GPT-5.6 Luna, GPT-5.6 Sol, GPT-5.6 Terra, Claude Haiku 5.5, Gemini 2.5 Pro, Qwen3.7 Flash, Qwen3.7 Plus, Grok 4.7, Grok 4.6, Grok 4.5. Above the tier threshold the higher rate applies to the whole request.
+Models with a long-context tier: GPT-6.1 Terra, GPT-6.1 Sol, GPT-6 Luna, GPT-6 Sol, GPT-6 Astra, GPT-5.6 Luna, GPT-5.6 Sol, GPT-5.6 Terra, Claude Haiku 5.5, Gemini 2.5 Pro, Qwen3.7 Flash, Qwen3.7 Plus, Grok 4.7, Grok 4.6, Grok 4.5, Muse Ember. Above the tier threshold the higher rate applies to the whole request.
+
+Google: Gemini 4 Argon and Carbon introductory rates run through November 30, 2026. Google lists doubled standard input and output rates from December 1, 2026.
 
 DeepSeek: Rates shown are DeepSeek's off-peak prices. From 01:00 to 04:00 and 06:00 to 10:00 UTC, Monday to Friday (except Chinese public holidays), DeepSeek charges double.
 <!-- generated-pricing:end -->

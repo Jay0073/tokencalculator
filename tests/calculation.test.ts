@@ -128,12 +128,14 @@ describe('published image formulas', () => {
     }
   });
 
-  // Gemini 3 spends a fixed budget per image, whatever its size:
+  // Gemini 3 and 4 spend a fixed budget per image, whatever its size:
   // ai.google.dev/gemini-api/docs/media-resolution
-  it('spends Gemini 3 media_resolution budgets', () => {
-    for (const size of [[384, 384], [1024, 1024], [3840, 2160]] as const) {
-      expect(countImage({ width: size[0], height: size[1] }, getModel('gemini-3.8-flash')).tokens).toBe(1120);
-      expect(countImage({ width: size[0], height: size[1], detail: 'low' }, getModel('gemini-3.8-flash')).tokens).toBe(280);
+  it('spends Gemini 3 and 4 media_resolution budgets', () => {
+    for (const id of ['gemini-3.8-flash', 'gemini-4-hydrogen', 'gemini-4-carbon']) {
+      for (const size of [[384, 384], [1024, 1024], [3840, 2160]] as const) {
+        expect(countImage({ width: size[0], height: size[1] }, getModel(id)).tokens).toBe(1120);
+        expect(countImage({ width: size[0], height: size[1], detail: 'low' }, getModel(id)).tokens).toBe(280);
+      }
     }
   });
 

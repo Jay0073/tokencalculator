@@ -15,6 +15,18 @@ describe('published media formulas', () => {
     expect(tokensOf(countMedia({ kind: 'audio', seconds: 90.2 }, model))).toBe(2275);
   });
 
+  it('bills Gemini 4 media with the published Gemini 3 and 4 budgets', () => {
+    const model = getModel('gemini-4-hydrogen');
+    const audio = countMedia({ kind: 'audio', seconds: 60 }, model);
+    const video = countMedia({ kind: 'video', seconds: 30 }, model);
+    const pdf = countMedia({ kind: 'pdf', pages: 3 }, model);
+    expect(tokensOf(audio)).toBe(1500);
+    expect(tokensOf(video)).toBe(2850);
+    expect(tokensOf(pdf)).toBe(1680);
+    expect(audio.supported && audio.method).toContain('Gemini 4 audio');
+    expect(countMediaTokens({ kind: 'video', seconds: 30 }, 'gemini-4-hydrogen')).toMatchObject(video);
+  });
+
   it('bills Gemini 2.x audio at 32 tokens a second', () => {
     // Google's own worked example: one minute of audio is 1,920 tokens.
     expect(tokensOf(countMedia({ kind: 'audio', seconds: 60 }, getModel('gemini-2.5-pro')))).toBe(1920);

@@ -6,7 +6,7 @@ const toc=[{id:'pipeline',label:'Local image pipeline'},{id:'openai',label:'Open
 // Anthropic's published table. Both columns come from the same formula; only the caps differ.
 const CLAUDE_ROWS=[['200 × 200','64','64'],['1000 × 1000','1,296','1,296'],['1092 × 1092','1,521','1,521'],['1920 × 1080','1,560','2,691'],['2000 × 1500','1,564','3,888'],['3840 × 2160','1,560','4,784']];
 ---
-<KnowledgeLayout title="Image and Vision Token Formulas: Documentation" description="How image tokens are counted: OpenAI 32x32 patches with a 2,500 budget, Claude 28x28 patches in two tiers, and Gemini 3 media_resolution budgets." heading="Images and vision-token formulas" eyebrow="Docs · Input pipeline 03" datePublished="2026-08-28" dateModified="2026-10-02" section="Documentation" type="TechArticle" keywords={['image token calculator','vision tokens','OpenAI patch tokens','Gemini media_resolution']} {toc}>
+<KnowledgeLayout title="Image and Vision Token Formulas: Documentation" description="How image tokens are counted: OpenAI 32x32 patches with a 2,500 budget, Claude 28x28 patches in two tiers, and Gemini 3 and 4 media_resolution budgets." heading="Images and vision-token formulas" eyebrow="Docs · Input pipeline 03" datePublished="2026-08-28" dateModified="2026-11-13" section="Documentation" type="TechArticle" keywords={['image token calculator','vision tokens','OpenAI patch tokens','Gemini media_resolution']} {toc}>
   <p class="knowledge-lead">The browser reads image dimensions locally and never uploads pixels. Each provider family then converts that geometry into tokens with its own published formula. The three formulas have nothing in common, so the same image can cost 1,120 tokens on one model and 4,784 on another.</p>
   <WorkflowDiagram title="Vision-token calculation" caption="Image dimensions—not compressed file size—drive the patch, tile, or fixed-budget rule selected for the model family." steps={[{label:'Image file',detail:'PNG, JPEG, WebP, GIF',tone:'source'},{label:'Read dimensions',detail:'Pixels stay local',tone:'source'},{label:'Select rule',detail:'By model family',tone:'measure'},{label:'Patches, tiles, or budget',detail:'Provider formula',tone:'measure'},{label:'Vision tokens',detail:'Added to text',tone:'action'}]}/>
 
@@ -38,7 +38,7 @@ const CLAUDE_ROWS=[['200 × 200','64','64'],['1000 × 1000','1,296','1,296'],['1
   <p>Every row is Anthropic's own published figure, and each one is covered by a test in this repository. Notice the shape of the table: below about 1.5 megapixels the two tiers agree, because nothing needs resizing. Above that, the older tier flattens at roughly 1,560 tokens while the newer tier keeps climbing to 4,784. A 4K screenshot therefore costs three times more on Claude Sonnet 5.5 than on Claude Haiku 4.5.</p>
 
   <h2 id="gemini">Gemini: fixed budgets</h2>
-  <p>Gemini 3 ignores image dimensions. Each image spends a fixed budget set by the <code>media_resolution</code> parameter.</p>
+  <p>Gemini 3 and 4 ignore image dimensions. Each image spends a fixed budget set by the <code>media_resolution</code> parameter.</p>
   <div class="table-shell overflow-x-auto"><table class="seo-table">
     <thead><tr><th><code>media_resolution</code></th><th>Tokens per image</th></tr></thead>
     <tbody>

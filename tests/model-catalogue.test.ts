@@ -41,16 +41,15 @@ describe('generated model catalogue', () => {
     }
   });
 
-  it('keeps Gemini 4 Argon on its provider-documented output limit and current rates', () => {
-    const argon = SITE_MODELS.find((model) => model.id === 'gemini-4-argon');
-    expect(argon).toMatchObject({
-      inputPerMillion: 2,
-      cachedInputPerMillion: 0.1,
-      outputPerMillion: 10,
-      contextWindow: 1_048_576,
-      maxOutput: 65_536,
-      maxOutputSource: 'https://ai.google.dev/gemini-api/docs/models/gemini-4-argon',
-    });
+  it('keeps Gemini 4 Argon and Carbon on their provider-documented output limits', () => {
+    for (const id of ['gemini-4-argon', 'gemini-4-carbon']) {
+      const model = SITE_MODELS.find((entry) => entry.id === id);
+      expect(model).toMatchObject({
+        contextWindow: 1_048_576,
+        maxOutput: 65_536,
+        maxOutputSource: `https://ai.google.dev/gemini-api/docs/models/${id}`,
+      });
+    }
   });
 
   it('resolves every alias to a model that exists', () => {

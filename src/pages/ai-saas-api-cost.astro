@@ -1,0 +1,108 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumbs from '../components/seo/Breadcrumbs.astro';
+import FAQ from '../components/seo/FAQ.astro';
+import ProviderLinks from '../components/seo/ProviderLinks.astro';
+import { MODELS } from '../data/models';
+import { calculateWorkloadCost } from '../engines/pricing/calculate';
+
+const breadcrumbs = [
+  { label: 'Token calculator', href: '/' },
+  { label: 'Compare models', href: '/compare/' },
+  { label: 'AI SaaS API cost' },
+];
+
+// An example, not a claim about a typical customer. Each user makes 30 model calls,
+// and every call sends 2,000 input tokens and receives 500 billed output tokens.
+const ACTIVE_USERS = 100;
+const CALLS_PER_USER = 30;
+const INPUT_TOKENS = 2_000;
+const OUTPUT_TOKENS = 500;
+const monthlyCalls = ACTIVE_USERS * CALLS_PER_USER;
+const modelIds = ['muse-ember-1.0', 'gpt-6.1-terra', 'gemini-4-hydrogen', 'claude-sonnet-5-5', 'claude-fable-5-2'];
+const rows = modelIds.map((id) => {
+  const model = MODELS.find((entry) => entry.id === id);
+  if (!model) throw new Error(`AI SaaS cost guide requires ${id} in the model catalogue.`);
+  return { model, monthly: monthlyCalls * calculateWorkloadCost(INPUT_TOKENS, OUTPUT_TOKENS, model) };
+});
+const verified = rows.map(({ model }) => model.verifiedAt).sort().at(-1);
+const money = (value: number) => `$${value.toFixed(2)}`;
+
+const faq = [
+  { question: 'How do I estimate an AI SaaS API bill?', answer: 'Multiply active users by model calls per user, then by the input and output token cost of one call. Count every model call in an agent workflow, including retries and tool follow-ups.' },
+  { question: 'Does this example include hosting or a builder subscription?', answer: 'No. The table includes only uncached text input and output at standard API rates. Hosting, storage, email, payment fees, builder subscriptions and tool charges need separate budget lines.' },
+  { question: 'Why can the real bill differ from the table?', answer: 'Actual prompts, output lengths, cache hits, reasoning tokens, long-context tiers and service tiers change the bill. Measure provider-reported usage on representative tasks before setting a paid plan price.' },
+];
+---
+
+<BaseLayout
+  title="AI SaaS API Cost: Estimate a Monthly Launch Budget | TokenCalculator.dev"
+  description="Estimate AI model API spend per active user. A worked SaaS launch budget compares current model rates and shows how to account for agents, caching and other costs."
+  canonical="/ai-saas-api-cost/"
+  {breadcrumbs} {faq}
+  article={{ headline: 'AI SaaS API cost: estimate a monthly launch budget', datePublished: '2026-11-13', dateModified: '2026-11-13', section: 'Cost guides', type: 'TechArticle', keywords: ['AI SaaS cost', 'AI API cost per user', 'LLM API budget'] }}
+>
+  <Breadcrumbs items={breadcrumbs} />
+
+  <section class="shell max-w-4xl pt-12 sm:pt-16 pb-8 relative z-10">
+    <span class="eyebrow">SaaS unit economics</span>
+    <h1 class="m-0 mt-4 text-[clamp(2.25rem,5vw,3.75rem)] leading-[1.02] tracking-[-.055em]">Estimate the AI API cost of your SaaS.</h1>
+    <p class="muted text-[16px] sm:text-[17px] mt-4 mb-0 max-w-3xl">
+      A builder subscription helps you make the product. Once customers use it, each model call can add to a separate API bill. Count that variable cost before choosing a paid plan price.
+    </p>
+  </section>
+
+  <section class="shell mt-8 relative z-10" aria-labelledby="example-title">
+    <span class="eyebrow">Worked launch budget</span>
+    <h2 id="example-title" class="section-title mt-3">One usage pattern, five model prices</h2>
+    <p class="muted max-w-3xl mt-4 mb-6">
+      Suppose {ACTIVE_USERS} people are active in a month. Each makes {CALLS_PER_USER} model calls, with {INPUT_TOKENS.toLocaleString()} input tokens and {OUTPUT_TOKENS} billed output tokens per call. That is {monthlyCalls.toLocaleString()} calls per month. The same workload costs:
+    </p>
+    <div class="table-shell overflow-x-auto" role="group" aria-labelledby="example-title" tabindex="0">
+      <table class="seo-table">
+        <thead><tr><th scope="col">Model</th><th scope="col">Input / 1M</th><th scope="col">Output / 1M</th><th scope="col">Monthly API cost</th></tr></thead>
+        <tbody>
+          {rows.map(({ model, monthly }) => (
+            <tr>
+              <td><strong>{model.name}</strong></td>
+              <td>{money(model.inputPerMillion)}</td>
+              <td>{money(model.outputPerMillion)}</td>
+              <td><strong>{money(monthly)}</strong></td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <p class="text-xs muted mt-4 max-w-3xl">
+      USD, standard rates verified {verified}. This is an illustrative, text-only estimate with no cache hits, retries, tool fees or long-context premiums. It is not a prediction of what users will do. The model catalogue supplies the rates; change the assumptions in <a href="/estimators/" class="text-[var(--accent)]">Cost Lab</a> before making a pricing decision.
+    </p>
+  </section>
+
+  <section class="shell mt-16 grid md:grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)] gap-8 md:gap-16 relative z-10">
+    <div><h2 class="section-title m-0">Start with calls per customer</h2></div>
+    <div class="muted">
+      <p>List each action a customer can take: ask a question, summarize a document, generate a report. Record how many model calls one action triggers. An agent may make several calls before returning one answer, so a count of button presses will understate its cost.</p>
+      <p>For each call, measure the full input: system instructions, user content, retrieved passages and tool results. Then record billed output from the provider's usage report, including reasoning tokens where the provider charges for them. Paste representative inputs into the <a href="/" class="text-[var(--accent)]">token calculator</a> to plan the input side.</p>
+      <p>The basic monthly formula is <strong>active users × calls per user × (input tokens × input rate + output tokens × output rate) ÷ 1,000,000</strong>. Use a busy customer as well as an average one to see where a generous usage allowance becomes expensive.</p>
+    </div>
+  </section>
+
+  <section class="shell mt-16 grid md:grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)] gap-8 md:gap-16 relative z-10">
+    <div><h2 class="section-title m-0">Recheck the bill when the workflow changes</h2></div>
+    <div class="muted">
+      <p>A larger system prompt, a document attached to every request, longer reasoning output or extra agent steps can move the bill even if user count stays flat. Log model calls and tokens per completed task, then compare that number with the estimate you used to price the plan.</p>
+      <p>Repeated prompt prefixes may be cheaper through caching, but only when they actually hit the cache. <a href="/prompt-caching-cost/" class="text-[var(--accent)]">Compare cached and uncached agent costs</a>. If you send a whole document on every request, <a href="/long-context-vs-rag-cost/" class="text-[var(--accent)]">compare long context with retrieval</a> before scaling.</p>
+    </div>
+  </section>
+
+  <section class="shell mt-16 grid md:grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)] gap-8 md:gap-16 relative z-10">
+    <div><h2 class="section-title m-0">Include the rest of the launch budget</h2></div>
+    <div class="muted">
+      <p>API tokens are only one line. Add the builder or coding tool, hosting, database, email, monitoring, payment fees and the time needed to support customers. Some builder plans bundle hosting or model usage; check the allowance and what happens when it runs out.</p>
+      <p>For the wider path from validating an idea to an MVP, payments and first customers, read <a href="https://jobbit.uk/en/blog/how-to-build-a-saas-with-ai-2026" class="text-[var(--accent)]">Jobbit's guide, “How to Build a SaaS With AI in 2026: From Idea to Paying Customers”</a>. Its launch checklist complements the per-customer API budget above.</p>
+    </div>
+  </section>
+
+  <ProviderLinks current="/ai-saas-api-cost/" limit={4} />
+  <FAQ items={faq} />
+</BaseLayout>

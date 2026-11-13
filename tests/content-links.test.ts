@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { COMPARISONS } from '../src/data/comparisons';
+import { COMPARISONS, COST_GUIDES } from '../src/data/comparisons';
 import { IMAGE_MODELS, IMAGE_PAGES } from '../src/data/image-models';
 import { blogPosts, docsPages } from '../src/data/knowledge';
 
@@ -17,6 +17,7 @@ describe('llms.txt coverage', () => {
     const paths = [
       '/compare/',
       ...COMPARISONS.map((page) => `/${page.slug}/`),
+      ...COST_GUIDES.map((guide) => guide.href),
       ...IMAGE_PAGES.map((page) => page.href),
       ...blogPosts.map((post) => post.href),
       ...docsPages.map((doc) => doc.href),

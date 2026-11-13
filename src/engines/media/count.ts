@@ -17,7 +17,7 @@ export type MediaCount =
   | { supported: false; reason: string };
 
 /**
- * Gemini 3 spends a fixed budget per second of audio, per video frame and per PDF page.
+ * Gemini 3 and 4 spend a fixed budget per second of audio, per video frame and per PDF page.
  * Video frames are sampled at 1 FPS. ai.google.dev/gemini-api/docs/media-resolution
  */
 const GEMINI_3 = { label: 'Gemini 3', audioPerSecond: 25, videoFrame: { low: 70, high: 280 }, pdfPerPage: { default: 560, low: 280, high: 1_120 } } as const;
@@ -50,6 +50,7 @@ export function countMedia(input: MediaInput, model: ModelConfig): MediaCount {
         : `${model.name} accepts ${LABELS[kind]} input, but no token rate is published for it.`,
     };
   }
+  const label = model.id.startsWith('gemini-4') ? 'Gemini 4' : rates.label;
 
   if (kind === 'audio') {
     const seconds = wholeSeconds(input.seconds);
@@ -57,7 +58,7 @@ export function countMedia(input: MediaInput, model: ModelConfig): MediaCount {
       supported: true,
       tokens: seconds * rates.audioPerSecond,
       accuracy: 'provider-formula',
-      method: `${rates.label} audio · ${rates.audioPerSecond} tokens per second × ${seconds.toLocaleString()}s`,
+      method: `${label} audio · ${rates.audioPerSecond} tokens per second × ${seconds.toLocaleString()}s`,
     };
   }
 
@@ -72,7 +73,7 @@ export function countMedia(input: MediaInput, model: ModelConfig): MediaCount {
       supported: true,
       tokens: frames + sound,
       accuracy: 'provider-formula',
-      method: `${rates.label} video · ${perFrame} tokens per frame at 1 FPS × ${seconds.toLocaleString()}s${sound ? ` + ${rates.audioPerSecond} tokens per second of sound` : ''}`,
+      method: `${label} video · ${perFrame} tokens per frame at 1 FPS × ${seconds.toLocaleString()}s${sound ? ` + ${rates.audioPerSecond} tokens per second of sound` : ''}`,
     };
   }
 
@@ -82,6 +83,6 @@ export function countMedia(input: MediaInput, model: ModelConfig): MediaCount {
     supported: true,
     tokens: pages * perPage,
     accuracy: 'provider-formula',
-    method: `${rates.label} PDF pages · ${perPage} tokens per page × ${pages.toLocaleString()} page${pages === 1 ? '' : 's'}, page text counted separately`,
+    method: `${label} PDF pages · ${perPage} tokens per page × ${pages.toLocaleString()} page${pages === 1 ? '' : 's'}, page text counted separately`,
   };
 }

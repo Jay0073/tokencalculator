@@ -23,7 +23,7 @@ const OPENAI_PATCH = { size: 32, budget: 2_500, multiplier: 1.2 } as const;
 const OPENAI_PUBLISHED_PATCH_SPEC = new Set(['gpt-6-astra', 'gpt-5.6-sol', 'gpt-5.6-terra', 'gpt-5.6-luna']);
 
 /**
- * Gemini 3 spends a fixed token budget per image, whatever its size. The default is the
+ * Gemini 3 and 4 spend a fixed token budget per image, whatever its size. The default is the
  * same allocation as media_resolution high.
  * ai.google.dev/gemini-api/docs/media-resolution
  */
@@ -117,10 +117,11 @@ export function countImage(input: ImageInput, model: ModelConfig): ImageCount {
   if (model.vision === 'gemini-budget') {
     const level = input.detail === 'low' ? 'low' : 'high';
     const tokens = GEMINI_IMAGE_BUDGET[level];
+    const generation = model.id.startsWith('gemini-4') ? 'Gemini 4' : 'Gemini 3';
     return {
       tokens,
       accuracy: 'provider-formula',
-      method: `Gemini 3 media_resolution ${level} · ${tokens.toLocaleString()} tokens per image`,
+      method: `${generation} media_resolution ${level} · ${tokens.toLocaleString()} tokens per image`,
     };
   }
 

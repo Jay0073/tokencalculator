@@ -13,11 +13,14 @@
     "gpt-5.6-terra",
     "gpt-5.6-luna",
     "claude-fable-5-1",
+    "claude-fable-5-2",
     "claude-opus-5",
     "claude-sonnet-5",
     "claude-haiku-5-5",
     "gemini-3.8-flash",
     "gemini-4-argon",
+    "gemini-4-carbon",
+    "gemini-4-hydrogen",
     "gemini-3.5-flash-lite",
     "gemini-3.1-flash-lite",
     "gemini-2.5-pro",
@@ -31,6 +34,7 @@
     "glm-5.3",
     "muse-spark-1.3",
     "muse-wonder-1.0",
+    "muse-ember-1.0",
     "claude-sonnet-5-5",
     "claude-opus-5-5",
     "gpt-6.1-sol",
@@ -55,6 +59,9 @@
       "description": "High-volume workloads"
     },
     "claude-fable-5-1": {
+      "description": "Previous frontier Claude"
+    },
+    "claude-fable-5-2": {
       "description": "Latest frontier Claude"
     },
     "claude-opus-5": {
@@ -70,9 +77,17 @@
       "description": "Latest multimodal Flash"
     },
     "gemini-4-argon": {
-      "description": "Flagship long-horizon reasoning",
+      "description": "Efficient Gemini 4 reasoning",
       "maxOutput": 65536,
       "maxOutputSource": "https://ai.google.dev/gemini-api/docs/models/gemini-4-argon"
+    },
+    "gemini-4-carbon": {
+      "description": "Most capable Gemini 4 reasoning",
+      "maxOutput": 65536,
+      "maxOutputSource": "https://ai.google.dev/gemini-api/docs/models/gemini-4-carbon"
+    },
+    "gemini-4-hydrogen": {
+      "description": "Fast Gemini 4 for everyday coding"
     },
     "gemini-3.6-flash": {
       "description": "Multimodal Flash"
@@ -124,6 +139,9 @@
     },
     "muse-wonder-1.0": {
       "description": "Meta frontier agent model"
+    },
+    "muse-ember-1.0": {
+      "description": "High-volume agent execution"
     },
     "claude-haiku-5-5": {
       "description": "High-volume, low-latency Claude"
@@ -213,8 +231,9 @@
       "tokenizer": "gemini-estimate",
       "accuracy": "estimated",
       "vision": "gemini-budget",
-      "$visionComment": "Gemini 3 spends a fixed budget per image: 280 low, 560 medium, 1,120 high and default, 2,240 ultra-high (ai.google.dev/gemini-api/docs/media-resolution).",
+      "$visionComment": "Gemini 3 and 4 spend a fixed budget per image: 280 low, 560 medium, 1,120 high and default, 2,240 ultra-high (ai.google.dev/gemini-api/docs/media-resolution).",
       "pricingUrl": "https://ai.google.dev/gemini-api/docs/pricing",
+      "pricingNote": "Gemini 4 Argon and Carbon introductory rates run through November 30, 2026. Google lists doubled standard input and output rates from December 1, 2026.",
       "include": [
         "^gemini-"
       ],
@@ -331,6 +350,7 @@
       "pricingUrl": "https://llama.developer.meta.com/docs/models",
       "include": [
         "^muse-(spark|wonder)-",
+        "^muse-ember-",
         "^llama-"
       ],
       "exclude": [
@@ -382,10 +402,11 @@
         "label": "Fast mode",
         "multiplier": 2,
         "appliesTo": [
+          "claude-fable-5-2",
           "claude-opus-5-5",
           "claude-opus-5"
         ],
-        "note": "Research preview, Opus models only, on the first-party API."
+        "note": "Available for Claude Fable 5.2 and select Opus models on the first-party API."
       },
       {
         "id": "us",
@@ -406,9 +427,11 @@
         "label": "Flex",
         "multiplier": 0.5,
         "appliesTo": [
-          "gemini-4-argon"
+          "gemini-4-argon",
+          "gemini-4-carbon",
+          "gemini-4-hydrogen"
         ],
-        "note": "Lower-priority capacity for Gemini 4 Argon, billed at the same rates as Batch."
+        "note": "Lower-priority Gemini 4 capacity, billed at the same rates as Batch."
       },
       {
         "id": "priority",
@@ -416,9 +439,11 @@
         "multiplier": 1.8,
         "appliesTo": [
           "gemini-4-argon",
+          "gemini-4-carbon",
+          "gemini-4-hydrogen",
           "gemini-3.8-flash"
         ],
-        "note": "Confirmed for Gemini 4 Argon and Gemini 3.8 Flash on the pricing page."
+        "note": "Confirmed for Gemini 4 Argon, Carbon and Hydrogen, and Gemini 3.8 Flash on the pricing page."
       }
     ],
     "deepseek": [

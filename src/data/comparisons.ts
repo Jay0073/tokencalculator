@@ -18,6 +18,7 @@ export const COMPARISON_GROUPS: { id: ComparisonGroup; eyebrow: string; title: s
 
 /** Guides that compare approaches rather than two models. */
 export const COST_GUIDES = [
+  { href: '/ai-saas-api-cost/', title: 'AI SaaS API cost', detail: 'Turn model calls per active user into a monthly launch budget' },
   { href: '/dots-vs-grok-bot-vs-muse/', title: 'Dots vs Grok Bot vs Muse', detail: 'Three agent products compared, and why agent work costs more than chat' },
   { href: '/llm-api-price-tiers/', title: 'The same model at five prices', detail: 'Batch, flex, fast, ultrafast and peak-hour rates compared' },
   { href: '/prompt-caching-cost/', title: 'Prompt caching cost', detail: 'What a cached prefix saves on a 20-turn agent loop' },
