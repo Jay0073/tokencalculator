@@ -46,7 +46,6 @@ export const MODELS: readonly ModelConfig[] = [
   { id: 'qwen3.8-max', name: 'Qwen3.8 Max', provider: 'alibaba', contextWindow: 1_000_000, inputPerMillion: 2, cachedInputPerMillion: 0.25, outputPerMillion: 6, bytesPerToken: 3.7 },
   { id: 'qwen3.7-flash', name: 'Qwen3.7 Flash', provider: 'alibaba', contextWindow: 1_000_000, inputPerMillion: 0.03, cachedInputPerMillion: 0.006, outputPerMillion: 0.13, bytesPerToken: 3.7 },
   { id: 'qwen3.7-plus', name: 'Qwen3.7 Plus', provider: 'alibaba', contextWindow: 1_000_000, inputPerMillion: 0.4, cachedInputPerMillion: 0.08, outputPerMillion: 1.6, bytesPerToken: 3.7 },
-  { id: 'qwen3.7-max', name: 'Qwen3.7 Max', provider: 'alibaba', contextWindow: 1_000_000, inputPerMillion: 2.5, cachedInputPerMillion: 0.5, outputPerMillion: 7.5, bytesPerToken: 3.7 },
   { id: 'kimi-k3.1-pro', name: 'Kimi K3.1 Pro', provider: 'moonshotai', contextWindow: 1_048_576, inputPerMillion: 2, cachedInputPerMillion: 0.2, outputPerMillion: 10, bytesPerToken: 3.7 },
   { id: 'kimi-k3', name: 'Kimi K3', provider: 'moonshotai', contextWindow: 1_048_576, inputPerMillion: 3, cachedInputPerMillion: 0.3, outputPerMillion: 15, bytesPerToken: 3.7 },
   { id: 'grok-4.7', name: 'Grok 4.7', provider: 'xai', contextWindow: 500_000, inputPerMillion: 2, cachedInputPerMillion: 0.5, outputPerMillion: 6, bytesPerToken: 4 },
